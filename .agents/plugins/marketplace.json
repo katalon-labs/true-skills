@@ -1,0 +1,20 @@
+{
+  "name": "katalon-true-platform",
+  "interface": {
+    "displayName": "Katalon True Platform"
+  },
+  "plugins": [
+    {
+      "name": "katalon-true-platform",
+      "source": {
+        "source": "local",
+        "path": "./plugins/katalon-true-platform"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

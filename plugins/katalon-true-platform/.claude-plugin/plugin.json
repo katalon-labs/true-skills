@@ -1,0 +1,20 @@
+{
+  "name": "katalon-true-platform",
+  "version": "0.1.0",
+  "description": "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.",
+  "author": {
+    "name": "katalon-labs",
+    "url": "https://github.com/katalon-labs"
+  },
+  "homepage": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
+  "repository": "https://github.com/katalon-labs/true-skills",
+  "license": "MIT",
+  "keywords": [
+    "katalon",
+    "testops",
+    "true-platform",
+    "testing",
+    "qa",
+    "playwright"
+  ]
+}

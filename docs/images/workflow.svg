@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 200" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="a2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#00A3A3"/>
+    </marker>
+  </defs>
+  <rect width="1040" height="200" fill="#f8fafc"/>
+  <text x="40" y="46" fill="#0f172a" font-size="18" font-weight="700">Requirement → execution, one prompt</text>
+
+  <!-- steps -->
+  <g>
+    <!-- positions: 6 steps -->
+    <g>
+      <rect x="40"  y="74" width="142" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="111" y="104" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="600">Analyze</text>
+      <text x="111" y="122" text-anchor="middle" fill="#64748b" font-size="11">requirement</text>
+    </g>
+    <g>
+      <rect x="214" y="74" width="142" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="285" y="104" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="600">Design + import</text>
+      <text x="285" y="122" text-anchor="middle" fill="#64748b" font-size="11">ISTQB cases, linked</text>
+    </g>
+    <g>
+      <rect x="388" y="74" width="142" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="459" y="104" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="600">Build suite</text>
+      <text x="459" y="122" text-anchor="middle" fill="#64748b" font-size="11">organize coverage</text>
+    </g>
+    <g>
+      <rect x="562" y="74" width="142" height="66" rx="10" fill="#e6f7f7" stroke="#00A3A3" stroke-width="1.5"/>
+      <text x="633" y="104" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="600">Run with AI</text>
+      <text x="633" y="122" text-anchor="middle" fill="#64748b" font-size="11">execute + poll</text>
+    </g>
+    <g>
+      <rect x="736" y="74" width="142" height="66" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="807" y="104" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="600">Upload reports</text>
+      <text x="807" y="122" text-anchor="middle" fill="#64748b" font-size="11">Katalon / JUnit / PW</text>
+    </g>
+    <g>
+      <rect x="898" y="74" width="142" height="66" rx="10" fill="#00A3A3"/>
+      <text x="969" y="104" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">Release call</text>
+      <text x="969" y="122" text-anchor="middle" fill="#d6f5f5" font-size="11">ready / risk / no</text>
+    </g>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#00A3A3" stroke-width="2" fill="none">
+    <path d="M182 107 L210 107" marker-end="url(#a2)"/>
+    <path d="M356 107 L384 107" marker-end="url(#a2)"/>
+    <path d="M530 107 L558 107" marker-end="url(#a2)"/>
+    <path d="M704 107 L732 107" marker-end="url(#a2)"/>
+    <path d="M878 107 L894 107" marker-end="url(#a2)"/>
+  </g>
+
+  <text x="40" y="176" fill="#64748b" font-size="12">Each step maps to a skill. Run the whole chain with `katalon-trueplatform-testing`, or call any step on its own.</text>
+</svg>

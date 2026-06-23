@@ -1,0 +1,12 @@
+name: katalon-prod-mcp
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: katalon-prod-mcp
+    command: npx
+    args:
+      - "-y"
+      - "mcp-remote"
+      - "https://<your.sub.domain>.katalon.io/mcp"
+      - "--transport"
+      - "http-first"

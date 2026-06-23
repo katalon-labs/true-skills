@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Platform Setup"
+  short_description: "Install and connect the Katalon MCP"
+  default_prompt: "Use $katalon-platform-setup to install the Katalon MCP server and connect it to my platform account."

@@ -1,0 +1,27 @@
+name: build-check
+
+# Verifies that the generated agent adapters are in sync with skills/.
+# If someone edited a skill (or a generated file) without rebuilding, the
+# working tree changes and this job fails.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  adapters-in-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Regenerate adapters from skills/
+        run: node scripts/build-adapters.mjs
+      - name: Fail if generated files are out of sync
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Generated files are out of sync. Run 'node scripts/build-adapters.mjs' and commit the result."
+            exit 1
+          fi
