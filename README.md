@@ -1,19 +1,41 @@
 <div align="center">
-
-<img src="assets/katalon-logo.svg" width="76" alt="Katalon">
-
-# True Skills
-
-**Open testing skills for Katalon True Platform - for every AI coding agent.**
-
-Design test cases, run them with AI, upload reports, and call release readiness - straight from your agent's chat. Author the skills once; native config is generated for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads `AGENTS.md`.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE)
-&nbsp;·&nbsp; 8 skills &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
-
-<img src="docs/images/architecture.svg" width="900" alt="Architecture: one skills/ source generates native config for each agent, all connecting to the Katalon MCP server">
-
+<img src="assets/katalon-logo.svg" width="72" alt="Katalon">
 </div>
+
+```text
+ _____ ____  _   _ _____   ____  _  _____ _     _     ____
+|_   _|  _ \| | | | ____| / ___|| |/ /_ _| |   | |   / ___|
+  | | | |_) | | | |  _|   \___ \| ' / | || |   | |   \___ \
+  | | |  _ <| |_| | |___   ___) | . \ | || |___| |___ ___) |
+  |_| |_| \_\\___/|_____| |____/|_|\_\___|_____|_____|____/
+```
+
+**Open testing skills for Katalon True Platform, for every AI coding agent.**
+
+Design test cases, run them with AI, upload reports, and call release readiness, straight from your agent's chat. Author the skills once; native config is generated for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads `AGENTS.md`.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE) &nbsp;·&nbsp; 8 skills &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
+
+![Katalon True Skills demo: install the marketplace, then ask the agent to analyze a requirement, design and import cases, run with AI, and call release readiness](docs/images/demo.svg)
+
+## How it fits together
+
+```text
+   skills/   one source of truth  (8 SKILL.md + references)
+      |
+      |   node scripts/build-adapters.mjs        deterministic, CI-checked
+      v
+   .--------------------- native config per agent ----------------------.
+   |  Claude Code     Codex        Copilot        Cursor        Kiro     |
+   |  Windsurf        Cline        Continue       AGENTS.md (any other)  |
+   '----------------------------------+---------------------------------'
+      |   every adapter points at the same MCP
+      v
+   Katalon MCP    npx mcp-remote https://<your.sub.domain>.katalon.io/mcp    OAuth
+      |
+      v
+   Katalon True Platform    requirements -> tests -> Run with AI -> reports
+```
 
 ---
 
@@ -25,7 +47,18 @@ Everything talks to the **Katalon MCP server**, so the agent operates your real 
 
 > **For AI agents:** read [`AGENTS.md`](AGENTS.md) for the skill index, then open `skills/<name>/SKILL.md` for the workflow you need. Start with `katalon-platform-setup` to connect the MCP.
 
-<img src="docs/images/workflow.svg" width="900" alt="Workflow: analyze requirement, design and import cases, build suite, run with AI, upload reports, release call">
+### Requirement to execution, one prompt
+
+```text
+  1. analyze requirement     ->  intent, flows, risk areas
+  2. design + import cases   ->  ISTQB coverage, linked to the requirement
+  3. build suite             ->  the executable "test plan"
+  4. Run with AI             ->  execute + poll to completion
+  5. upload reports          ->  Katalon / JUnit / Playwright
+  6. release call            ->  Ready / Ready with risk / Not ready
+```
+
+Each step maps to a skill. Run the whole chain with `katalon-trueplatform-testing`, or call any step on its own.
 
 ## Skills
 

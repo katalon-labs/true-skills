@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 415" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="15">
+  <rect width="820" height="415" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
+  <rect width="820" height="40" rx="10" fill="#161b22"/>
+  <rect y="30" width="820" height="10" fill="#161b22"/>
+  <circle cx="22" cy="20" r="6" fill="#ff5f56"/>
+  <circle cx="44" cy="20" r="6" fill="#ffbd2e"/>
+  <circle cx="66" cy="20" r="6" fill="#27c93f"/>
+  <text x="410" y="25" text-anchor="middle" fill="#8b949e" font-size="13">katalon-labs / true-skills</text>
+  <text x="22" y="77" fill="#3fb950" opacity="0">$ claude plugin marketplace add katalon-labs/true-skills<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.0479;0.0563;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="102" fill="#2dd4bf" opacity="0">  ✔ marketplace added · 8 skills available<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.1042;0.1127;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="152" fill="#58a6ff" font-weight="700" opacity="0">you ▸ Analyze CEL-6, design cases, run with AI - can we ship?<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.2169;0.2254;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="202" fill="#c9d1d9" opacity="0">  ⟳ analyze requirement ............ done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3296;0.3380;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="227" fill="#c9d1d9" opacity="0">  ⟳ design 12 ISTQB cases .......... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3859;0.3944;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="252" fill="#c9d1d9" opacity="0">  ⟳ import + link to CEL-6 ......... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4423;0.4507;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="277" fill="#c9d1d9" opacity="0">  ⟳ build suite "CEL-6 smoke" ...... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4986;0.5070;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="302" fill="#e3b341" opacity="0">  ⟳ Run with AI .................... 11 passed · 1 failed<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.5549;0.5634;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="327" fill="#c9d1d9" opacity="0">  ⟳ upload report ................ done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.6113;0.6197;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <text x="22" y="377" fill="#00d4d4" font-weight="700" opacity="0">  ▣ Release: READY WITH RISK  (1 failure: checkout flow)<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.7239;0.7324;1" dur="14.2s" repeatCount="indefinite"/></text>
+  <rect x="22" y="390" width="9" height="15" fill="#2dd4bf" opacity="0.9"><animate attributeName="opacity" values="0.9;0.9;0;0" keyTimes="0;0.5;0.5;1" dur="1.05s" repeatCount="indefinite"/></rect>
+</svg>
