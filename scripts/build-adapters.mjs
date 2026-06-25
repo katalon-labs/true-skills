@@ -7,8 +7,8 @@
  * Run `node scripts/build-adapters.mjs` after editing any skill, then commit the result.
  *
  * Generated targets:
- *   plugins/katalon-true-platform/   Claude Code + Codex plugin (+ root marketplaces)
- *   .cursor/rules/*.mdc              Cursor
+ *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces)
+ *   .cursor/rules/*.mdc              Cursor rules (lightweight, always-available)
  *   .kiro/steering/*.md              Kiro
  *   .github/prompts/*.prompt.md      GitHub Copilot (+ copilot-instructions.md, .vscode/mcp.json)
  *   .windsurf/rules/*.md             Windsurf
@@ -153,7 +153,7 @@ const names = [...ORDER.filter((n) => present.includes(n)), ...present.filter((n
 const skills = names.map(parseSkill);
 
 // ===========================================================================
-// 1. Claude Code + Codex plugin
+// 1. Claude Code + Codex + Cursor plugin
 // ===========================================================================
 const PLUGIN_DIR = `plugins/${PLUGIN_NAME}`;
 resetDir(PLUGIN_DIR);
@@ -191,40 +191,43 @@ track(
   ),
 );
 
-track(
-  writeFile(
-    join(PLUGIN_DIR, ".codex-plugin", "plugin.json"),
-    j({
-      name: PLUGIN_NAME,
-      version: PLUGIN_VERSION,
-      description,
-      author,
-      homepage: HOMEPAGE,
-      repository: REPO_URL,
-      license: "MIT",
-      keywords,
-      skills: "./skills/",
-      mcpServers: "./.mcp.json",
-      interface: {
-        displayName: "Katalon True Platform",
-        shortDescription: "Design, run, upload, and analyze Katalon tests.",
-        longDescription:
-          "Bundle Katalon True Platform/TestOps workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
-        developerName: ORG,
-        category: "Productivity",
-        capabilities: ["Read", "Write", "Interactive"],
-        defaultPrompt: ORDER.slice(0, 5).map((n) => INTERFACE[n].prompt),
-        brandColor: "#00A3A3",
-        composerIcon: "./assets/katalon-logo.svg",
-        logo: "./assets/katalon-logo.svg",
-        websiteURL: HOMEPAGE,
-        privacyPolicyURL: "https://katalon.com/terms#privacy-policy",
-        termsOfServiceURL: "https://katalon.com/terms",
-        screenshots: [],
-      },
-    }),
-  ),
-);
+// Shared rich interface block - consumed by the Codex and Cursor plugin manifests.
+const pluginInterface = {
+  displayName: "Katalon True Platform",
+  shortDescription: "Design, run, upload, and analyze Katalon tests.",
+  longDescription:
+    "Bundle Katalon True Platform/TestOps workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
+  developerName: ORG,
+  category: "Productivity",
+  capabilities: ["Read", "Write", "Interactive"],
+  defaultPrompt: ORDER.slice(0, 5).map((n) => INTERFACE[n].prompt),
+  brandColor: "#00A3A3",
+  composerIcon: "./assets/katalon-logo.svg",
+  logo: "./assets/katalon-logo.svg",
+  websiteURL: HOMEPAGE,
+  privacyPolicyURL: "https://katalon.com/terms#privacy-policy",
+  termsOfServiceURL: "https://katalon.com/terms",
+  screenshots: [],
+};
+
+const richPluginManifest = {
+  name: PLUGIN_NAME,
+  version: PLUGIN_VERSION,
+  description,
+  author,
+  homepage: HOMEPAGE,
+  repository: REPO_URL,
+  license: "MIT",
+  keywords,
+  skills: "./skills/",
+  mcpServers: "./.mcp.json",
+  interface: pluginInterface,
+};
+
+track(writeFile(join(PLUGIN_DIR, ".codex-plugin", "plugin.json"), j(richPluginManifest)));
+
+// Cursor reads .cursor-plugin/plugin.json at the plugin root (same schema as Codex).
+track(writeFile(join(PLUGIN_DIR, ".cursor-plugin", "plugin.json"), j(richPluginManifest)));
 
 // plugin README
 track(
@@ -267,6 +270,27 @@ track(
           source: { source: "local", path: `./${PLUGIN_DIR}` },
           policy: { installation: "AVAILABLE", authentication: "ON_INSTALL" },
           category: "Productivity",
+        },
+      ],
+    }),
+  ),
+);
+// Cursor multi-plugin marketplace manifest at the repo root.
+track(
+  writeFile(
+    ".cursor-plugin/marketplace.json",
+    j({
+      name: `${PLUGIN_NAME}-marketplace`,
+      interface: { displayName: "Katalon True Platform" },
+      owner: author,
+      plugins: [
+        {
+          name: PLUGIN_NAME,
+          source: { source: "local", path: `./${PLUGIN_DIR}` },
+          policy: { installation: "AVAILABLE", authentication: "ON_INSTALL" },
+          category: "Productivity",
+          description,
+          version: PLUGIN_VERSION,
         },
       ],
     }),

@@ -1,0 +1,48 @@
+{
+  "name": "katalon-true-platform",
+  "version": "0.1.0",
+  "description": "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.",
+  "author": {
+    "name": "katalon-labs",
+    "url": "https://github.com/katalon-labs"
+  },
+  "homepage": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
+  "repository": "https://github.com/katalon-labs/true-skills",
+  "license": "MIT",
+  "keywords": [
+    "katalon",
+    "testops",
+    "true-platform",
+    "testing",
+    "qa",
+    "playwright"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Katalon True Platform",
+    "shortDescription": "Design, run, upload, and analyze Katalon tests.",
+    "longDescription": "Bundle Katalon True Platform/TestOps workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
+    "developerName": "katalon-labs",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Install the Katalon MCP server and connect it to my platform account.",
+      "Design and import manual test cases from requirement CEL-6.",
+      "Run this Katalon test suite with AI and report the result.",
+      "Upload a Katalon, JUnit, or Playwright report to Katalon Platform and summarize results.",
+      "Generate Playwright TypeScript automation from Katalon Platform test cases using Page Object Model and fixtures."
+    ],
+    "brandColor": "#00A3A3",
+    "composerIcon": "./assets/katalon-logo.svg",
+    "logo": "./assets/katalon-logo.svg",
+    "websiteURL": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
+    "privacyPolicyURL": "https://katalon.com/terms#privacy-policy",
+    "termsOfServiceURL": "https://katalon.com/terms",
+    "screenshots": []
+  }
+}

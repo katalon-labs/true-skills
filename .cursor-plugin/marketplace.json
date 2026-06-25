@@ -1,0 +1,26 @@
+{
+  "name": "katalon-true-platform-marketplace",
+  "interface": {
+    "displayName": "Katalon True Platform"
+  },
+  "owner": {
+    "name": "katalon-labs",
+    "url": "https://github.com/katalon-labs"
+  },
+  "plugins": [
+    {
+      "name": "katalon-true-platform",
+      "source": {
+        "source": "local",
+        "path": "./plugins/katalon-true-platform"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity",
+      "description": "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.",
+      "version": "0.1.0"
+    }
+  ]
+}
