@@ -80,6 +80,24 @@ Each skill is a folder under [`skills/`](skills/) with a `SKILL.md` and supporti
 Pick your agent. **Every path needs the [Katalon MCP server](#katalon-mcp-server) configured** - that's the shared step at the bottom.
 
 <details open>
+<summary><b>Any agent</b> - <code>skills</code> CLI (auto-detects what you have)</summary>
+
+```bash
+npx skills add katalon-labs/true-skills
+```
+
+The [open `skills` CLI](https://github.com/vercel-labs/skills) detects your installed coding agent (70+ supported), installs these skills into its native skills directory on demand, and keeps them current:
+
+```bash
+npx skills add katalon-labs/true-skills --skill katalon-platform-setup   # one skill
+npx skills add katalon-labs/true-skills -g                               # user-global, all agents
+npx skills update                                                        # pull latest
+```
+
+The CLI installs the **skill files only**; it does not configure MCP. Complete the [Katalon MCP server](#katalon-mcp-server) step afterward. For the bundled-MCP experience on Claude Code or Codex, use the plugin marketplace options below instead.
+</details>
+
+<details>
 <summary><b>Claude Code</b> - plugin marketplace</summary>
 
 ```bash
@@ -237,13 +255,14 @@ docs/images/                 Diagrams
 
 ## Contributing
 
-Edit skills in **`skills/` only** - everything else is generated. After any change, regenerate and commit:
+Edit skills in **`skills/` only** - everything else is generated. After any change, validate, regenerate, and commit:
 
 ```bash
-node scripts/build-adapters.mjs
+node scripts/validate-skills.mjs    # skills/ matches scripts/skills.config.mjs
+node scripts/build-adapters.mjs     # regenerate every agent's native config
 ```
 
-The build is deterministic and idempotent: re-running with no skill changes produces no diff. CI rejects out-of-sync adapters. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The build is deterministic and idempotent: re-running with no skill changes produces no diff. CI runs the validator and rejects out-of-sync adapters. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
