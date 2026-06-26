@@ -13,14 +13,15 @@
  *   2. The frontmatter `name` matches the folder name.
  *   3. Every skill folder appears in INTERFACE and in ORDER (and vice versa).
  *   4. ORDER has no duplicates; INTERFACE entries have title/short/prompt.
- *   5. No real Katalon subdomain leaked into a skill body (placeholder must stay).
+ *   5. No real Katalon subdomain leaked into any skill .md (SKILL.md or
+ *      references/*.md), with or without an http(s):// scheme. Placeholder stays.
  *
  * Exits non-zero on any failure. No external dependencies - Node >= 18, ESM.
  * Run: node scripts/validate-skills.mjs
  */
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INTERFACE, ORDER } from "./skills.config.mjs";
 
@@ -29,6 +30,28 @@ const SKILLS_DIR = join(ROOT, "skills");
 
 const errors = [];
 const fail = (msg) => errors.push(msg);
+
+// All *.md files under a directory (recursive) - SKILL.md plus references/.
+function listMarkdown(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) out.push(...listMarkdown(p));
+    else if (e.isFile() && e.name.endsWith(".md")) out.push(p);
+  }
+  return out;
+}
+
+// Find a real Katalon MCP endpoint, with or without scheme
+// (e.g. https://acme.katalon.io/mcp or bare acme.katalon.io/mcp).
+// The documented placeholder <your.sub.domain>.katalon.io/mcp never matches
+// because '>' is not a valid host-label character, so it cannot sit adjacent
+// to '.katalon.io'.
+function findEndpointLeak(text) {
+  const re = /(?:https?:\/\/)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.katalon\.io\/mcp/i;
+  const m = text.match(re);
+  return m ? m[0] : null;
+}
 
 // Folders actually present under skills/
 const dirs = readdirSync(SKILLS_DIR)
@@ -60,10 +83,15 @@ for (const name of dirs) {
   if (!fm.description) fail(`${name}: frontmatter missing 'description'`);
   else if (fm.description.length < 40) fail(`${name}: description is too short to route on (${fm.description.length} chars)`);
 
-  // 5: no real subdomain leaked (placeholder must remain). Matches xxx.katalon.io
-  // but not the intended <your.sub.domain>.katalon.io placeholder.
-  const leak = m[2].match(/https?:\/\/(?!<)[a-z0-9-]+\.katalon\.io\/mcp/i);
-  if (leak) fail(`${name}: real Katalon endpoint '${leak[0]}' committed - use the <your.sub.domain> placeholder`);
+  // 5: no real subdomain leaked (placeholder must remain). Scans SKILL.md AND
+  // references/*.md - both are published (references are inlined into adapters
+  // by build-adapters' inlineBody), so either could leak an endpoint.
+  for (const file of listMarkdown(join(SKILLS_DIR, name))) {
+    const leak = findEndpointLeak(readFileSync(file, "utf8"));
+    if (leak) {
+      fail(`${relative(ROOT, file)}: real Katalon endpoint '${leak}' committed - use the <your.sub.domain> placeholder`);
+    }
+  }
 }
 
 // 3: skills/ folders and config maps must be the same set
