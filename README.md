@@ -31,7 +31,7 @@ Design test cases, run them with AI, upload reports, and call release readiness,
    '----------------------------------+---------------------------------'
       |   every adapter points at the same MCP
       v
-   Katalon MCP    npx mcp-remote https://<your.sub.domain>.katalon.io/mcp    OAuth
+   Katalon MCP    npx mcp-remote https://platform.katalon.io/mcp    OAuth
       |
       v
    Katalon True Platform    requirements -> tests -> Run with AI -> reports
@@ -121,7 +121,7 @@ The plugin bundles the skills and an `.mcp.json`. If your environment doesn't au
 codex plugin marketplace add katalon-labs/true-skills
 ```
 
-Then open **Plugins** in Codex and install **Katalon True Platform**. The Codex wrapper declares the MCP server in the plugin's `.mcp.json`; replace `<your.sub.domain>` first.
+Then open **Plugins** in Codex and install **Katalon True Platform**. The Codex wrapper declares the MCP server in the plugin's `.mcp.json` with the ready-to-use endpoint `https://platform.katalon.io/mcp`; no editing needed unless you have a dedicated Katalon domain.
 </details>
 
 <details>
@@ -135,7 +135,7 @@ mkdir -p .github && cp -R <checkout>/.github/prompts .github/ \
   && mkdir -p .vscode && cp <checkout>/.vscode/mcp.json .vscode/
 ```
 
-In Copilot Chat, invoke a skill with `/katalon-platform-setup`, `/katalon-trueplatform-testing`, etc. Edit `.vscode/mcp.json` to set your subdomain.
+In Copilot Chat, invoke a skill with `/katalon-platform-setup`, `/katalon-trueplatform-testing`, etc. `.vscode/mcp.json` ships the ready-to-use `https://platform.katalon.io/mcp` endpoint; only edit the host if you have a dedicated Katalon domain.
 </details>
 
 <details>
@@ -145,7 +145,7 @@ In Copilot Chat, invoke a skill with `/katalon-platform-setup`, `/katalon-truepl
 cp -R <checkout>/.cursor .cursor
 ```
 
-Rules in `.cursor/rules/*.mdc` are agent-requested (loaded by description when relevant). MCP is configured in `.cursor/mcp.json` - set your subdomain.
+Rules in `.cursor/rules/*.mdc` are agent-requested (loaded by description when relevant). MCP is configured in `.cursor/mcp.json` with the ready-to-use `https://platform.katalon.io/mcp` endpoint - only change the host for a dedicated Katalon domain.
 </details>
 
 <details>
@@ -185,7 +185,7 @@ Cline loads every file in `.clinerules/`. Add the MCP server through Cline's **M
 cp -R <checkout>/.continue .continue
 ```
 
-Rules live in `.continue/rules/*.md`; the MCP server block is in `.continue/mcpServers/katalon.yaml`. Set your subdomain there.
+Rules live in `.continue/rules/*.md`; the MCP server block is in `.continue/mcpServers/katalon.yaml`, preset to `https://platform.katalon.io/mcp`. Only change the host for a dedicated Katalon domain.
 </details>
 
 <details>
@@ -203,14 +203,14 @@ All skills operate the platform through the Katalon MCP server. The command is i
   "mcpServers": {
     "katalon-prod-mcp": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your.sub.domain>.katalon.io/mcp", "--transport", "http-first"]
+      "args": ["-y", "mcp-remote", "https://platform.katalon.io/mcp", "--transport", "http-first"]
     }
   }
 }
 ```
 
-1. Replace `<your.sub.domain>` with the subdomain of your Katalon workspace.
-2. On first connect, `mcp-remote` opens a **browser OAuth flow**. Complete login there.
+1. The canonical endpoint `https://platform.katalon.io/mcp` is ready to use as-is - one shared host serves every workspace. Only swap the host if you have a dedicated Katalon domain.
+2. On first connect, `mcp-remote` opens a **browser OAuth flow**. Sign in and pick your Katalon workspace there.
 3. Reload your agent if the tools don't appear immediately.
 
 > 🔒 **Security:** authentication is browser/OAuth only. Never paste passwords, API tokens, cookies, JWTs, MFA codes, or OAuth callback URLs into chat or commit them. The skills enforce this.

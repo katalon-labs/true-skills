@@ -26,9 +26,9 @@ Read `references/capability-boundaries.md` when explaining available operations.
 For setup requests, collect the minimum routing and authentication choices before writing or testing MCP config:
 
 1. Resolve the Katalon MCP endpoint:
-   - If the installed config still contains `https://<your.sub.domain>.katalon.io/mcp`, ask for the Katalon subdomain or full MCP URL before attempting a connection.
+   - The default, canonical endpoint is `https://platform.katalon.io/mcp`. It needs no editing: connecting starts a browser OAuth flow, then prompts you to pick your Katalon workspace/account (the same picker as logging into True Platform), so one shared endpoint serves every workspace.
+   - Only override the host when the user has a dedicated Katalon domain (e.g. a self-hosted or region-specific deployment). In that case normalize a bare subdomain to `https://<your.sub.domain>.katalon.io/mcp`.
    - If the user or local config mentions more than one Katalon domain, list the candidate domains and ask which domain they want to work with.
-   - Normalize a bare subdomain such as `<your.sub.domain>` to `https://<your.sub.domain>.katalon.io/mcp`.
 2. Ask how the user wants to authenticate when auth is required:
    - Browser OAuth flow with an agent restart/reload after login.
    - CLI/local `mcp-remote` login bootstrap.
@@ -65,11 +65,11 @@ Report the exact boundary:
 When MCP tools are missing:
 
 1. Inspect local agent/plugin context for an existing Katalon MCP install path or configuration.
-2. If the config contains `https://<your.sub.domain>.katalon.io/mcp`, ask the user for the target Katalon subdomain or full MCP URL, then write the resolved endpoint into the agent's MCP config. Do not leave the placeholder in an active user config.
+2. The bundled config ships the canonical endpoint `https://platform.katalon.io/mcp`, which is ready to use as-is. Only rewrite the host if the user has a dedicated Katalon domain; otherwise leave the canonical endpoint in place.
 3. The recommended transport is the `mcp-remote` wrapper, which works across every agent. The command and args are identical everywhere; only the surrounding config format changes per agent:
 
    ```sh
-   npx -y mcp-remote https://<your.sub.domain>.katalon.io/mcp --transport http-first
+   npx -y mcp-remote https://platform.katalon.io/mcp --transport http-first
    ```
 
    - JSON agents (Claude Code, Cursor, Kiro, Copilot/VS Code, Windsurf, Cline) declare this as an `mcpServers` entry. See the bundled `.mcp.json` for the canonical shape.
@@ -87,7 +87,7 @@ If the user explicitly asks to install but the environment does not permit plugi
 Use this when Katalon MCP tools are missing from the active session or direct remote MCP config returns `401 Invalid JWT token format`.
 
 1. Ask only for non-secret information needed to target the right server or verify access, such as:
-   - Katalon subdomain or full MCP URL, for example `https://<your.sub.domain>.katalon.io/mcp`.
+   - Katalon MCP URL. The default is `https://platform.katalon.io/mcp`; only ask for a different host if the user has a dedicated Katalon domain.
    - Project name or project ID.
    - Repository/Test Project name, if the user wants a specific target verified.
    - Login email, only if it helps the user choose the right account in the browser.
@@ -95,7 +95,7 @@ Use this when Katalon MCP tools are missing from the active session or direct re
 3. Run the proxy with the Katalon endpoint:
 
    ```sh
-   npx -y mcp-remote "https://<your.sub.domain>.katalon.io/mcp" --transport http-first
+   npx -y mcp-remote "https://platform.katalon.io/mcp" --transport http-first
    ```
 
    If this prints an authorization URL or opens the browser, wait for the user/browser callback to complete. `mcp-remote` stores OAuth state under its own auth cache, such as `~/.mcp-auth`, not in the workspace.
@@ -113,7 +113,7 @@ Known working MCP server entry (JSON form; Codex uses the same command/args in T
   "mcpServers": {
     "katalon-prod-mcp": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your.sub.domain>.katalon.io/mcp", "--transport", "http-first"]
+      "args": ["-y", "mcp-remote", "https://platform.katalon.io/mcp", "--transport", "http-first"]
     }
   }
 }

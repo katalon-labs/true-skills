@@ -57,4 +57,4 @@ node scripts/validate-skills.mjs && node scripts/build-adapters.mjs && git diff 
 
 - **No secrets, ever.** Skills must never instruct a user to paste passwords, tokens, cookies, JWTs, MFA codes, or OAuth callback URLs into chat.
 - **Be honest about boundaries.** If the Katalon MCP can't do something, the skill says so and offers the supported workaround.
-- Keep MCP endpoints as the `https://<your.sub.domain>.katalon.io/mcp` placeholder - never commit a real workspace subdomain.
+- The only real MCP endpoint allowed in the repo is the canonical shared host `https://platform.katalon.io/mcp` (allowlisted in `validate-skills.mjs`). For anything that varies per customer, use the `https://<your.sub.domain>.katalon.io/mcp` placeholder - never commit a real per-workspace subdomain.

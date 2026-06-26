@@ -42,15 +42,23 @@ function listMarkdown(dir) {
   return out;
 }
 
-// Find a real Katalon MCP endpoint, with or without scheme
-// (e.g. https://acme.katalon.io/mcp or bare acme.katalon.io/mcp).
-// The documented placeholder <your.sub.domain>.katalon.io/mcp never matches
-// because '>' is not a valid host-label character, so it cannot sit adjacent
-// to '.katalon.io'.
+// Canonical shared endpoints that are SAFE to commit. These are not
+// per-workspace subdomains: connecting routes through Katalon OAuth and a
+// workspace picker, so the same host serves every customer.
+const ALLOWED_HOSTS = new Set(["platform.katalon.io"]);
+
+// Find a real per-workspace Katalon MCP endpoint, with or without scheme
+// (e.g. https://acme.katalon.io/mcp or bare acme.katalon.io/mcp). Hosts in
+// ALLOWED_HOSTS are skipped. The documented placeholder
+// <your.sub.domain>.katalon.io/mcp never matches because '>' is not a valid
+// host-label character, so it cannot sit adjacent to '.katalon.io'.
 function findEndpointLeak(text) {
-  const re = /(?:https?:\/\/)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.katalon\.io\/mcp/i;
-  const m = text.match(re);
-  return m ? m[0] : null;
+  const re = /(?:https?:\/\/)?([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.katalon\.io)\/mcp/gi;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    if (!ALLOWED_HOSTS.has(m[1].toLowerCase())) return m[0];
+  }
+  return null;
 }
 
 // Folders actually present under skills/

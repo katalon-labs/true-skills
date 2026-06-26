@@ -34,7 +34,7 @@ const REPO_URL = `https://github.com/${ORG}/${REPO}`;
 const PLUGIN_NAME = "katalon-true-platform";
 const PLUGIN_VERSION = "0.1.0";
 const MCP_SERVER = "katalon-prod-mcp";
-const MCP_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
+const MCP_ENDPOINT = "https://platform.katalon.io/mcp";
 const MCP_ARGS = ["-y", "mcp-remote", MCP_ENDPOINT, "--transport", "http-first"];
 const HOMEPAGE = "https://docs.katalon.com/katalon-platform/testops-mcp-server";
 
@@ -186,8 +186,10 @@ track(
       `the \`skills/\` and \`assets/\` folders are shared.\n\n` +
       `## Included skills\n\n` +
       skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
-      `\n\n## Bundled MCP server\n\nSee \`.mcp.json\`. Replace \`<your.sub.domain>\` with your Katalon subdomain. ` +
-      `Authentication is handled through the browser/OAuth flow; never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
+      `\n\n## Bundled MCP server\n\nSee \`.mcp.json\`. It ships the canonical endpoint \`${MCP_ENDPOINT}\`, ready to use as-is. ` +
+      `On first connect, a browser OAuth flow lets you sign in and pick your Katalon workspace; ` +
+      `only override the host if you have a dedicated Katalon domain. ` +
+      `Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
       `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`). ` +
       `For install instructions across all supported agents, see the [repository README](${REPO_URL}#install).\n`,
   ),
@@ -297,8 +299,8 @@ track(
       skills.map((s) => `- \`/${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
       `\n\n## Katalon MCP server\n\n` +
       `These workflows depend on the Katalon MCP server. Configure it for VS Code in \`.vscode/mcp.json\` ` +
-      `(included), replacing \`<your.sub.domain>\` with your Katalon subdomain. ` +
-      `Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
+      `(included), which ships the canonical endpoint \`${MCP_ENDPOINT}\`, ready to use as-is. ` +
+      `Authentication is a browser/OAuth flow that lets you pick your Katalon workspace - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
       `When a request matches a skill's description, open the matching prompt file and follow it. ` +
       `Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.\n`,
   ),
@@ -363,7 +365,7 @@ track(
         .join("\n\n") +
       `\n\n## Katalon MCP server\n\n` +
       `These workflows depend on the Katalon MCP server. Add an \`mcpServers\` entry to your agent's MCP config ` +
-      `using the canonical shape in \`.mcp.json\` at the repo root, replacing \`<your.sub.domain>\` with your Katalon subdomain.\n\n` +
+      `using the canonical shape in \`.mcp.json\` at the repo root. It ships the ready-to-use endpoint \`${MCP_ENDPOINT}\`; only override the host if you have a dedicated Katalon domain.\n\n` +
       "```sh\n" +
       `npx ${MCP_ARGS.join(" ")}\n` +
       "```\n\n" +

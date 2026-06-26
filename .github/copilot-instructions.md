@@ -17,6 +17,6 @@ This repository ships the Katalon True Platform testing toolkit as GitHub Copilo
 
 ## Katalon MCP server
 
-These workflows depend on the Katalon MCP server. Configure it for VS Code in `.vscode/mcp.json` (included), replacing `<your.sub.domain>` with your Katalon subdomain. Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
+These workflows depend on the Katalon MCP server. Configure it for VS Code in `.vscode/mcp.json` (included), which ships the canonical endpoint `https://platform.katalon.io/mcp`, ready to use as-is. Authentication is a browser/OAuth flow that lets you pick your Katalon workspace - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
 
 When a request matches a skill's description, open the matching prompt file and follow it. Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.

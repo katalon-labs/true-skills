@@ -17,6 +17,6 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 
 ## Bundled MCP server
 
-See `.mcp.json`. Replace `<your.sub.domain>` with your Katalon subdomain. Authentication is handled through the browser/OAuth flow; never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
+See `.mcp.json`. It ships the canonical endpoint `https://platform.katalon.io/mcp`, ready to use as-is. On first connect, a browser OAuth flow lets you sign in and pick your Katalon workspace; only override the host if you have a dedicated Katalon domain. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
 
 Distributed from the repository root marketplaces (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`). For install instructions across all supported agents, see the [repository README](https://github.com/katalon-labs/true-skills#install).

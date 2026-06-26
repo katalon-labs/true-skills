@@ -58,10 +58,10 @@ File: `skills/katalon-trueplatform-testing/SKILL.md`
 
 ## Katalon MCP server
 
-These workflows depend on the Katalon MCP server. Add an `mcpServers` entry to your agent's MCP config using the canonical shape in `.mcp.json` at the repo root, replacing `<your.sub.domain>` with your Katalon subdomain.
+These workflows depend on the Katalon MCP server. Add an `mcpServers` entry to your agent's MCP config using the canonical shape in `.mcp.json` at the repo root. It ships the ready-to-use endpoint `https://platform.katalon.io/mcp`; only override the host if you have a dedicated Katalon domain.
 
 ```sh
-npx -y mcp-remote https://<your.sub.domain>.katalon.io/mcp --transport http-first
+npx -y mcp-remote https://platform.katalon.io/mcp --transport http-first
 ```
 
 Authentication is a browser/OAuth flow. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
