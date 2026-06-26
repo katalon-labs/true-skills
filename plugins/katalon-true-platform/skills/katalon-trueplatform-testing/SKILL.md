@@ -99,7 +99,7 @@ Mirror the style of related existing test cases before drafting new or updated c
 - If existing cases are weak, preserve platform compatibility while improving only what is needed for correctness and coverage.
 - When no related cases exist, use the default manual test case format below.
 
-Design enough coverage using ISTQB-aligned test design techniques before importing cases:
+Design enough coverage using ISTQB test design techniques as a reference before importing cases (the techniques guide the design; the output is plain platform test cases, not an ISTQB certification):
 
 - Use equivalence partitioning for input classes, filters, statuses, user roles, and product states.
 - Use boundary value analysis for numeric ranges, quantities, prices, dates, pagination, and length limits.
@@ -109,7 +109,7 @@ Design enough coverage using ISTQB-aligned test design techniques before importi
 - Use error guessing/checklist-based testing for common ecommerce/platform risks.
 - Use pairwise or combinatorial reduction when variants explode, while preserving high-risk combinations.
 
-Prefer one test case per user-observable behavior. Avoid mixing unrelated flows into one long case unless it is a true end-to-end scenario. If coverage is intentionally reduced, state the risk-based rationale.
+Keep each case **atomic in scope** (one validation condition per case) so a failure pinpoints the exact rule and each requirement line maps 1:1 to a result. Atomic is about scope, not step count: every case is still a complete, runnable flow (precondition/navigation -> enter surrounding valid data -> action under test -> verify), never a lone bare assertion. Cover the happy-path flow and its edge cases (boundary + negative variants), not just the positive path. Reserve combined cases for true end-to-end scenarios. Quote expected error/UI strings verbatim from the requirement, including source typos (flag them separately). If coverage is intentionally reduced, state the risk-based rationale.
 
 Read `references/istqb-coverage.md` before designing cases from requirements. Read `references/manual-test-case-format.md` before creating many cases or when the user asks for a specific format.
 
@@ -122,7 +122,7 @@ Before creating or importing any test case, check whether suitable coverage alre
 - Read likely matches with `read_test_case` when title alone is not enough to judge coverage.
 - Read enough related cases to infer the local writing style before drafting new cases, even when the related cases do not fully cover the requested behavior.
 - Reuse, update, move, or link existing cases when they already cover the behavior.
-- Create new cases only for uncovered behavior, missing ISTQB coverage classes, or clearly obsolete/incorrect existing coverage.
+- Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete/incorrect existing coverage.
 - Report what was reused, what was updated, and what was newly created.
 
 This check is mandatory for write/import/full-flow requests, including retries after partial failure. Do not create duplicate cases simply because a previous create attempt failed. If no related cases can be found, say that the new cases follow the default skill format.

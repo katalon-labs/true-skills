@@ -1,6 +1,6 @@
-# ISTQB-Aligned Coverage Guide
+# Coverage Guide (ISTQB techniques as reference)
 
-Use this guide before writing or importing test cases. The goal is enough risk-based coverage, not maximum case count.
+Use this guide before writing or importing test cases. ISTQB is the **reference toolkit** for designing coverage here, not the deliverable: the output is plain platform test cases designed *using* these techniques, not "ISTQB cases" certified against the standard. The goal is enough risk-based coverage, not maximum case count.
 
 ## Technique Selection
 
@@ -46,6 +46,13 @@ Deferred / Not Covered:
 Reason:
 - ...
 ```
+
+## Case Granularity
+
+- Keep each case **atomic in scope**: one validation condition / one acceptance-criteria line per case, so a failure pinpoints the exact rule and each requirement line maps 1:1 to a result.
+- Atomic does not mean a single step. Every case is a **complete, runnable flow**: precondition/navigation -> enter surrounding valid data -> perform the action under test -> verify the result. Avoid lone-step cases like "count the columns"; include the steps to reach and exercise that state so the case executes on its own (including under Run with AI).
+- Cover the happy-path flow **and** its edge cases for every feature: main success flow plus boundary and negative variants. Do not stop at the positive path.
+- Quote expected error/UI strings verbatim from the requirement, including source typos; flag suspected typos separately rather than correcting them in the expected result.
 
 ## Practical Rules
 

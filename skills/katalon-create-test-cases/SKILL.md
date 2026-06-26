@@ -1,6 +1,6 @@
 ---
 name: katalon-create-test-cases
-description: Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design ISTQB-aligned manual test cases, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to katalon-trueplatform-testing.
+description: Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design manual test cases using ISTQB techniques as a reference, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to katalon-trueplatform-testing.
 ---
 
 # Katalon Create Test Cases
@@ -51,7 +51,7 @@ Read `references/requirement-analysis.md` before analyzing non-trivial requireme
 
 ## Design Coverage
 
-Design manual cases with ISTQB-aligned coverage:
+Design manual cases using ISTQB techniques as a reference for coverage (the techniques guide the design; the deliverable is plain platform test cases, not an ISTQB certification):
 
 - Equivalence partitioning for input classes, statuses, roles, filters, and product states.
 - Boundary value analysis for ranges, quantities, prices, dates, pagination, and text lengths.
@@ -60,9 +60,23 @@ Design manual cases with ISTQB-aligned coverage:
 - Use-case scenarios for realistic end-to-end user journeys.
 - Error guessing for ecommerce, account, permissions, environment, and data risks.
 
-Prefer one test case per user-observable behavior. Keep true end-to-end flows as dedicated scenario cases, not mixed with unrelated checks.
+### Make each case atomic
+
+Each test case targets **one validation condition (one acceptance-criteria line)** — but it must still be a **complete, independently runnable flow**, not a single bare assertion.
+
+- "Atomic" describes the *scope under test* (one rule per case), not the step count. Every case walks the real path to that condition: precondition/navigation -> enter the surrounding valid data -> perform the action under test -> verify the expected result. A case that is a lone step like "count the columns" is too thin; lead with the steps to reach and exercise that state so the case runs on its own (and so Run with AI can execute it).
+- Split each input class, each required field, each boundary value, and each error message into its own case. Example: a password rule of "min 8 chars, has a letter, has a number, no spaces" becomes separate cases for too-short (7), exactly-8 valid, letters-only, numbers-only, and contains-space — each one a full fill-the-form-and-submit flow, differing only in the field under test.
+- Cover both the happy-path flow and its edge cases. For every feature, include at least the main success flow plus the boundary and negative variants around it; do not stop at the positive path.
+- Reserve genuinely combined multi-feature cases for true end-to-end scenarios (e.g. register -> log in -> land on dashboard), never as a container for unrelated checks.
+- Why: a case mixing several *conditions* fails as a whole, so the result cannot tell you which rule broke and you lose 1 requirement-line -> 1 test-result traceability. Atomic-scope cases pinpoint the failing rule and map cleanly back to the requirement.
+- Quote expected error and UI strings **verbatim** from the requirement, including any source typos. Flag suspected typos separately; never silently "correct" them in the expected result, or the test will assert behavior the app does not produce.
 
 Read `references/istqb-coverage.md` before creating cases from requirements, and `references/manual-test-case-format.md` before importing several cases.
+
+## Platform Constraints
+
+- Test case **names** accept only letters, numbers, spaces, and `( ) . , _ -`. Avoid other symbols (such as `@`, `:`, `/`) in titles; keep them in descriptions or steps instead. Folder paths may use `/`.
+- Prefer `update_test_case` over delete-and-recreate when adjusting an existing set. Deletion can fail server-side, and updating in place keeps IDs, links, and history intact.
 
 ## Check Existing Cases
 

@@ -51,7 +51,7 @@ Everything talks to the **Katalon MCP server**, so the agent operates your real 
 
 ```text
   1. analyze requirement     ->  intent, flows, risk areas
-  2. design + import cases   ->  ISTQB coverage, linked to the requirement
+  2. design + import cases   ->  coverage via ISTQB techniques, linked to the requirement
   3. build suite             ->  the executable "test plan"
   4. Run with AI             ->  execute + poll to completion
   5. upload reports          ->  Katalon / JUnit / Playwright
@@ -65,7 +65,7 @@ Each step maps to a skill. Run the whole chain with `katalon-trueplatform-testin
 | Skill | What it does |
 | --- | --- |
 | **katalon-platform-setup** | Install, connect, and verify the Katalon MCP. Diagnose auth/access. Always start here. |
-| **katalon-create-test-cases** | Analyze a requirement (or free text), design ISTQB-aligned manual cases, check existing coverage to avoid duplicates, import only what's missing, and link requirements. |
+| **katalon-create-test-cases** | Analyze a requirement (or free text), design atomic manual cases using ISTQB techniques as a reference, check existing coverage to avoid duplicates, import only what's missing, and link requirements. |
 | **katalon-execute-test** | Run an existing case, list, or suite - manual run, Run with AI, or scheduled automation - then summarize pass/fail/blocked. |
 | **katalon-upload-report** | Run automation and upload or verify Katalon Studio/KRE, JUnit XML, or Playwright reports on the platform. |
 | **katalon-test-case-to-playwright-script** | Convert Katalon manual test cases into Playwright TypeScript with Page Object Model and fixtures. |
