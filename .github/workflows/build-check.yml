@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Validate skills against skills.config.mjs
+        run: node scripts/validate-skills.mjs
       - name: Regenerate adapters from skills/
         run: node scripts/build-adapters.mjs
       - name: Fail if generated files are out of sync
