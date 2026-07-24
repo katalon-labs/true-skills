@@ -107,6 +107,8 @@ cross-cutting  katalon-platform-setup (connect the MCP)
 
 Some steps are **product surfaces, not MCP calls** - object capture and resilience design (Studio), custom fields / Git config / governance (TestOps UI), self-healing / Time Capsule / TrueTest regeneration, and rerun / terminate / Live Monitor. Each skill states its boundary so the agent never over-promises. See `skills/katalon-trueplatform-testing/references/lifecycle-map.md` for the full map and `references/mcp-tool-index.md` for every tool.
 
+A self-contained visual of the lifecycle for humans lives at [`docs/lifecycle.html`](docs/lifecycle.html) (open it in a browser). Machine-readable discovery for AI agents: [`AGENTS.md`](AGENTS.md) and [`llms.txt`](llms.txt).
+
 ## Skills
 
 Setup first, then lifecycle order, orchestrator last. **Bold** = the stage owner.
