@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katalon True Skills - AI testing skills for the full QA lifecycle (any agent)</title>
+<meta name="description" content="Open, agent-neutral AI testing skills for Katalon True Platform. Cover the whole software testing lifecycle - test plan, test design, test management and traceability, test review, test execution, failure analysis, and test maintenance - from your AI coding agent's chat via the Katalon MCP. Works with Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, and Continue.">
+<meta name="keywords" content="Katalon, Katalon True Platform, TestOps, TrueTest, AI testing, agentic testing, test automation, MCP, Model Context Protocol, AI coding agent, Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, test case generation, Run with AI, requirement traceability, release readiness, test maintenance, flaky tests, Playwright, QA lifecycle, software testing skills, LLM testing, test management, failure triage">
+<meta name="author" content="Katalon">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://katalon-labs.github.io/true-skills/lifecycle.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Katalon True Skills - AI testing skills for the full QA lifecycle">
+<meta property="og:description" content="Open, agent-neutral AI testing skills for Katalon True Platform. 14 skills across 7 lifecycle stages, mapped to the Katalon MCP, for any AI coding agent and any model tier.">
+<meta property="og:url" content="https://github.com/katalon-labs/true-skills">
+<meta property="og:site_name" content="Katalon True Skills">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Katalon True Skills - AI testing skills for the full QA lifecycle">
+<meta name="twitter:description" content="Open, agent-neutral testing skills for Katalon True Platform. 14 skills, 7 stages, one MCP, 8+ agents.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Katalon True Skills",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Cross-platform",
+  "description": "Open, agent-neutral AI testing skills for Katalon True Platform covering the full 7-stage software testing lifecycle (plan, design, manage, review, execute, analyze, maintain) via the Katalon MCP. Usable from any AI coding agent and any model tier.",
+  "url": "https://github.com/katalon-labs/true-skills",
+  "codeRepository": "https://github.com/katalon-labs/true-skills",
+  "license": "https://opensource.org/licenses/MIT",
+  "keywords": "Katalon, True Platform, TestOps, TrueTest, AI testing, agentic testing, MCP, test automation, QA lifecycle, requirement traceability, release readiness",
+  "author": { "@type": "Organization", "name": "Katalon" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+:root{
+  --indigo:#6059E4; --indigo-soft:#ecebfb; --ink:#0F172A; --muted:#5b6478;
+  --bg:#f7f8fb; --card:#ffffff; --line:#e6e8ef; --ok:#0f8461; --gap:#c2410c; --warn:#b45309;
+  --chip:#f1f2f7; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.05);
+}
+@media (prefers-color-scheme:dark){:root{
+  --indigo:#8b85f0; --indigo-soft:#241f4d; --ink:#e9ecf5; --muted:#9aa3b8;
+  --bg:#0b0d14; --card:#141824; --line:#242938; --ok:#34d399; --gap:#fb923c; --warn:#fbbf24;
+  --chip:#1c2130; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 30px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --indigo:#8b85f0; --indigo-soft:#241f4d; --ink:#e9ecf5; --muted:#9aa3b8;
+  --bg:#0b0d14; --card:#141824; --line:#242938; --ok:#34d399; --gap:#fb923c; --warn:#fbbf24;
+  --chip:#1c2130; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 30px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  --indigo:#6059E4; --indigo-soft:#ecebfb; --ink:#0F172A; --muted:#5b6478;
+  --bg:#f7f8fb; --card:#ffffff; --line:#e6e8ef; --ok:#0f8461; --gap:#c2410c; --warn:#b45309;
+  --chip:#f1f2f7; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 20px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+h1{font-size:26px;margin:.1em 0 .1em;letter-spacing:-.02em}
+h1 .repo{color:var(--indigo)}
+.sub{color:var(--muted);max-width:780px;margin:.2em 0 0}
+.themebtn{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;
+  padding:7px 13px;font-size:13px;cursor:pointer}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 6px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);min-width:120px}
+.kpi b{display:block;font-size:22px;letter-spacing:-.02em}
+.kpi span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.northstar{background:linear-gradient(180deg,var(--indigo-soft),transparent);border:1px solid var(--line);
+  border-left:3px solid var(--indigo);border-radius:12px;padding:16px 18px;margin:22px 0}
+.northstar h2{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--indigo)}
+h2.sec{font-size:16px;margin:38px 0 14px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);position:relative}
+.stage .num{font-size:11px;font-weight:700;color:var(--indigo);letter-spacing:.06em}
+.stage h3{margin:2px 0 8px;font-size:15px}
+.stage .skill{display:inline-block;font-size:12px;font-weight:600;background:var(--indigo-soft);color:var(--indigo);
+  border-radius:6px;padding:2px 7px;margin:0 4px 4px 0;word-break:break-word}
+.stage .tools{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.7;overflow-wrap:anywhere;word-break:break-word}
+.stage .tools code{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:10.5px;overflow-wrap:anywhere;word-break:break-word;display:inline-block;margin:1px 0}
+.loop{color:var(--muted);font-size:12.5px;margin:10px 2px 0}
+.loop b{color:var(--indigo)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--chip)}
+tr:last-child td{border-bottom:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px;font-size:14px}
+ul.tight{margin:6px 0 0;padding-left:18px}
+ul.tight li{margin:3px 0;color:var(--muted)}
+ul.tight li b{color:var(--ink)}
+a{color:var(--indigo)}
+footer{margin-top:44px;color:var(--muted);font-size:12px;text-align:center}
+footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span class="repo mono">true-skills</span> · the testing lifecycle</h1>
+      <p class="sub">Open, agent-neutral testing skills for Katalon True Platform. Design test cases, run them with AI, analyze results, and maintain the suite - straight from your coding agent's chat. Author once; native config is generated for Claude Code, Codex, Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads <code class="mono">AGENTS.md</code>.</p>
+    </div>
+    <button class="themebtn" onclick="tg()">◐ theme</button>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><b>7</b><span>lifecycle stages</span></div>
+    <div class="kpi"><b>14</b><span>skills</span></div>
+    <div class="kpi"><b>40</b><span>MCP tools</span></div>
+    <div class="kpi"><b>8+</b><span>agents</span></div>
+    <div class="kpi"><b>1</b><span>Katalon MCP</span></div>
+  </div>
+
+  <div class="northstar">
+    <h2>What it is</h2>
+    <div>One well-tested set of Katalon True Platform testing skills that any AI coding agent - and any model tier, from the largest models down to small ones - can run. Every step of the software testing workflow, from plan to insight, is covered by a skill mapped to concrete Katalon MCP tools. The lifecycle router picks the right stage; the loop closes when maintenance feeds gaps back into planning.</div>
+  </div>
+
+  <h2 class="sec">The 7-stage lifecycle</h2>
+  <div class="flow">
+    <div class="stage"><div class="num">STAGE 1</div><h3>Plan</h3>
+      <span class="skill">katalon-test-plan</span>
+      <div class="tools">Scope, risk-priority, and the executable folder+suite for a sprint/release.<br><code>list_projects</code> <code>find_iterations</code> <code>fetch_requirement_data</code> <code>manage_test_suite</code></div></div>
+    <div class="stage"><div class="num">STAGE 2</div><h3>Design</h3>
+      <span class="skill">katalon-create-test-cases</span>
+      <div class="tools">Atomic cases from requirements, ISTQB-as-reference, linked and de-duplicated.<br><code>find_requirements</code> <code>create_test_case</code> <code>update_test_case</code></div></div>
+    <div class="stage"><div class="num">STAGE 3</div><h3>Manage</h3>
+      <span class="skill">katalon-test-management</span>
+      <div class="tools">Inventory + requirement↔case↔suite traceability, orphans, coverage %.<br><code>manage_test_folder</code> <code>move_test_case</code> <code>link_requirements_to_test_case</code></div></div>
+    <div class="stage"><div class="num">STAGE 4</div><h3>Review</h3>
+      <span class="skill">katalon-test-review</span>
+      <div class="tools">Pre-pipeline verdict on coverage, quality, and flakiness.<br><code>fetch_test_case_data</code> <code>fetch_test_stability_data</code> <code>fetch_test_configuration_data</code></div></div>
+    <div class="stage"><div class="num">STAGE 5</div><h3>Execute</h3>
+      <span class="skill">katalon-execute-test</span><span class="skill">upload-report</span><span class="skill">playwright-execute</span>
+      <div class="tools">Manual, Run with AI, automated, and cloud-scale execution.<br><code>read_auts</code> <code>create_manual_ai_session</code> <code>schedule_test_run</code></div></div>
+    <div class="stage"><div class="num">STAGE 6</div><h3>Analyze</h3>
+      <span class="skill">katalon-analyze-failures</span><span class="skill">release-analyze</span>
+      <div class="tools">Failure triage (product / automation / environment), defects, and the ship call.<br><code>read_test_result</code> <code>fetch_defect_data</code> <code>create_defect</code></div></div>
+    <div class="stage"><div class="num">STAGE 7</div><h3>Maintain</h3>
+      <span class="skill">katalon-test-maintenance</span>
+      <div class="tools">Repair flaky/broken cases, regenerate, and feed gaps back to plan.<br><code>fetch_test_stability_data</code> <code>update_test_case</code> <code>find_test_results</code></div></div>
+    <div class="stage" style="border-style:dashed"><div class="num">CROSS-CUTTING</div><h3>Connect &amp; test-of</h3>
+      <span class="skill">katalon-platform-setup</span><span class="skill">katalon-dogfood-session</span><span class="skill">trueplatform-testing (router)</span>
+      <div class="tools">Connect and verify the MCP · run a durable dogfood/"test-of" session · route any request to the right stage.</div></div>
+  </div>
+  <p class="loop">↺ <b>The loop closes:</b> stage 7 Maintain feeds the refreshed coverage gap list back into stage 1 Plan.</p>
+  <p class="loop">Some steps are product surfaces (Studio, TestOps UI, TrueTest), not MCP calls - each skill states its boundary so the agent never over-promises.</p>
+
+  <h2 class="sec">Combination recipes</h2>
+  <table>
+    <tr><th>Recipe</th><th>Stages</th><th>Skill chain</th></tr>
+    <tr><td><b>Requirement → ship call</b></td><td>1→6</td><td>test-plan → create-test-cases → execute-test → analyze-failures → release-analyze</td></tr>
+    <tr><td><b>Coverage rescue</b></td><td>3→4→2</td><td>test-management (orphans) → test-review (verdict) → create-test-cases (fill)</td></tr>
+    <tr><td><b>Flaky-suite cleanup</b></td><td>6→7→4</td><td>analyze-failures → test-maintenance → test-review (re-approve)</td></tr>
+    <tr><td><b>Manual → automation</b></td><td>2→5</td><td>create-test-cases → to-playwright-script → playwright-execute → upload-report</td></tr>
+    <tr><td><b>Dogfood a release</b></td><td>cross</td><td>dogfood-session wrapping the full chain + cross-lane verify + tagged defects</td></tr>
+    <tr><td><b>Traceability audit</b></td><td>3</td><td>test-management → requirement↔case↔result matrix</td></tr>
+  </table>
+
+  <h2 class="sec">Runs on any agent, any model</h2>
+  <div class="card">
+    <ul class="tight">
+      <li><b>Deterministic:</b> numbered tool order and explicit stop conditions, so smaller models follow the steps instead of guessing.</li>
+      <li><b>Agent-neutral:</b> MCP tools referenced by platform name only - the same skill body works in Claude Code, Codex, Copilot, Cursor, Kiro, Windsurf, Cline, and Continue.</li>
+      <li><b>Bounded:</b> every skill states what the MCP can and cannot do up front, so no agent hallucinates create-requirement, create-release, or self-healing.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Install and full docs: see the repository <a href="https://github.com/katalon-labs/true-skills#install">README</a>.
+    Start with <code class="mono">katalon-platform-setup</code> to connect the Katalon MCP, then ask your agent for any stage.
+  </footer>
+</div>
+<script>
+function tg(){var r=document.documentElement,c=r.getAttribute('data-theme');
+  var d=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  var cur=c||(d?'dark':'light');r.setAttribute('data-theme',cur==='dark'?'light':'dark');}
+</script>
+</body>
+</html>

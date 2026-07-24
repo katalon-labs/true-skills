@@ -1,11 +1,30 @@
 ---
 name: katalon-trueplatform-testing
-description: End-to-end Katalon True Platform testing workflow. Use when you need to analyze requirements, design manual test cases, import them into Katalon/TestOps, link requirements, organize test suites, create manual executions, start Run with AI, monitor execution results, or report Katalon True Platform test outcomes. Also use for deciding what is and is not available through the Katalon MCP tools.
+description: End-to-end Katalon True Platform testing workflow and lifecycle router. Use when you need to analyze requirements, design manual test cases, import them into Katalon/TestOps, link requirements, organize test suites, create manual executions, start Run with AI, monitor execution results, or report Katalon True Platform test outcomes. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools.
 ---
 
 # Katalon True Platform Testing
 
-Use this skill for requirement-to-execution workflows in Katalon True Platform/TestOps. Prefer Katalon MCP tools for platform operations and Browser/Playwright only for external AUT exploration or visual verification.
+Use this skill for requirement-to-execution workflows in Katalon True Platform/TestOps, and as the **router across the full 7-stage testing lifecycle**. Prefer Katalon MCP tools for platform operations and Browser/Playwright only for external AUT exploration or visual verification.
+
+## Lifecycle Routing
+
+The Katalon testing lifecycle has 7 stages. For a focused request, route to the matching skill; for a full-flow request, run the stages in order and stop when the user's goal is met. Full map + tool lists: `references/lifecycle-map.md`.
+
+| Stage | Route to skill | When |
+|---|---|---|
+| 1 Plan | `katalon-test-plan` | scope, risk-prioritized plan, executable folder+suite for a sprint/release |
+| 2 Design | `katalon-create-test-cases` (+ `katalon-test-case-to-playwright-script`) | author/import cases from requirements |
+| 3 Manage | `katalon-test-management` | organize inventory, classify, requirement traceability audit |
+| 4 Review | `katalon-test-review` | pre-pipeline coverage/quality/flakiness verdict |
+| 5 Execute | `katalon-execute-test` (+ `katalon-upload-report`, `katalon-playwright-execute`) | manual, Run with AI, automated, cloud |
+| 6 Analyze | `katalon-analyze-failures` + `katalon-release-analyze` | failure triage/defects; ship/no-ship call |
+| 7 Maintain | `katalon-test-maintenance` | repair flaky/broken cases, regenerate, feed gaps back to plan |
+| pre / cross | `katalon-platform-setup`, `katalon-dogfood-session` | connect the MCP; durable test-of/dogfood session |
+
+For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, dogfood, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
+
+This skill can run any stage inline itself (the workflows below cover requirement->execution->report); route to a focused skill when the user wants only that stage or a deeper treatment (traceability, review verdict, failure triage, maintenance).
 
 ## Autonomy Policy
 

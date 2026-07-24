@@ -14,14 +14,14 @@
 
 Design test cases, run them with AI, upload reports, and call release readiness, straight from your agent's chat. Author the skills once; native config is generated for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads `AGENTS.md`.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE) &nbsp;·&nbsp; 8 skills &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
+[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE) &nbsp;·&nbsp; 14 skills &nbsp;·&nbsp; 7-stage lifecycle &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
 
 ![Katalon True Skills demo: install the marketplace, then ask the agent to analyze a requirement, design and import cases, run with AI, and call release readiness](docs/images/demo.svg)
 
 ## How it fits together
 
 ```text
-   skills/   one source of truth  (8 SKILL.md + references)
+   skills/   one source of truth  (14 SKILL.md + references)
       |
       |   node scripts/build-adapters.mjs        deterministic, CI-checked
       v
@@ -60,20 +60,77 @@ Everything talks to the **Katalon MCP server**, so the agent operates your real 
 
 Each step maps to a skill. Run the whole chain with `katalon-trueplatform-testing`, or call any step on its own.
 
+## The testing lifecycle
+
+The skills cover the **whole software testing workflow, from plan to insight** - seven stages, each with dedicated skills and the exact Katalon MCP tools behind them. `katalon-trueplatform-testing` routes any request to the right stage; the loop closes when maintenance feeds gaps back into planning.
+
+```mermaid
+flowchart LR
+  P["1 · Plan<br/>katalon-test-plan"] --> D["2 · Design<br/>katalon-create-test-cases"]
+  D --> M["3 · Manage<br/>katalon-test-management"]
+  M --> R["4 · Review<br/>katalon-test-review"]
+  R --> E["5 · Execute<br/>katalon-execute-test<br/>+ upload / playwright"]
+  E --> A["6 · Analyze<br/>katalon-analyze-failures<br/>+ katalon-release-analyze"]
+  A --> T["7 · Maintain<br/>katalon-test-maintenance"]
+  T -. gap list .-> P
+  S["katalon-platform-setup"] -.-> P
+  DF["katalon-dogfood-session<br/>(test-of loop)"] -.wraps.-> E
+```
+
+```text
+STAGE          SKILL(S)                          KEY KATALON MCP TOOLS
+1 Plan         katalon-test-plan                 list_projects, list_repositories, find_iterations,
+                                                  fetch_requirement_data, find_test_cases_by_requirement,
+                                                  manage_test_folder, manage_test_suite
+2 Design       katalon-create-test-cases         find_requirements, read_requirement, create_test_case,
+               (+ ...-to-playwright-script)       read_test_case, update_test_case, find_test_cases
+3 Manage       katalon-test-management           find_test_folders, manage_test_folder, find_test_suites,
+                                                  manage_test_suite, move_test_case, link_requirements_to_test_case,
+                                                  unlink_requirements_from_test_case, find_test_cases_by_requirement
+4 Review       katalon-test-review               fetch_requirement_data, fetch_test_case_data,
+                                                  fetch_test_stability_data, fetch_test_configuration_data
+5 Execute      katalon-execute-test              read_auts, create_manual_test_run, create_manual_ai_session,
+               (+ upload-report,                  read_manual_ai_session, find_execution_profiles,
+                  playwright-execute)              list_test_cloud_environments, build_run_configuration,
+                                                  build_schedule, schedule_test_run, read_execution
+6 Analyze      katalon-analyze-failures          read_test_result, read_execution_test_results, find_test_results,
+               + katalon-release-analyze          fetch_defect_data, find_alm_integration_projects, create_defect
+7 Maintain     katalon-test-maintenance          fetch_test_stability_data, find_test_results, read_execution,
+                                                  update_test_case, move_test_case, duplicate_test_case
+                                                        |
+                                                        +--> gap list feeds back into 1 Plan (loop closes)
+
+cross-cutting  katalon-platform-setup (connect the MCP)
+               katalon-dogfood-session (durable test-of / dogfooding session)
+               katalon-trueplatform-testing (lifecycle router + end-to-end runner)
+```
+
+Some steps are **product surfaces, not MCP calls** - object capture and resilience design (Studio), custom fields / Git config / governance (TestOps UI), self-healing / Time Capsule / TrueTest regeneration, and rerun / terminate / Live Monitor. Each skill states its boundary so the agent never over-promises. See `skills/katalon-trueplatform-testing/references/lifecycle-map.md` for the full map and `references/mcp-tool-index.md` for every tool.
+
+A self-contained visual of the lifecycle for humans lives at [`docs/lifecycle.html`](docs/lifecycle.html) (open it in a browser). Machine-readable discovery for AI agents: [`AGENTS.md`](AGENTS.md) and [`llms.txt`](llms.txt).
+
 ## Skills
 
-| Skill | What it does |
-| --- | --- |
-| **katalon-platform-setup** | Install, connect, and verify the Katalon MCP. Diagnose auth/access. Always start here. |
-| **katalon-create-test-cases** | Analyze a requirement (or free text), design atomic manual cases using ISTQB techniques as a reference, check existing coverage to avoid duplicates, import only what's missing, and link requirements. |
-| **katalon-execute-test** | Run an existing case, list, or suite - manual run, Run with AI, or scheduled automation - then summarize pass/fail/blocked. |
-| **katalon-upload-report** | Run automation and upload or verify Katalon Studio/KRE, JUnit XML, or Playwright reports on the platform. |
-| **katalon-test-case-to-playwright-script** | Convert Katalon manual test cases into Playwright TypeScript with Page Object Model and fixtures. |
-| **katalon-playwright-execute** | Run Playwright specs/suites, upload the report to Katalon with `@katalon/playwright-reporter`, and verify the run. |
-| **katalon-release-analyze** | Read quality metrics and results to produce a *Ready / Ready with risk / Not ready* release recommendation. |
-| **katalon-trueplatform-testing** | The end-to-end orchestrator: requirement → cases → suite → Run with AI → results → report, in one go. |
+Setup first, then lifecycle order, orchestrator last. **Bold** = the stage owner.
 
-Each skill is a folder under [`skills/`](skills/) with a `SKILL.md` and supporting `references/`.
+| Skill | Stage | What it does |
+| --- | --- | --- |
+| **katalon-platform-setup** | pre | Install, connect, and verify the Katalon MCP. Diagnose auth/access. Always start here. |
+| **katalon-test-plan** | 1 Plan | Translate quality goals into scope, prioritize by requirement coverage and risk, and build the executable folder+suite+release structure that stands in for a formal Test Plan. |
+| **katalon-create-test-cases** | 2 Design | Analyze a requirement (or free text), design atomic manual cases using ISTQB techniques as a reference, avoid duplicates, import only what's missing, and link requirements. |
+| **katalon-test-management** | 3 Manage | Organize inventory (folders/suites/moves), classify and find at scale, and produce a requirement↔case↔suite **traceability** report with coverage % and orphans. |
+| **katalon-test-review** | 4 Review | Pre-pipeline coverage, quality, and flakiness review that returns a **verdict** (Approve / Approve with fixes / Reject) plus the specific weak cases. |
+| **katalon-execute-test** | 5 Execute | Run an existing case, list, or suite - manual run, Run with AI, or scheduled automation - then summarize pass/fail/blocked. |
+| **katalon-upload-report** | 5/6 | Run automation and upload or verify Katalon Studio/KRE, JUnit XML, or Playwright reports on the platform. |
+| **katalon-test-case-to-playwright-script** | 2/5 | Convert Katalon manual test cases into Playwright TypeScript with Page Object Model and fixtures. |
+| **katalon-playwright-execute** | 5/6 | Run Playwright specs/suites, upload the report to Katalon with `@katalon/playwright-reporter`, and verify the run. |
+| **katalon-analyze-failures** | 6 Analyze | Triage failures - product defect vs automation defect vs environment - cluster by signature, and file ALM defects for real product bugs. |
+| **katalon-release-analyze** | 6 Analyze | Read quality metrics and results to produce a *Ready / Ready with risk / Not ready* release recommendation. |
+| **katalon-test-maintenance** | 7 Maintain | Detect flaky/broken cases from stability and history, repair or regenerate, and feed the refreshed gap list back into planning. |
+| **katalon-dogfood-session** | cross | Durable test-of / dogfooding session against a product build: session record, atomic cases, both lanes, cross-verify, defects tagged back. |
+| **katalon-trueplatform-testing** | all | The lifecycle **router** + end-to-end runner: requirement → cases → suite → Run with AI → results → report, and routes any request to the right stage. |
+
+Each skill is a folder under [`skills/`](skills/) with a `SKILL.md` and supporting `references/`. Multi-skill playbooks live in `skills/katalon-trueplatform-testing/references/combination-recipes.md`; copy-paste prompts and cross-model/cross-agent notes in `references/prompt-recipes.md`.
 
 ## Install
 
@@ -242,7 +299,7 @@ See `skills/katalon-trueplatform-testing/references/unavailable-capabilities.md`
 ## Repository layout
 
 ```text
-skills/                      Single source of truth - 8 skills (SKILL.md + references/)
+skills/                      Single source of truth - 14 skills (SKILL.md + references/)
 scripts/build-adapters.mjs   Generates every agent's native config from skills/
 plugins/katalon-true-platform/   Claude Code + Codex plugin (generated)
 .claude-plugin/ .agents/     Root marketplaces for Claude Code / Codex (generated)

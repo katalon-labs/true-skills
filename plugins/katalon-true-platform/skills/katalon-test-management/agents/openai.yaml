@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Management"
+  short_description: "Organize and trace Katalon test assets"
+  default_prompt: "Use $katalon-test-management to audit requirement-to-test traceability and list orphan requirements."

@@ -7,13 +7,19 @@ This repository ships the Katalon True Platform testing toolkit as GitHub Copilo
 ## Skills
 
 - `/katalon-platform-setup` - Install and connect the Katalon MCP.
+- `/katalon-test-plan` - Plan and prioritize Katalon testing.
 - `/katalon-create-test-cases` - Create and link Katalon manual tests.
+- `/katalon-test-management` - Organize and trace Katalon test assets.
+- `/katalon-test-review` - Review coverage and quality before the pipeline.
 - `/katalon-execute-test` - Run Katalon cases or suites.
 - `/katalon-upload-report` - Upload and verify Katalon reports.
 - `/katalon-test-case-to-playwright-script` - Generate Playwright from Katalon cases.
 - `/katalon-playwright-execute` - Run Playwright and upload Katalon reports.
+- `/katalon-analyze-failures` - Triage failures and file defects.
 - `/katalon-release-analyze` - Assess release testing readiness.
-- `/katalon-trueplatform-testing` - Plan, import, execute, and report Katalon tests.
+- `/katalon-test-maintenance` - Repair and evolve the regression suite.
+- `/katalon-dogfood-session` - Durable test-of / dogfooding session.
+- `/katalon-trueplatform-testing` - Route and run the full 7-stage testing lifecycle.
 
 ## Katalon MCP server
 
