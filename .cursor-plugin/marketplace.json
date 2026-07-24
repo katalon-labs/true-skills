@@ -19,8 +19,8 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity",
-      "description": "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.",
-      "version": "0.1.0"
+      "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
+      "version": "0.2.0"
     }
   ]
 }

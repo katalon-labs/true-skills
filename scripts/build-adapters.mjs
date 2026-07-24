@@ -32,7 +32,7 @@ const ORG = "katalon-labs";
 const REPO = "true-skills";
 const REPO_URL = `https://github.com/${ORG}/${REPO}`;
 const PLUGIN_NAME = "katalon-true-platform";
-const PLUGIN_VERSION = "0.1.0";
+const PLUGIN_VERSION = "0.2.0";
 const MCP_SERVER = "katalon-prod-mcp";
 const MCP_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
 const MCP_ARGS = ["-y", "mcp-remote", MCP_ENDPOINT, "--transport", "http-first"];
@@ -127,9 +127,9 @@ const mcpJson = { mcpServers: { [MCP_SERVER]: { command: "npx", args: MCP_ARGS }
 track(writeFile(join(PLUGIN_DIR, ".mcp.json"), j(mcpJson)));
 
 const author = { name: ORG, url: `https://github.com/${ORG}` };
-const keywords = ["katalon", "testops", "true-platform", "testing", "qa", "playwright"];
+const keywords = ["katalon", "testops", "truetest", "true-platform", "testing", "ai-testing", "agentic-testing", "qa", "test-automation", "test-management", "requirement-traceability", "release-readiness", "test-maintenance", "playwright", "mcp"];
 const description =
-  "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.";
+  "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.";
 
 track(
   writeFile(

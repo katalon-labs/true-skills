@@ -1,7 +1,7 @@
 {
   "name": "katalon-true-platform",
-  "version": "0.1.0",
-  "description": "Katalon True Platform workflows for test design, execution, Playwright automation, report upload, setup, and release analysis.",
+  "version": "0.2.0",
+  "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
   "author": {
     "name": "katalon-labs",
     "url": "https://github.com/katalon-labs"
@@ -12,10 +12,19 @@
   "keywords": [
     "katalon",
     "testops",
+    "truetest",
     "true-platform",
     "testing",
+    "ai-testing",
+    "agentic-testing",
     "qa",
-    "playwright"
+    "test-automation",
+    "test-management",
+    "requirement-traceability",
+    "release-readiness",
+    "test-maintenance",
+    "playwright",
+    "mcp"
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
