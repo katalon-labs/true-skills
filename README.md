@@ -14,14 +14,14 @@
 
 Design test cases, run them with AI, upload reports, and call release readiness, straight from your agent's chat. Author the skills once; native config is generated for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads `AGENTS.md`.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE) &nbsp;·&nbsp; 14 skills &nbsp;·&nbsp; 7-stage lifecycle &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
+[![License: MIT](https://img.shields.io/badge/License-MIT-00A3A3.svg)](LICENSE) &nbsp;·&nbsp; 13 skills &nbsp;·&nbsp; 7-stage lifecycle &nbsp;·&nbsp; 8+ agents &nbsp;·&nbsp; 1 MCP
 
 ![Katalon True Skills demo: install the marketplace, then ask the agent to analyze a requirement, design and import cases, run with AI, and call release readiness](docs/images/demo.svg)
 
 ## How it fits together
 
 ```text
-   skills/   one source of truth  (14 SKILL.md + references)
+   skills/   one source of truth  (13 SKILL.md + references)
       |
       |   node scripts/build-adapters.mjs        deterministic, CI-checked
       v
@@ -74,7 +74,6 @@ flowchart LR
   A --> T["7 · Maintain<br/>katalon-test-maintenance"]
   T -. gap list .-> P
   S["katalon-platform-setup"] -.-> P
-  DF["katalon-dogfood-session<br/>(test-of loop)"] -.wraps.-> E
 ```
 
 ```text
@@ -101,7 +100,6 @@ STAGE          SKILL(S)                          KEY KATALON MCP TOOLS
                                                         +--> gap list feeds back into 1 Plan (loop closes)
 
 cross-cutting  katalon-platform-setup (connect the MCP)
-               katalon-dogfood-session (durable test-of / dogfooding session)
                katalon-trueplatform-testing (lifecycle router + end-to-end runner)
 ```
 
@@ -127,7 +125,6 @@ Setup first, then lifecycle order, orchestrator last. **Bold** = the stage owner
 | **katalon-analyze-failures** | 6 Analyze | Triage failures - product defect vs automation defect vs environment - cluster by signature, and file ALM defects for real product bugs. |
 | **katalon-release-analyze** | 6 Analyze | Read quality metrics and results to produce a *Ready / Ready with risk / Not ready* release recommendation. |
 | **katalon-test-maintenance** | 7 Maintain | Detect flaky/broken cases from stability and history, repair or regenerate, and feed the refreshed gap list back into planning. |
-| **katalon-dogfood-session** | cross | Durable test-of / dogfooding session against a product build: session record, atomic cases, both lanes, cross-verify, defects tagged back. |
 | **katalon-trueplatform-testing** | all | The lifecycle **router** + end-to-end runner: requirement → cases → suite → Run with AI → results → report, and routes any request to the right stage. |
 
 Each skill is a folder under [`skills/`](skills/) with a `SKILL.md` and supporting `references/`. Multi-skill playbooks live in `skills/katalon-trueplatform-testing/references/combination-recipes.md`; copy-paste prompts and cross-model/cross-agent notes in `references/prompt-recipes.md`.
@@ -299,7 +296,7 @@ See `skills/katalon-trueplatform-testing/references/unavailable-capabilities.md`
 ## Repository layout
 
 ```text
-skills/                      Single source of truth - 14 skills (SKILL.md + references/)
+skills/                      Single source of truth - 13 skills (SKILL.md + references/)
 scripts/build-adapters.mjs   Generates every agent's native config from skills/
 plugins/katalon-true-platform/   Claude Code + Codex plugin (generated)
 .claude-plugin/ .agents/     Root marketplaces for Claude Code / Codex (generated)

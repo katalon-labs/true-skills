@@ -27,10 +27,11 @@ Each recipe chains several skills and MCP tools into one end-to-end play. Trigge
 - **Tools:** `read_test_case`, `find_test_cases`, then Playwright codegen + `@katalon/playwright-reporter` upload, verified via `read_execution` / `find_test_results`.
 - **Stop when:** the Playwright run is uploaded and the platform run is verified.
 
-## R5 — Dogfood a release  (cross-cutting)
-- **Trigger:** "dogfood this build / test-of product-980."
-- **Skills:** `katalon-dogfood-session` wrapping R1 with a session record + cross-lane verify + `source:dogfood` defect tags.
-- **Stop when:** every critical case is cross-verified (manual AI vs code lane), real defects are filed, and the session record is committed.
+## R5 — Cross-lane trust check  (stages 5->6)
+- **Trigger:** "don't trust the AI pass, verify it against real automation."
+- **Skills:** `katalon-execute-test` (manual Run with AI) + `katalon-playwright-execute` (code lane) -> `katalon-analyze-failures`.
+- **Tools:** `create_manual_ai_session`, `read_manual_ai_session`, Playwright run + `@katalon/playwright-reporter` upload, then `read_test_result` on both.
+- **Stop when:** every critical case's manual AI verdict is confirmed against the code-lane ground truth; discrepancies recorded.
 - **Boundary:** a self-reported AI PASS contradicted by the code lane is not a PASS.
 
 ## R6 — Traceability audit  (stage 3)

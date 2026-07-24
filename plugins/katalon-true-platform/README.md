@@ -18,7 +18,6 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 - `katalon-analyze-failures` - Triage failures and file defects.
 - `katalon-release-analyze` - Assess release testing readiness.
 - `katalon-test-maintenance` - Repair and evolve the regression suite.
-- `katalon-dogfood-session` - Durable test-of / dogfooding session.
 - `katalon-trueplatform-testing` - Route and run the full 7-stage testing lifecycle.
 
 ## Bundled MCP server

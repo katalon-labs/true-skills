@@ -29,7 +29,7 @@ Execute: `Run this suite with AI and report pass/fail/blocked.`
 Analyze: `Triage execution 8842: product bug vs flaky vs environment, and what to file.`
 Release: `Is release 3.2 ready to ship based on the quality metrics?`
 Maintain: `Which cases went flaky this month, and repair vs regenerate?`
-Dogfood: `Dogfood product-980: session, design, run both lanes, cross-verify, file defects.`
+Cross-verify: `Run this critical suite with AI and with Playwright, then reconcile any disagreement.`
 Full chain: `Analyze CEL-6, design and import cases, build a suite, run with AI, and tell me if we can ship.`
 
 ## Non-Claude agent notes

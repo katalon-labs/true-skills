@@ -111,7 +111,7 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
 
   <div class="kpis">
     <div class="kpi"><b>7</b><span>lifecycle stages</span></div>
-    <div class="kpi"><b>14</b><span>skills</span></div>
+    <div class="kpi"><b>13</b><span>skills</span></div>
     <div class="kpi"><b>40</b><span>MCP tools</span></div>
     <div class="kpi"><b>8+</b><span>agents</span></div>
     <div class="kpi"><b>1</b><span>Katalon MCP</span></div>
@@ -145,9 +145,9 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
     <div class="stage"><div class="num">STAGE 7</div><h3>Maintain</h3>
       <span class="skill">katalon-test-maintenance</span>
       <div class="tools">Repair flaky/broken cases, regenerate, and feed gaps back to plan.<br><code>fetch_test_stability_data</code> <code>update_test_case</code> <code>find_test_results</code></div></div>
-    <div class="stage" style="border-style:dashed"><div class="num">CROSS-CUTTING</div><h3>Connect &amp; test-of</h3>
-      <span class="skill">katalon-platform-setup</span><span class="skill">katalon-dogfood-session</span><span class="skill">trueplatform-testing (router)</span>
-      <div class="tools">Connect and verify the MCP · run a durable dogfood/"test-of" session · route any request to the right stage.</div></div>
+    <div class="stage" style="border-style:dashed"><div class="num">CROSS-CUTTING</div><h3>Connect &amp; route</h3>
+      <span class="skill">katalon-platform-setup</span><span class="skill">trueplatform-testing (router)</span>
+      <div class="tools">Connect and verify the MCP · route any request to the right stage · run the full chain end to end.</div></div>
   </div>
   <p class="loop">↺ <b>The loop closes:</b> stage 7 Maintain feeds the refreshed coverage gap list back into stage 1 Plan.</p>
   <p class="loop">Some steps are product surfaces (Studio, TestOps UI, TrueTest), not MCP calls - each skill states its boundary so the agent never over-promises.</p>
@@ -159,7 +159,7 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
     <tr><td><b>Coverage rescue</b></td><td>3→4→2</td><td>test-management (orphans) → test-review (verdict) → create-test-cases (fill)</td></tr>
     <tr><td><b>Flaky-suite cleanup</b></td><td>6→7→4</td><td>analyze-failures → test-maintenance → test-review (re-approve)</td></tr>
     <tr><td><b>Manual → automation</b></td><td>2→5</td><td>create-test-cases → to-playwright-script → playwright-execute → upload-report</td></tr>
-    <tr><td><b>Dogfood a release</b></td><td>cross</td><td>dogfood-session wrapping the full chain + cross-lane verify + tagged defects</td></tr>
+    <tr><td><b>Cross-lane trust check</b></td><td>5→6</td><td>execute-test (Run with AI) + playwright-execute (code lane) → analyze-failures (reconcile)</td></tr>
     <tr><td><b>Traceability audit</b></td><td>3</td><td>test-management → requirement↔case↔result matrix</td></tr>
   </table>
 

@@ -74,11 +74,6 @@ export const INTERFACE = {
     short: "Repair and evolve the regression suite",
     prompt: "Which cases went flaky this month, and which should we repair vs regenerate?",
   },
-  "katalon-dogfood-session": {
-    title: "Katalon Dogfood Session",
-    short: "Durable test-of / dogfooding session",
-    prompt: "Dogfood product-980: open a session, design cases, run both lanes, cross-verify, and file defects.",
-  },
   "katalon-trueplatform-testing": {
     title: "Katalon True Platform Testing",
     short: "Route and run the full 7-stage testing lifecycle",
@@ -100,6 +95,5 @@ export const ORDER = [
   "katalon-analyze-failures",
   "katalon-release-analyze",
   "katalon-test-maintenance",
-  "katalon-dogfood-session",
   "katalon-trueplatform-testing",
 ];

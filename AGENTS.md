@@ -80,12 +80,6 @@ Maintain and evolve a Katalon True Platform/TestOps regression suite as the appl
 
 File: `skills/katalon-test-maintenance/SKILL.md`
 
-### katalon-dogfood-session
-
-Run a durable dogfooding / test-of session that uses Katalon True Platform to test a Katalon product build (or any product) end to end, with a working-session record and a human review gate. Use when you need to take a product intent or issue key, open a persistent testing session, gather context, design atomic cases, run them (manual AI plus optional Playwright code lane), cross-verify the AI self-report against code-lane ground truth, file defects back with a source tag, and keep durable evidence. Adapted from the lw-test-tower working-session model. For a single stateless requirement-to-execution pass use katalon-trueplatform-testing instead.
-
-File: `skills/katalon-dogfood-session/SKILL.md`
-
 ### katalon-trueplatform-testing
 
 End-to-end Katalon True Platform testing workflow and lifecycle router. Use when you need to analyze requirements, design manual test cases, import them into Katalon/TestOps, link requirements, organize test suites, create manual executions, start Run with AI, monitor execution results, or report Katalon True Platform test outcomes. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools.

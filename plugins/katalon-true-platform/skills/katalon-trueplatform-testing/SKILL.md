@@ -20,9 +20,9 @@ The Katalon testing lifecycle has 7 stages. For a focused request, route to the 
 | 5 Execute | `katalon-execute-test` (+ `katalon-upload-report`, `katalon-playwright-execute`) | manual, Run with AI, automated, cloud |
 | 6 Analyze | `katalon-analyze-failures` + `katalon-release-analyze` | failure triage/defects; ship/no-ship call |
 | 7 Maintain | `katalon-test-maintenance` | repair flaky/broken cases, regenerate, feed gaps back to plan |
-| pre / cross | `katalon-platform-setup`, `katalon-dogfood-session` | connect the MCP; durable test-of/dogfood session |
+| pre / cross | `katalon-platform-setup` | connect and verify the MCP |
 
-For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, dogfood, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
+For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
 
 This skill can run any stage inline itself (the workflows below cover requirement->execution->report); route to a focused skill when the user wants only that stage or a deeper treatment (traceability, review verdict, failure triage, maintenance).
 

@@ -42,8 +42,7 @@ Single source for the README diagram and the orchestrator's routing. The Katalon
                  |
                  +--> feeds the gap list back to 1 PLAN (the loop closes)
 
-CROSS-CUTTING .. katalon-platform-setup (connect) · katalon-dogfood-session (test-of)
-                 · katalon-trueplatform-testing (router)
+CROSS-CUTTING .. katalon-platform-setup (connect) · katalon-trueplatform-testing (router)
 ```
 
 ## Stage boundaries (no MCP)

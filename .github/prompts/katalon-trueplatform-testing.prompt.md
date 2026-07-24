@@ -22,9 +22,9 @@ The Katalon testing lifecycle has 7 stages. For a focused request, route to the 
 | 5 Execute | `katalon-execute-test` (+ `katalon-upload-report`, `katalon-playwright-execute`) | manual, Run with AI, automated, cloud |
 | 6 Analyze | `katalon-analyze-failures` + `katalon-release-analyze` | failure triage/defects; ship/no-ship call |
 | 7 Maintain | `katalon-test-maintenance` | repair flaky/broken cases, regenerate, feed gaps back to plan |
-| pre / cross | `katalon-platform-setup`, `katalon-dogfood-session` | connect the MCP; durable test-of/dogfood session |
+| pre / cross | `katalon-platform-setup` | connect and verify the MCP |
 
-For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, dogfood, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
+For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
 
 This skill can run any stage inline itself (the workflows below cover requirement->execution->report); route to a focused skill when the user wants only that stage or a deeper treatment (traceability, review verdict, failure triage, maintenance).
 
@@ -288,10 +288,11 @@ Each recipe chains several skills and MCP tools into one end-to-end play. Trigge
 - **Tools:** `read_test_case`, `find_test_cases`, then Playwright codegen + `@katalon/playwright-reporter` upload, verified via `read_execution` / `find_test_results`.
 - **Stop when:** the Playwright run is uploaded and the platform run is verified.
 
-## R5 — Dogfood a release  (cross-cutting)
-- **Trigger:** "dogfood this build / test-of product-980."
-- **Skills:** `katalon-dogfood-session` wrapping R1 with a session record + cross-lane verify + `source:dogfood` defect tags.
-- **Stop when:** every critical case is cross-verified (manual AI vs code lane), real defects are filed, and the session record is committed.
+## R5 — Cross-lane trust check  (stages 5->6)
+- **Trigger:** "don't trust the AI pass, verify it against real automation."
+- **Skills:** `katalon-execute-test` (manual Run with AI) + `katalon-playwright-execute` (code lane) -> `katalon-analyze-failures`.
+- **Tools:** `create_manual_ai_session`, `read_manual_ai_session`, Playwright run + `@katalon/playwright-reporter` upload, then `read_test_result` on both.
+- **Stop when:** every critical case's manual AI verdict is confirmed against the code-lane ground truth; discrepancies recorded.
 - **Boundary:** a self-reported AI PASS contradicted by the code lane is not a PASS.
 
 ## R6 — Traceability audit  (stage 3)
@@ -484,8 +485,7 @@ Single source for the README diagram and the orchestrator's routing. The Katalon
                  |
                  +--> feeds the gap list back to 1 PLAN (the loop closes)
 
-CROSS-CUTTING .. katalon-platform-setup (connect) · katalon-dogfood-session (test-of)
-                 · katalon-trueplatform-testing (router)
+CROSS-CUTTING .. katalon-platform-setup (connect) · katalon-trueplatform-testing (router)
 ```
 
 ## Stage boundaries (no MCP)
@@ -648,7 +648,7 @@ Execute: `Run this suite with AI and report pass/fail/blocked.`
 Analyze: `Triage execution 8842: product bug vs flaky vs environment, and what to file.`
 Release: `Is release 3.2 ready to ship based on the quality metrics?`
 Maintain: `Which cases went flaky this month, and repair vs regenerate?`
-Dogfood: `Dogfood product-980: session, design, run both lanes, cross-verify, file defects.`
+Cross-verify: `Run this critical suite with AI and with Playwright, then reconcile any disagreement.`
 Full chain: `Analyze CEL-6, design and import cases, build a suite, run with AI, and tell me if we can ship.`
 
 ## Non-Claude agent notes

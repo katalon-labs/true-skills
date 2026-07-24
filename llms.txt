@@ -1,6 +1,6 @@
 # Katalon True Skills
 
-> Open, agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Fourteen skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
+> Open, agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Thirteen skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
 
 ## Start here
 
@@ -22,12 +22,11 @@
 - [katalon-analyze-failures](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-analyze-failures/SKILL.md): stage 6 - triage failures (product vs automation vs environment), cluster, and file ALM defects.
 - [katalon-release-analyze](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-release-analyze/SKILL.md): stage 6 - produce a Ready / Ready with risk / Not ready release recommendation from quality metrics.
 - [katalon-test-maintenance](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-maintenance/SKILL.md): stage 7 - detect flaky/broken cases, repair or regenerate, and feed gaps back into planning.
-- [katalon-dogfood-session](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-dogfood-session/SKILL.md): cross-cutting - a durable dogfooding / test-of session with a working-session record and human review gate.
 - [katalon-trueplatform-testing](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/SKILL.md): the lifecycle router + end-to-end runner across all 7 stages.
 
 ## Combination recipes and prompts
 
-- [combination-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/combination-recipes.md): multi-skill playbooks (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, dogfood, traceability audit).
+- [combination-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/combination-recipes.md): multi-skill playbooks (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit).
 - [prompt-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/prompt-recipes.md): copy-paste prompts plus cross-model and cross-agent execution notes.
 - [mcp-tool-index](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/mcp-tool-index.md): every Katalon MCP tool, one line, tagged by lifecycle stage.
 

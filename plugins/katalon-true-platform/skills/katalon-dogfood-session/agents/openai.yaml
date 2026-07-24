@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon Dogfood Session"
-  short_description: "Durable test-of / dogfooding session"
-  default_prompt: "Use $katalon-dogfood-session to dogfood product-980: open a session, design cases, run both lanes, cross-verify, and file defects."
