@@ -32,10 +32,10 @@
     ],
     "defaultPrompt": [
       "Install the Katalon MCP server and connect it to my platform account.",
+      "Plan testing for this sprint: show coverage gaps and build the executable suite.",
       "Design and import manual test cases from requirement CEL-6.",
-      "Run this Katalon test suite with AI and report the result.",
-      "Upload a Katalon, JUnit, or Playwright report to Katalon Platform and summarize results.",
-      "Generate Playwright TypeScript automation from Katalon Platform test cases using Page Object Model and fixtures."
+      "Audit requirement-to-test traceability and list orphan requirements.",
+      "Review this suite for the pipeline and give a verdict with weak cases."
     ],
     "brandColor": "#00A3A3",
     "composerIcon": "./assets/katalon-logo.svg",

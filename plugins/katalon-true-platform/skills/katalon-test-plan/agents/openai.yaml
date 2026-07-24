@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Plan"
+  short_description: "Plan and prioritize Katalon testing"
+  default_prompt: "Use $katalon-test-plan to plan testing for this sprint: show coverage gaps and build the executable suite."

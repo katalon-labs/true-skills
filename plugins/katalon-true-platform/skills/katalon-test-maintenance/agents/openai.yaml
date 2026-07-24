@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Maintenance"
+  short_description: "Repair and evolve the regression suite"
+  default_prompt: "Use $katalon-test-maintenance to which cases went flaky this month, and which should we repair vs regenerate?"
