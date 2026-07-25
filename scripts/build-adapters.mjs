@@ -368,7 +368,7 @@ track(
       `npx ${MCP_ARGS.join(" ")}\n` +
       "```\n\n" +
       `Authentication is a browser/OAuth flow. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `Start with \`katalon-platform-setup\` to connect and verify the MCP, then use the workflow skills. ` +
+      `Start with \`platform-setup\` to connect and verify the MCP, then use the workflow skills. ` +
       `For human-facing install instructions per agent, see [README.md](${REPO_URL}#install).\n`,
   ),
 );

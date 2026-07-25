@@ -125,28 +125,28 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
   <h2 class="sec">The 7-stage lifecycle</h2>
   <div class="flow">
     <div class="stage"><div class="num">STAGE 1</div><h3>Plan</h3>
-      <span class="skill">katalon-test-plan</span>
+      <span class="skill">test-plan</span>
       <div class="tools">Scope, risk-priority, and the executable folder+suite for a sprint/release.<br><code>list_projects</code> <code>find_iterations</code> <code>fetch_requirement_data</code> <code>manage_test_suite</code></div></div>
     <div class="stage"><div class="num">STAGE 2</div><h3>Design</h3>
-      <span class="skill">katalon-create-test-cases</span>
+      <span class="skill">create-test-cases</span>
       <div class="tools">Atomic cases from requirements, ISTQB-as-reference, linked and de-duplicated.<br><code>find_requirements</code> <code>create_test_case</code> <code>update_test_case</code></div></div>
     <div class="stage"><div class="num">STAGE 3</div><h3>Manage</h3>
-      <span class="skill">katalon-test-management</span>
+      <span class="skill">test-management</span>
       <div class="tools">Inventory + requirement↔case↔suite traceability, orphans, coverage %.<br><code>manage_test_folder</code> <code>move_test_case</code> <code>link_requirements_to_test_case</code></div></div>
     <div class="stage"><div class="num">STAGE 4</div><h3>Review</h3>
-      <span class="skill">katalon-test-review</span>
+      <span class="skill">test-review</span>
       <div class="tools">Pre-pipeline verdict on coverage, quality, and flakiness.<br><code>fetch_test_case_data</code> <code>fetch_test_stability_data</code> <code>fetch_test_configuration_data</code></div></div>
     <div class="stage"><div class="num">STAGE 5</div><h3>Execute</h3>
-      <span class="skill">katalon-execute-test</span><span class="skill">upload-report</span><span class="skill">playwright-execute</span>
+      <span class="skill">execute-test</span><span class="skill">upload-report</span><span class="skill">playwright-execute</span>
       <div class="tools">Manual, Run with AI, automated, and cloud-scale execution.<br><code>read_auts</code> <code>create_manual_ai_session</code> <code>schedule_test_run</code></div></div>
     <div class="stage"><div class="num">STAGE 6</div><h3>Analyze</h3>
-      <span class="skill">katalon-analyze-failures</span><span class="skill">release-analyze</span>
+      <span class="skill">analyze-failures</span><span class="skill">release-analyze</span>
       <div class="tools">Failure triage (product / automation / environment), defects, and the ship call.<br><code>read_test_result</code> <code>fetch_defect_data</code> <code>create_defect</code></div></div>
     <div class="stage"><div class="num">STAGE 7</div><h3>Maintain</h3>
-      <span class="skill">katalon-test-maintenance</span>
+      <span class="skill">test-maintenance</span>
       <div class="tools">Repair flaky/broken cases, regenerate, and feed gaps back to plan.<br><code>fetch_test_stability_data</code> <code>update_test_case</code> <code>find_test_results</code></div></div>
     <div class="stage" style="border-style:dashed"><div class="num">CROSS-CUTTING</div><h3>Connect &amp; route</h3>
-      <span class="skill">katalon-platform-setup</span><span class="skill">trueplatform-testing (router)</span>
+      <span class="skill">platform-setup</span><span class="skill">true-platform-testing (router)</span>
       <div class="tools">Connect and verify the MCP · route any request to the right stage · run the full chain end to end.</div></div>
   </div>
   <p class="loop">↺ <b>The loop closes:</b> stage 7 Maintain feeds the refreshed coverage gap list back into stage 1 Plan.</p>
@@ -174,7 +174,7 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
 
   <footer>
     Install and full docs: see the repository <a href="https://github.com/katalon-labs/true-skills#install">README</a>.
-    Start with <code class="mono">katalon-platform-setup</code> to connect the Katalon MCP, then ask your agent for any stage.
+    Start with <code class="mono">platform-setup</code> to connect the Katalon MCP, then ask your agent for any stage.
   </footer>
 </div>
 <script>

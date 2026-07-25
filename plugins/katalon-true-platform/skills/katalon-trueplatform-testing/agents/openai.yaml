@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon True Platform Testing"
-  short_description: "Route and run the full 7-stage testing lifecycle"
-  default_prompt: "Use $katalon-trueplatform-testing to analyze requirements, create manual test cases, organize suites, run with AI, and report results."

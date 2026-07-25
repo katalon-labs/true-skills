@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon Test Case to Playwright Script"
-  short_description: "Generate Playwright from Katalon cases"
-  default_prompt: "Use $katalon-test-case-to-playwright-script to generate Playwright TypeScript automation from Katalon Platform test cases using Page Object Model and fixtures."

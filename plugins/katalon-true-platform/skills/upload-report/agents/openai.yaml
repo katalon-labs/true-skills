@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Upload Report"
+  short_description: "Upload and verify Katalon reports"
+  default_prompt: "Use $upload-report to upload a Katalon, JUnit, or Playwright report to Katalon Platform and summarize results."

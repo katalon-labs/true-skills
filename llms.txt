@@ -10,25 +10,25 @@
 
 ## Skills (single source of truth: skills/)
 
-- [katalon-platform-setup](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-platform-setup/SKILL.md): install, connect, and verify the Katalon MCP; diagnose auth/access. Start here.
-- [katalon-test-plan](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-plan/SKILL.md): stage 1 - scope, risk-prioritized planning, and the executable folder+suite that stands in for a Test Plan.
-- [katalon-create-test-cases](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-create-test-cases/SKILL.md): stage 2 - design atomic manual test cases from requirements (ISTQB as reference), avoid duplicates, import and link.
-- [katalon-test-management](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-management/SKILL.md): stage 3 - organize inventory and produce a requirement-to-test traceability report with coverage and orphans.
-- [katalon-test-review](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-review/SKILL.md): stage 4 - pre-pipeline coverage/quality/flakiness review returning an Approve / Approve-with-fixes / Reject verdict.
-- [katalon-execute-test](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-execute-test/SKILL.md): stage 5 - manual runs, Run with AI, and scheduled automation; summarize pass/fail/blocked.
-- [katalon-upload-report](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-upload-report/SKILL.md): stage 5/6 - run automation and upload/verify Katalon, JUnit, or Playwright reports.
-- [katalon-test-case-to-playwright-script](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-case-to-playwright-script/SKILL.md): convert Katalon manual cases into Playwright TypeScript (Page Object Model + fixtures).
-- [katalon-playwright-execute](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-playwright-execute/SKILL.md): run Playwright specs, upload to Katalon with @katalon/playwright-reporter, and verify the run.
-- [katalon-analyze-failures](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-analyze-failures/SKILL.md): stage 6 - triage failures (product vs automation vs environment), cluster, and file ALM defects.
-- [katalon-release-analyze](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-release-analyze/SKILL.md): stage 6 - produce a Ready / Ready with risk / Not ready release recommendation from quality metrics.
-- [katalon-test-maintenance](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-test-maintenance/SKILL.md): stage 7 - detect flaky/broken cases, repair or regenerate, and feed gaps back into planning.
-- [katalon-trueplatform-testing](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/SKILL.md): the lifecycle router + end-to-end runner across all 7 stages.
+- [platform-setup](https://github.com/katalon-labs/true-skills/blob/main/skills/platform-setup/SKILL.md): install, connect, and verify the Katalon MCP; diagnose auth/access. Start here.
+- [test-plan](https://github.com/katalon-labs/true-skills/blob/main/skills/test-plan/SKILL.md): stage 1 - scope, risk-prioritized planning, and the executable folder+suite that stands in for a Test Plan.
+- [create-test-cases](https://github.com/katalon-labs/true-skills/blob/main/skills/create-test-cases/SKILL.md): stage 2 - design atomic manual test cases from requirements (ISTQB as reference), avoid duplicates, import and link.
+- [test-management](https://github.com/katalon-labs/true-skills/blob/main/skills/test-management/SKILL.md): stage 3 - organize inventory and produce a requirement-to-test traceability report with coverage and orphans.
+- [test-review](https://github.com/katalon-labs/true-skills/blob/main/skills/test-review/SKILL.md): stage 4 - pre-pipeline coverage/quality/flakiness review returning an Approve / Approve-with-fixes / Reject verdict.
+- [execute-test](https://github.com/katalon-labs/true-skills/blob/main/skills/execute-test/SKILL.md): stage 5 - manual runs, Run with AI, and scheduled automation; summarize pass/fail/blocked.
+- [upload-report](https://github.com/katalon-labs/true-skills/blob/main/skills/upload-report/SKILL.md): stage 5/6 - run automation and upload/verify Katalon, JUnit, or Playwright reports.
+- [test-case-to-playwright](https://github.com/katalon-labs/true-skills/blob/main/skills/test-case-to-playwright/SKILL.md): convert Katalon manual cases into Playwright TypeScript (Page Object Model + fixtures).
+- [playwright-execute](https://github.com/katalon-labs/true-skills/blob/main/skills/playwright-execute/SKILL.md): run Playwright specs, upload to Katalon with @katalon/playwright-reporter, and verify the run.
+- [analyze-failures](https://github.com/katalon-labs/true-skills/blob/main/skills/analyze-failures/SKILL.md): stage 6 - triage failures (product vs automation vs environment), cluster, and file ALM defects.
+- [release-analyze](https://github.com/katalon-labs/true-skills/blob/main/skills/release-analyze/SKILL.md): stage 6 - produce a Ready / Ready with risk / Not ready release recommendation from quality metrics.
+- [test-maintenance](https://github.com/katalon-labs/true-skills/blob/main/skills/test-maintenance/SKILL.md): stage 7 - detect flaky/broken cases, repair or regenerate, and feed gaps back into planning.
+- [true-platform-testing](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/SKILL.md): the lifecycle router + end-to-end runner across all 7 stages.
 
 ## Combination recipes and prompts
 
-- [combination-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/combination-recipes.md): multi-skill playbooks (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit).
-- [prompt-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/prompt-recipes.md): copy-paste prompts plus cross-model and cross-agent execution notes.
-- [mcp-tool-index](https://github.com/katalon-labs/true-skills/blob/main/skills/katalon-trueplatform-testing/references/mcp-tool-index.md): every Katalon MCP tool, one line, tagged by lifecycle stage.
+- [combination-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/combination-recipes.md): multi-skill playbooks (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit).
+- [prompt-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/prompt-recipes.md): copy-paste prompts plus cross-model and cross-agent execution notes.
+- [mcp-tool-index](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/mcp-tool-index.md): every Katalon MCP tool, one line, tagged by lifecycle stage.
 
 ## Install
 

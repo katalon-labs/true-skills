@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon Test Review"
-  short_description: "Review coverage and quality before the pipeline"
-  default_prompt: "Use $katalon-test-review to review this suite for the pipeline and give a verdict with weak cases."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon Create Test Cases"
-  short_description: "Create and link Katalon manual tests"
-  default_prompt: "Use $katalon-create-test-cases to design and import manual test cases from requirement CEL-6."

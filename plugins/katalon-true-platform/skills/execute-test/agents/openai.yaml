@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Execute Test"
+  short_description: "Run Katalon cases or suites"
+  default_prompt: "Use $execute-test to run this Katalon test suite with AI and report the result."

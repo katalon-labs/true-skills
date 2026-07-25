@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Analyze Failures"
+  short_description: "Triage failures and file defects"
+  default_prompt: "Use $analyze-failures to triage this execution: product bug vs flaky vs environment, and what to file."
