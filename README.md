@@ -80,16 +80,10 @@ Multi-skill playbooks live in [`combination-recipes.md`](skills/true-platform-te
 
 Seven stages, each owned by a skill. The loop closes when maintenance feeds its gap list back into the plan.
 
-```mermaid
-flowchart LR
-  P["1 plan<br/>test-plan"] --> D["2 design<br/>create-test-cases"]
-  D --> M["3 manage<br/>test-management"]
-  M --> R["4 review<br/>test-review"]
-  R --> E["5 execute<br/>execute-test<br/>upload-report"]
-  E --> A["6 analyze<br/>analyze-failures<br/>release-analyze"]
-  A --> T["7 maintain<br/>test-maintenance"]
-  T -. gap list .-> P
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/lifecycle-dark.svg">
+  <img src="docs/images/lifecycle-light.svg" alt="The seven-stage testing lifecycle and the skill that owns each stage, with the maintenance gap list feeding back into planning" width="100%">
+</picture>
 
 `platform-setup` sits before all seven, connecting the MCP. Every skill states which Katalon MCP tools it uses and where the platform stops. Full stage map: [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md). Every tool in one line each: [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md). A self-contained visual for humans: [`docs/lifecycle.html`](docs/lifecycle.html).
 

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 172" width="1000" height="172" role="img" aria-label="The seven-stage testing lifecycle and the skill that owns each stage, with the maintenance gap list feeding back into planning">
+<rect x="0.5" y="0.5" width="999" height="171" rx="14" fill="#ffffff" stroke="#e2e7e4"/>
+<rect x="36" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="96" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">1 PLAN</text>
+<text x="96" y="68" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">test-plan</text>
+<path d="M 159 52 L 165 57 L 159 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="170" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="230" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">2 DESIGN</text>
+<text x="230" y="68" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">create-test-cases</text>
+<path d="M 293 52 L 299 57 L 293 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="304" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="364" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">3 MANAGE</text>
+<text x="364" y="68" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">test-management</text>
+<path d="M 427 52 L 433 57 L 427 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="438" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="498" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">4 REVIEW</text>
+<text x="498" y="68" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">test-review</text>
+<path d="M 561 52 L 567 57 L 561 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="572" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="632" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">5 EXECUTE</text>
+<text x="632" y="64" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">execute-test</text>
+<text x="632" y="80" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">upload-report</text>
+<path d="M 695 52 L 701 57 L 695 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="706" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="766" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">6 ANALYZE</text>
+<text x="766" y="64" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">analyze-failures</text>
+<text x="766" y="80" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">release-analyze</text>
+<path d="M 829 52 L 835 57 L 829 62" fill="none" stroke="#b9c4bf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="840" y="18" width="120" height="78" rx="8" fill="#f6f9f7" stroke="#e2e7e4"/>
+<text x="900" y="42" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" letter-spacing="1" fill="#0f8461">7 MAINTAIN</text>
+<text x="900" y="68" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10" fill="#46524d">test-maintenance</text>
+<path d="M 900 104 C 900 150 96 150 96 108" fill="none" stroke="#c2ccc8" stroke-width="1.6" stroke-dasharray="6 6" stroke-linecap="round"/>
+<path d="M 90 113 L 96 104 L 102 113" fill="none" stroke="#c2ccc8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="392" y="132" width="216" height="16" fill="#ffffff"/>
+<text x="500" y="144" text-anchor="middle" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="10.5" fill="#8a938f">gap list feeds the next plan</text>
+</svg>
