@@ -1,20 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 415" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="15">
-  <rect width="820" height="415" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
-  <rect width="820" height="40" rx="10" fill="#161b22"/>
-  <rect y="30" width="820" height="10" fill="#161b22"/>
-  <circle cx="22" cy="20" r="6" fill="#ff5f56"/>
-  <circle cx="44" cy="20" r="6" fill="#ffbd2e"/>
-  <circle cx="66" cy="20" r="6" fill="#27c93f"/>
-  <text x="410" y="25" text-anchor="middle" fill="#8b949e" font-size="13">katalon-labs / true-skills</text>
-  <text x="22" y="77" fill="#3fb950" opacity="0">$ claude plugin marketplace add katalon-labs/true-skills<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.0479;0.0563;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="102" fill="#2dd4bf" opacity="0">  ✔ marketplace added · 8 skills available<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.1042;0.1127;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="152" fill="#58a6ff" font-weight="700" opacity="0">you ▸ Analyze CEL-6, design cases, run with AI - can we ship?<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.2169;0.2254;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="202" fill="#c9d1d9" opacity="0">  ⟳ analyze requirement ............ done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3296;0.3380;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="227" fill="#c9d1d9" opacity="0">  ⟳ design 12 ISTQB cases .......... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3859;0.3944;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="252" fill="#c9d1d9" opacity="0">  ⟳ import + link to CEL-6 ......... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4423;0.4507;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="277" fill="#c9d1d9" opacity="0">  ⟳ build suite "CEL-6 smoke" ...... done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4986;0.5070;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="302" fill="#e3b341" opacity="0">  ⟳ Run with AI .................... 11 passed · 1 failed<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.5549;0.5634;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="327" fill="#c9d1d9" opacity="0">  ⟳ upload report ................ done<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.6113;0.6197;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <text x="22" y="377" fill="#00d4d4" font-weight="700" opacity="0">  ▣ Release: READY WITH RISK  (1 failure: checkout flow)<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.7239;0.7324;1" dur="14.2s" repeatCount="indefinite"/></text>
-  <rect x="22" y="390" width="9" height="15" fill="#2dd4bf" opacity="0.9"><animate attributeName="opacity" values="0.9;0.9;0;0" keyTimes="0;0.5;0.5;1" dur="1.05s" repeatCount="indefinite"/></rect>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" width="860" height="400" font-family="SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace" font-size="14.5" role="img" aria-label="Example agent session: install the skills, analyze requirement CEL-6, design and import cases, run with AI, upload the report, and get a ship decision">
+  <rect x="0.5" y="0.5" width="859" height="399" rx="12" fill="#0c1411" stroke="#1f2925"/>
+  <path d="M 0 12 A 12 12 0 0 1 12 0 L 848 0 A 12 12 0 0 1 860 12 L 860 38 L 0 38 Z" fill="#131c19"/>
+  <circle cx="22" cy="19" r="5.5" fill="#ff5f56"/>
+  <circle cx="42" cy="19" r="5.5" fill="#ffbd2e"/>
+  <circle cx="62" cy="19" r="5.5" fill="#27c93f"/>
+  <text x="430" y="24" text-anchor="middle" fill="#6f7d78" font-size="12.5">katalon-labs / true-skills</text>
+
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.0313;0.0400;1" dur="16s" repeatCount="indefinite"/>
+    <text x="26" y="76" fill="#19d89f">$ npx skills add katalon-labs/true-skills</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.0813;0.0900;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="100" fill="#7c8b85">13 skills installed<tspan fill="#3c4642"> · </tspan>Katalon MCP connected</text>
+  </g>
+
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.1563;0.1650;1" dur="16s" repeatCount="indefinite"/>
+    <text x="26" y="142" fill="#ffffff"><tspan fill="#19d89f">you ▸ </tspan>Analyze CEL-6, design and run the cases. Can we ship?</text>
+  </g>
+
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.2375;0.2463;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="184" fill="#19d89f">✔</text>
+    <text x="70" y="184" fill="#c9d3cf">read requirement CEL-6</text>
+    <text x="450" y="184" fill="#7c8b85">3 flows, 2 risk areas</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.2938;0.3025;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="206" fill="#19d89f">✔</text>
+    <text x="70" y="206" fill="#c9d3cf">designed 12 atomic cases</text>
+    <text x="450" y="206" fill="#7c8b85">boundary, decision table, state</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3500;0.3588;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="228" fill="#19d89f">✔</text>
+    <text x="70" y="228" fill="#c9d3cf">imported and linked to CEL-6</text>
+    <text x="450" y="228" fill="#7c8b85">4 duplicates skipped</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4063;0.4150;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="250" fill="#19d89f">✔</text>
+    <text x="70" y="250" fill="#c9d3cf">built suite "CEL-6 regression"</text>
+    <text x="450" y="250" fill="#7c8b85">12 cases</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.4750;0.4838;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="272" fill="#19d89f">✔</text>
+    <text x="70" y="272" fill="#c9d3cf">ran the suite with AI</text>
+    <text x="450" y="272" fill="#7c8b85">11 passed<tspan fill="#3c4642"> · </tspan><tspan fill="#ff7b72">1 failed</tspan></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.5438;0.5525;1" dur="16s" repeatCount="indefinite"/>
+    <text x="44" y="294" fill="#19d89f">✔</text>
+    <text x="70" y="294" fill="#c9d3cf">uploaded the report</text>
+    <text x="450" y="294" fill="#7c8b85">run #4821</text>
+  </g>
+
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.6250;0.6338;1" dur="16s" repeatCount="indefinite"/>
+    <rect x="26" y="318" width="3" height="58" rx="1.5" fill="#ff7b72" opacity="0.55"/>
+    <text x="44" y="334" fill="#ff7b72" font-weight="700">▣ Not ready to ship</text>
+    <text x="44" y="356" fill="#9aa8a2">cart total keeps the old price after a quantity change</text>
+    <text x="44" y="374" fill="#6f7d78">product defect, filed as CEL-118</text>
+  </g>
 </svg>
