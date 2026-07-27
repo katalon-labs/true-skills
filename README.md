@@ -89,10 +89,9 @@ flowchart LR
   E --> A["6 analyze<br/>analyze-failures<br/>release-analyze"]
   A --> T["7 maintain<br/>test-maintenance"]
   T -. gap list .-> P
-  S["platform-setup"] -.-> P
 ```
 
-Every skill states which Katalon MCP tools it uses and where the platform stops. Full stage map: [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md). Every tool in one line each: [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md). A self-contained visual for humans: [`docs/lifecycle.html`](docs/lifecycle.html).
+`platform-setup` sits before all seven, connecting the MCP. Every skill states which Katalon MCP tools it uses and where the platform stops. Full stage map: [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md). Every tool in one line each: [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md). A self-contained visual for humans: [`docs/lifecycle.html`](docs/lifecycle.html).
 
 ## Where the boundary is
 
