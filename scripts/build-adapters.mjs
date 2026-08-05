@@ -10,7 +10,8 @@
  *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces)
  *   .cursor/rules/*.mdc              Cursor rules (lightweight, always-available)
  *   .kiro/steering/*.md              Kiro
- *   .github/prompts/*.prompt.md      GitHub Copilot (+ copilot-instructions.md, .vscode/mcp.json)
+ *   .github/skills/                  GitHub Copilot Agent Skills (VS Code, CLI, coding agent, code review)
+ *   .github/prompts/*.prompt.md      GitHub Copilot prompt files (+ copilot-instructions.md, .vscode/mcp.json)
  *   .windsurf/rules/*.md             Windsurf
  *   .clinerules/*.md                 Cline
  *   .continue/rules/*.md             Continue (+ .continue/mcpServers/katalon.yaml)
@@ -275,8 +276,20 @@ track(
 );
 
 // ===========================================================================
-// 4. GitHub Copilot - .github/prompts/*.prompt.md + copilot-instructions.md + .vscode/mcp.json
+// 4. GitHub Copilot - .github/skills/ + .github/prompts/*.prompt.md
+//    + copilot-instructions.md + .vscode/mcp.json
 // ===========================================================================
+// Agent Skills (agentskills.io spec - same format as canonical skills/):
+// auto-discovered from .github/skills/ by the Copilot coding agent, Copilot
+// code review, Copilot CLI, and agent mode in VS Code / JetBrains. Mirrored
+// verbatim so relative references/ paths keep working.
+resetDir(".github/skills");
+for (const s of skills) {
+  cpSync(s.dir, join(ROOT, ".github/skills", s.name), { recursive: true });
+  track(`.github/skills/${s.name}/SKILL.md`);
+}
+
+// Prompt files: kept alongside skills for explicit /name invocation in VS Code chat.
 resetDir(".github/prompts");
 for (const s of skills) {
   const i = INTERFACE[s.name];
@@ -291,23 +304,45 @@ track(
   writeFile(
     ".github/copilot-instructions.md",
     `${GENERATED_NOTE}\n\n# Katalon True Platform - Copilot instructions\n\n` +
-      `This repository ships the Katalon True Platform testing toolkit as GitHub Copilot prompt files in \`.github/prompts/\`. ` +
-      `Each prompt maps to one skill and can be invoked in Copilot Chat with \`/\` followed by the prompt name.\n\n` +
+      `This repository ships the Katalon True Platform testing toolkit as GitHub Copilot **Agent Skills** in \`.github/skills/\`. ` +
+      `Copilot discovers them automatically (coding agent, code review, Copilot CLI, agent mode in VS Code, and JetBrains agent mode in public preview) ` +
+      `and loads the matching skill when a request fits its description. ` +
+      `The same skills are also available as prompt files in \`.github/prompts/\` for explicit \`/name\` invocation in VS Code chat.\n\n` +
       `## Skills\n\n` +
-      skills.map((s) => `- \`/${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
+      skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
       `\n\n## Katalon MCP server\n\n` +
-      `These workflows depend on the Katalon MCP server. Configure it for VS Code in \`.vscode/mcp.json\` ` +
-      `(included), replacing \`<your.sub.domain>\` with your Katalon subdomain. ` +
+      `These workflows depend on the Katalon MCP server.\n\n` +
+      `- **VS Code**: \`.vscode/mcp.json\` (included) defines the \`${MCP_SERVER}\` server as a remote HTTP server. ` +
+      `On first start VS Code prompts for your Katalon subdomain and signs you in through the browser OAuth flow.\n` +
+      `- **Copilot CLI**: add the server with \`/mcp add\` - type \`http\`, URL \`${MCP_ENDPOINT}\` (replace \`<your.sub.domain>\`).\n` +
+      `- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports ` +
+      `OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.\n\n` +
       `Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `When a request matches a skill's description, open the matching prompt file and follow it. ` +
+      `When a request matches a skill's description, load that skill and follow it. ` +
       `Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.\n`,
   ),
 );
-// VS Code MCP format uses "servers" with an explicit type.
+// VS Code MCP: native remote HTTP server. VS Code runs the OAuth browser flow
+// itself (the Katalon server supports dynamic client registration) and prompts
+// for the tenant subdomain via the "inputs" mechanism - no npx shim needed.
 track(
   writeFile(
     ".vscode/mcp.json",
-    j({ servers: { [MCP_SERVER]: { type: "stdio", command: "npx", args: MCP_ARGS } } }),
+    j({
+      inputs: [
+        {
+          type: "promptString",
+          id: "katalon-subdomain",
+          description: "Katalon tenant subdomain (the <sub> in https://<sub>.katalon.io)",
+        },
+      ],
+      servers: {
+        [MCP_SERVER]: {
+          type: "http",
+          url: "https://${input:katalon-subdomain}.katalon.io/mcp",
+        },
+      },
+    }),
   ),
 );
 

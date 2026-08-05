@@ -142,15 +142,19 @@ Open **Plugins** in Codex and install **Katalon True Platform**. Set your subdom
 </details>
 
 <details>
-<summary><b>GitHub Copilot</b> prompt files</summary>
+<summary><b>GitHub Copilot</b> agent skills + MCP</summary>
 
 ```bash
-mkdir -p .github && cp -R <checkout>/.github/prompts .github/ \
+mkdir -p .github .vscode \
+  && cp -R <checkout>/.github/skills .github/ \
+  && cp -R <checkout>/.github/prompts .github/ \
   && cp <checkout>/.github/copilot-instructions.md .github/ \
-  && mkdir -p .vscode && cp <checkout>/.vscode/mcp.json .vscode/
+  && cp <checkout>/.vscode/mcp.json .vscode/
 ```
 
-In Copilot Chat, call a skill with `/platform-setup` or `/true-platform-testing`. Set your subdomain in `.vscode/mcp.json`.
+- **VS Code (agent mode)** - skills in `.github/skills/` load automatically; prompt files stay available as `/platform-setup` etc. Start the `katalon-prod-mcp` server when VS Code offers it: it prompts for your Katalon subdomain, then signs you in through the browser OAuth flow. No token pasting.
+- **Copilot CLI** - the same skills are auto-discovered (`/skills list` to see them). Add the MCP server with `/mcp add`: type `http`, URL `https://<your.sub.domain>.katalon.io/mcp`.
+- **Copilot coding agent & code review** - read `.github/skills/` from your repository automatically. Neither surface supports OAuth remote MCP servers yet, so keep Katalon platform operations in VS Code or the CLI for now.
 </details>
 
 <details>

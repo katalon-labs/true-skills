@@ -2,26 +2,32 @@
 
 # Katalon True Platform - Copilot instructions
 
-This repository ships the Katalon True Platform testing toolkit as GitHub Copilot prompt files in `.github/prompts/`. Each prompt maps to one skill and can be invoked in Copilot Chat with `/` followed by the prompt name.
+This repository ships the Katalon True Platform testing toolkit as GitHub Copilot **Agent Skills** in `.github/skills/`. Copilot discovers them automatically (coding agent, code review, Copilot CLI, agent mode in VS Code, and JetBrains agent mode in public preview) and loads the matching skill when a request fits its description. The same skills are also available as prompt files in `.github/prompts/` for explicit `/name` invocation in VS Code chat.
 
 ## Skills
 
-- `/platform-setup` - Install and connect the Katalon MCP.
-- `/test-plan` - Plan and prioritize Katalon testing.
-- `/create-test-cases` - Create and link Katalon manual tests.
-- `/test-management` - Organize and trace Katalon test assets.
-- `/test-review` - Review coverage and quality before the pipeline.
-- `/execute-test` - Run Katalon cases or suites.
-- `/upload-report` - Upload and verify Katalon reports.
-- `/test-case-to-playwright` - Generate Playwright from Katalon cases.
-- `/playwright-execute` - Run Playwright and upload Katalon reports.
-- `/analyze-failures` - Triage failures and file defects.
-- `/release-analyze` - Assess release testing readiness.
-- `/test-maintenance` - Repair and evolve the regression suite.
-- `/true-platform-testing` - Route and run the full 7-stage testing lifecycle.
+- `platform-setup` - Install and connect the Katalon MCP.
+- `test-plan` - Plan and prioritize Katalon testing.
+- `create-test-cases` - Create and link Katalon manual tests.
+- `test-management` - Organize and trace Katalon test assets.
+- `test-review` - Review coverage and quality before the pipeline.
+- `execute-test` - Run Katalon cases or suites.
+- `upload-report` - Upload and verify Katalon reports.
+- `test-case-to-playwright` - Generate Playwright from Katalon cases.
+- `playwright-execute` - Run Playwright and upload Katalon reports.
+- `analyze-failures` - Triage failures and file defects.
+- `release-analyze` - Assess release testing readiness.
+- `test-maintenance` - Repair and evolve the regression suite.
+- `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
 
 ## Katalon MCP server
 
-These workflows depend on the Katalon MCP server. Configure it for VS Code in `.vscode/mcp.json` (included), replacing `<your.sub.domain>` with your Katalon subdomain. Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
+These workflows depend on the Katalon MCP server.
 
-When a request matches a skill's description, open the matching prompt file and follow it. Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.
+- **VS Code**: `.vscode/mcp.json` (included) defines the `katalon-prod-mcp` server as a remote HTTP server. On first start VS Code prompts for your Katalon subdomain and signs you in through the browser OAuth flow.
+- **Copilot CLI**: add the server with `/mcp add` - type `http`, URL `https://<your.sub.domain>.katalon.io/mcp` (replace `<your.sub.domain>`).
+- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.
+
+Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
+
+When a request matches a skill's description, load that skill and follow it. Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.
