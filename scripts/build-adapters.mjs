@@ -11,6 +11,7 @@
  *   .cursor/rules/*.mdc              Cursor rules (lightweight, always-available)
  *   .kiro/steering/*.md              Kiro
  *   .github/skills/                  GitHub Copilot Agent Skills (VS Code, CLI, coding agent, code review)
+ *   .github/mcp.json                 Copilot CLI MCP config (auto-loaded from the repo)
  *   .github/prompts/*.prompt.md      GitHub Copilot prompt files (+ copilot-instructions.md, .vscode/mcp.json)
  *   .windsurf/rules/*.md             Windsurf
  *   .clinerules/*.md                 Cline
@@ -289,6 +290,16 @@ for (const s of skills) {
   track(`.github/skills/${s.name}/SKILL.md`);
 }
 
+// Copilot CLI MCP config: the CLI auto-loads .github/mcp.json (top-level key
+// "mcpServers", explicit "type") - it does NOT read .vscode/mcp.json. The CLI
+// has no inputs mechanism, so the subdomain stays a documented placeholder.
+track(
+  writeFile(
+    ".github/mcp.json",
+    j({ mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } }),
+  ),
+);
+
 // Prompt files: kept alongside skills for explicit /name invocation in VS Code chat.
 resetDir(".github/prompts");
 for (const s of skills) {
@@ -314,7 +325,8 @@ track(
       `These workflows depend on the Katalon MCP server.\n\n` +
       `- **VS Code**: \`.vscode/mcp.json\` (included) defines the \`${MCP_SERVER}\` server as a remote HTTP server. ` +
       `On first start VS Code prompts for your Katalon subdomain and signs you in through the browser OAuth flow.\n` +
-      `- **Copilot CLI**: add the server with \`/mcp add\` - type \`http\`, URL \`${MCP_ENDPOINT}\` (replace \`<your.sub.domain>\`).\n` +
+      `- **Copilot CLI**: \`.github/mcp.json\` (included) is auto-loaded - replace \`<your.sub.domain>\` with your subdomain, ` +
+      `or register interactively with \`/mcp add\` (type \`http\`, URL \`${MCP_ENDPOINT}\`).\n` +
       `- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports ` +
       `OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.\n\n` +
       `Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
