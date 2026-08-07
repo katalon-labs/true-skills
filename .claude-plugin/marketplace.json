@@ -12,7 +12,7 @@
       "name": "katalon-true-platform",
       "source": "./plugins/katalon-true-platform",
       "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }

@@ -7,7 +7,8 @@
  * Run `node scripts/build-adapters.mjs` after editing any skill, then commit the result.
  *
  * Generated targets:
- *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces)
+ *   plugin.json + mcp.json           Agent Plugins standard manifest (agent-plugins.org, spec 1.0.0)
+ *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces + standard manifest)
  *   .cursor/rules/*.mdc              Cursor rules (lightweight, always-available)
  *   .kiro/steering/*.md              Kiro
  *   .github/skills/                  GitHub Copilot Agent Skills (VS Code, CLI, coding agent, code review)
@@ -34,7 +35,10 @@ const ORG = "katalon-labs";
 const REPO = "true-skills";
 const REPO_URL = `https://github.com/${ORG}/${REPO}`;
 const PLUGIN_NAME = "katalon-true-platform";
-const PLUGIN_VERSION = "0.2.0";
+const PLUGIN_VERSION = "0.3.0";
+// Agent Plugins standard (https://agent-plugins.org) schema URLs, spec 1.0.0.
+const AP_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
+const AP_MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 const MCP_SERVER = "katalon-prod-mcp";
 const MCP_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
 const MCP_ARGS = ["-y", "mcp-remote", MCP_ENDPOINT, "--transport", "http-first"];
@@ -140,6 +144,32 @@ track(
   ),
 );
 
+// Agent Plugins standard (agent-plugins.org, spec 1.0.0): one portable manifest
+// any conformant client can load. The contract is plugin.json + skills/ + mcp.json
+// at the plugin root. The MCP server uses the stdio variant (npx mcp-remote) because
+// the tenant subdomain is a documented placeholder, not a resolvable URL.
+const agentPluginManifest = {
+  $schema: AP_PLUGIN_SCHEMA,
+  name: PLUGIN_NAME,
+  version: PLUGIN_VERSION,
+  description,
+  author,
+  homepage: HOMEPAGE,
+  repository: REPO_URL,
+  license: "MIT",
+  keywords,
+};
+const agentPluginMcp = {
+  $schema: AP_MCP_SCHEMA,
+  mcpServers: { [MCP_SERVER]: { type: "stdio", command: "npx", args: MCP_ARGS } },
+};
+track(writeFile(join(PLUGIN_DIR, "plugin.json"), j(agentPluginManifest)));
+track(writeFile(join(PLUGIN_DIR, "mcp.json"), j(agentPluginMcp)));
+// The repo root is itself a conformant Agent Plugin: root skills/ is the canonical
+// source, so cloning the repo == installing the plugin for standard-aware clients.
+track(writeFile("plugin.json", j(agentPluginManifest)));
+track(writeFile("mcp.json", j(agentPluginMcp)));
+
 // Shared rich interface block - consumed by the Codex and Cursor plugin manifests.
 const pluginInterface = {
   displayName: "Katalon True Platform",
@@ -190,7 +220,9 @@ track(
       skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
       `\n\n## Bundled MCP server\n\nSee \`.mcp.json\`. Replace \`<your.sub.domain>\` with your Katalon subdomain. ` +
       `Authentication is handled through the browser/OAuth flow; never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`). ` +
+      `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`) ` +
+      `and as an [Agent Plugins standard](https://agent-plugins.org) plugin (\`plugin.json\` + \`mcp.json\` + \`skills/\`, spec 1.0.0) ` +
+      `for any conformant client. ` +
       `For install instructions across all supported agents, see the [repository README](${REPO_URL}#install).\n`,
   ),
 );

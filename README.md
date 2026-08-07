@@ -115,6 +115,12 @@ The CLI installs skill files only. Configure the MCP yourself with the snippet b
 </details>
 
 <details>
+<summary><b>Any agent</b> via the <a href="https://agent-plugins.org">Agent Plugins</a> standard</summary>
+
+This repository conforms to the [Agent Plugins specification 1.0.0](https://agent-plugins.org/specification): `plugin.json` + `skills/` + `mcp.json` at the repo root form a portable plugin any conformant client can load directly, and `plugins/katalon-true-platform/` ships the same contract as a standalone plugin directory. Skills follow the [Agent Skills](https://agentskills.io) format. Point your standard-aware client at either directory; replace `<your.sub.domain>` in `mcp.json` with your Katalon subdomain.
+</details>
+
+<details>
 <summary><b>Claude Code</b> plugin marketplace</summary>
 
 ```bash

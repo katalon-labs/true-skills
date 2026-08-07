@@ -24,4 +24,4 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 
 See `.mcp.json`. Replace `<your.sub.domain>` with your Katalon subdomain. Authentication is handled through the browser/OAuth flow; never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
 
-Distributed from the repository root marketplaces (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`). For install instructions across all supported agents, see the [repository README](https://github.com/katalon-labs/true-skills#install).
+Distributed from the repository root marketplaces (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`) and as an [Agent Plugins standard](https://agent-plugins.org) plugin (`plugin.json` + `mcp.json` + `skills/`, spec 1.0.0) for any conformant client. For install instructions across all supported agents, see the [repository README](https://github.com/katalon-labs/true-skills#install).
