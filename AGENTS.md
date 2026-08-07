@@ -4,85 +4,96 @@
 
 This file lets any AI coding agent that reads `AGENTS.md` use the Katalon True Platform testing toolkit, even without a native adapter in this repo.
 
+## Find your skill by role
+
+| Role | Starts at |
+| --- | --- |
+| Manual tester | `create-test-cases`, `execute-test`, `analyze-failures` |
+| Automation tester | `upload-report`, `test-case-to-playwright`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
+| Test lead | `test-plan`, `test-management`, `test-review`, `release-analyze`, `test-maintenance` |
+| Test manager | `release-analyze` |
+
+`platform-setup` is role-neutral and comes first for anyone not yet connected. A request that names a job rather than one task starts at `true-platform-testing`, which routes by role and by stage.
+
 ## Skills (single source of truth: `skills/`)
 
 When a user request matches one of the descriptions below, read that skill's `skills/<name>/SKILL.md` (and the files in its `references/` folder) and follow it.
 
 ### platform-setup
 
-Set up, verify, and troubleshoot Katalon True Platform/TestOps MCP connectivity for any AI coding agent. Use when you need to install or configure the Katalon MCP server, connect to a Katalon platform account, verify available Katalon MCP tools, diagnose missing authentication or repository access, confirm project/repository discovery, or explain what platform operations are and are not exposed through the MCP.
+Set up, verify, and troubleshoot Katalon True Platform/TestOps MCP connectivity for any AI coding agent. Use when you need to install or configure the Katalon MCP server, connect to a Katalon platform account, verify available Katalon MCP tools, diagnose missing authentication or repository access, confirm project/repository discovery, or explain what platform operations are and are not exposed through the MCP. One-time cross-cutting setup, run once by whoever wires the agent to the platform, before any lifecycle skill can work.
 
 File: `skills/platform-setup/SKILL.md`
 
 ### test-plan
 
-Plan Katalon True Platform/TestOps testing for a release, sprint, or feature. Use when you need to translate quality goals into scope, prioritize testing by requirement coverage and risk, decide what to test first, or build the executable plan structure (folders, suites, and sprint/release association) that stands in for a formal Test Plan. Reads project/repository/iteration context and requirement coverage, then proposes and materializes a prioritized plan. For designing the actual test cases, hand off to create-test-cases; for the ship/no-ship call, hand off to release-analyze.
+Plan Katalon True Platform/TestOps testing for a release, sprint, or feature. Use when you need to translate quality goals into scope, prioritize testing by requirement coverage and risk, decide what to test first, or build the executable plan structure (folders, suites, and sprint/release association) that stands in for a formal Test Plan. Reads project/repository/iteration context and requirement coverage, then proposes and materializes a prioritized plan. For designing the actual test cases, hand off to create-test-cases; for the ship/no-ship call, hand off to release-analyze. Written for the test lead who owns the cycle and has to decide what gets tested first.
 
 File: `skills/test-plan/SKILL.md`
 
 ### create-test-cases
 
-Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design manual test cases using ISTQB techniques as a reference, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to true-platform-testing.
+Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design manual test cases using ISTQB techniques as a reference, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has a written requirement in hand and no cases for it yet.
 
 File: `skills/create-test-cases/SKILL.md`
 
 ### test-management
 
-Organize, classify, and trace Katalon True Platform/TestOps test assets. Use when you need to structure test cases into folders and suites, move or reorganize cases, search and find existing assets at scale, link or unlink requirements to test cases, or produce a requirement-to-test traceability report (which requirements have coverage, which cases are orphaned, coverage percentage). Prefer this skill for inventory hygiene and traceability audits. For authoring new cases use create-test-cases; for coverage quality verdicts use test-review.
+Organize, classify, and trace Katalon True Platform/TestOps test assets. Use when you need to structure test cases into folders and suites, move or reorganize cases, search and find existing assets at scale, link or unlink requirements to test cases, or produce a requirement-to-test traceability report (which requirements have coverage, which cases are orphaned, coverage percentage). Prefer this skill for inventory hygiene and traceability audits. For authoring new cases use create-test-cases; for coverage quality verdicts use test-review. Written for the test lead doing inventory hygiene on a repository nobody has curated in months.
 
 File: `skills/test-management/SKILL.md`
 
 ### test-review
 
-Review Katalon True Platform/TestOps test quality and coverage before tests enter the delivery pipeline. Use when you need to check whether a suite is ready to run, review requirement and configuration coverage, assess test-case quality and flakiness/stability, spot weak or unreliable cases, and produce a review verdict (Approve / Approve with fixes / Reject for pipeline) with the specific cases to fix. This is a pre-execution quality gate, not a ship decision; for the release ship/no-ship call use release-analyze.
+Review Katalon True Platform/TestOps test quality and coverage before tests enter the delivery pipeline. Use when you need to check whether a suite is ready to run, review requirement and configuration coverage, assess test-case quality and flakiness/stability, spot weak or unreliable cases, and produce a review verdict (Approve / Approve with fixes / Reject for pipeline) with the specific cases to fix. This is a pre-execution quality gate, not a ship decision; for the release ship/no-ship call use release-analyze. Written for the test lead gating what is allowed into the pipeline, one suite at a time.
 
 File: `skills/test-review/SKILL.md`
 
 ### execute-test
 
-Execute Katalon True Platform/TestOps tests when the input is an existing test case, manual test case list, test suite, suite collection, execution request, or "run with AI" instruction. Use when you need to create a manual test run, start Run with AI, poll AI session results, schedule automated suites, read execution/test results, or summarize pass/fail/blocked outcomes. For full requirement-to-test-design-to-execution workflows, combine with or defer to true-platform-testing.
+Execute Katalon True Platform/TestOps tests when the input is an existing test case, manual test case list, test suite, suite collection, execution request, or "run with AI" instruction. Use when you need to create a manual test run, start Run with AI, poll AI session results, schedule automated suites, read execution/test results, or summarize pass/fail/blocked outcomes. For full requirement-to-test-design-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has cases and needs a result, by hand or through Run with AI. A coded suite driven from a framework starts at playwright-execute or upload-report.
 
 File: `skills/execute-test/SKILL.md`
 
 ### upload-report
 
-Run automation and upload or verify Katalon Platform reports for Katalon Studio/KRE, JUnit XML, and Playwright reports. Use when you need to combine Katalon MCP project/result discovery with Katalon CLI execution, Katalon Report Uploader, or @katalon/playwright-reporter; configure report folders, report types, Platform/TestOps IDs, verify uploaded runs, handle failed auto-upload, or summarize execution results after automation completes.
+Run automation and upload or verify Katalon Platform reports for Katalon Studio/KRE, JUnit XML, and Playwright reports. Use when you need to combine Katalon MCP project/result discovery with Katalon CLI execution, Katalon Report Uploader, or @katalon/playwright-reporter; configure report folders, report types, Platform/TestOps IDs, verify uploaded runs, handle failed auto-upload, or summarize execution results after automation completes. Written for the automation tester whose framework has already run and whose report is sitting on disk. If the Playwright run has not happened yet, start at playwright-execute.
 
 File: `skills/upload-report/SKILL.md`
 
 ### test-case-to-playwright
 
-Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Playwright TypeScript automation. Use when you need to fetch/read Katalon Platform test cases and implement Playwright scripts, create or adapt a Playwright framework, apply Page Object Model and fixtures, or translate manual steps into meaningful automated test keywords.
+Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Playwright TypeScript automation. Use when you need to fetch/read Katalon Platform test cases and implement Playwright scripts, create or adapt a Playwright framework, apply Page Object Model and fixtures, or translate manual steps into meaningful automated test keywords. Written for the automation tester converting a manual case into code that fits an existing page-object layer.
 
 File: `skills/test-case-to-playwright/SKILL.md`
 
 ### playwright-execute
 
-Run Playwright tests or suites and upload the resulting report to Katalon True Platform. Use when you need to execute Playwright scripts, package scripts, spec files, projects, or suites, configure or verify @katalon/playwright-reporter, upload Playwright reports with Katalon CLI/reporter commands, and verify uploaded Katalon Platform runs or reports.
+Run Playwright tests or suites and upload the resulting report to Katalon True Platform. Use when you need to execute Playwright scripts, package scripts, spec files, projects, or suites, configure or verify @katalon/playwright-reporter, upload Playwright reports with Katalon CLI/reporter commands, and verify uploaded Katalon Platform runs or reports. Written for the automation tester who wants the suite driven and the results landed in the platform in one step. For a report from a run that has already finished, or from any other framework, use upload-report.
 
 File: `skills/playwright-execute/SKILL.md`
 
 ### analyze-failures
 
-Triage Katalon True Platform/TestOps test failures and file defects. Use when you need to investigate failed test results, classify each failure as product defect vs automation defect vs environment/data issue, cluster failures by common signature, find likely root cause from execution data, and optionally create ALM-linked defects for real product bugs. This is failure diagnosis and defect filing; for the overall ship/no-ship release call use release-analyze, and for repairing the tests themselves use test-maintenance.
+Triage Katalon True Platform/TestOps test failures and file defects. Use when you need to investigate failed test results, classify each failure as product defect vs automation defect vs environment/data issue, cluster failures by common signature, find likely root cause from execution data, and optionally create ALM-linked defects for real product bugs. This is failure diagnosis and defect filing; for the overall ship/no-ship release call use release-analyze, and for repairing the tests themselves use test-maintenance. Written for the manual tester and the automation tester looking at a red run and needing to know whether the application broke or the test did.
 
 File: `skills/analyze-failures/SKILL.md`
 
 ### release-analyze
 
-Analyze Katalon True Platform/TestOps release readiness from testing quality data. Use when you need to use Katalon MCP metrics and results to assess whether a release, sprint, iteration, version, test plan, suite, or repository is ready to ship; summarize requirement coverage, execution health, defect risk, test stability, configuration coverage, release blockers, quality gaps, and produce a Ready / Ready with risk / Not ready recommendation.
+Analyze Katalon True Platform/TestOps release readiness from testing quality data. Use when you need to use Katalon MCP metrics and results to assess whether a release, sprint, iteration, version, test plan, suite, or repository is ready to ship; summarize requirement coverage, execution health, defect risk, test stability, configuration coverage, release blockers, quality gaps, and produce a Ready / Ready with risk / Not ready recommendation. Written for the test manager who owns the ship call and the test lead who has to defend it.
 
 File: `skills/release-analyze/SKILL.md`
 
 ### test-maintenance
 
-Maintain and evolve a Katalon True Platform/TestOps regression suite as the application changes. Use when you need to detect which tests broke or became flaky from stability and result history, diagnose whether a case needs repair vs regeneration, repair test assets (update, move, reorganize cases), refresh coverage after application or requirement changes, and feed the resulting gap list back into planning. Closes the lifecycle loop. For classifying a specific run's failures use analyze-failures; for authoring brand-new cases use create-test-cases.
+Maintain and evolve a Katalon True Platform/TestOps regression suite as the application changes. Use when you need to detect which tests broke or became flaky from stability and result history, diagnose whether a case needs repair vs regeneration, repair test assets (update, move, reorganize cases), refresh coverage after application or requirement changes, and feed the resulting gap list back into planning. Closes the lifecycle loop. For classifying a specific run's failures use analyze-failures; for authoring brand-new cases use create-test-cases. Written for the automation tester repairing a suite that has started lying, and the test lead who has to keep it trustworthy.
 
 File: `skills/test-maintenance/SKILL.md`
 
 ### true-platform-testing
 
-End-to-end Katalon True Platform testing workflow and lifecycle router. Use when you need to analyze requirements, design manual test cases, import them into Katalon/TestOps, link requirements, organize test suites, create manual executions, start Run with AI, monitor execution results, or report Katalon True Platform test outcomes. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools.
+End-to-end Katalon True Platform testing workflow and lifecycle router. Use when one request spans several stages and no single skill owns all of it, for example analyze a requirement, design and import the cases, build a suite, run it with AI, and report the outcome. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools. Start here when a request names a job rather than one task, such as drive the whole chain from requirement to ship call, or I own quality for this release and do not know where to begin. Routes the asker to the skill that owns their next step, whether they say manual tester, QA analyst, test analyst, automation tester, SDET, automation engineer, QA engineer, test lead, QA lead, test manager, or QA manager.
 
 File: `skills/true-platform-testing/SKILL.md`
 

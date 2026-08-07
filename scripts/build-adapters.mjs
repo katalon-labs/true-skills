@@ -25,7 +25,7 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync, existsSync, statSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INTERFACE, ORDER } from "./skills.config.mjs";
+import { INTERFACE, ORDER, ROLES, ROUTER } from "./skills.config.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS_DIR = join(ROOT, "skills");
@@ -428,12 +428,28 @@ track(
 // ===========================================================================
 // 8. AGENTS.md - universal fallback for any other agent
 // ===========================================================================
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const roleIndex =
+  `## Find your skill by role\n\n| Role | Starts at |\n| --- | --- |\n` +
+  ROLES.map(
+    (r) =>
+      `| ${cap(r)} | ` +
+      skills
+        .filter((s) => s.name !== ROUTER && (INTERFACE[s.name].roles || []).includes(r))
+        .map((s) => `\`${s.name}\``)
+        .join(", ") +
+      ` |`,
+  ).join("\n") +
+  `\n\n\`platform-setup\` is role-neutral and comes first for anyone not yet connected. ` +
+  `A request that names a job rather than one task starts at \`${ROUTER}\`, which routes by role and by stage.\n\n`;
+
 track(
   writeFile(
     "AGENTS.md",
     `${GENERATED_NOTE}\n\n# AGENTS.md - Katalon True Platform skills\n\n` +
       `This file lets any AI coding agent that reads \`AGENTS.md\` use the Katalon True Platform testing toolkit, ` +
       `even without a native adapter in this repo.\n\n` +
+      roleIndex +
       `## Skills (single source of truth: \`skills/\`)\n\n` +
       `When a user request matches one of the descriptions below, read that skill's \`skills/<name>/SKILL.md\` ` +
       `(and the files in its \`references/\` folder) and follow it.\n\n` +

@@ -1,5 +1,5 @@
 ---
-description: Maintain and evolve a Katalon True Platform/TestOps regression suite as the application changes. Use when you need to detect which tests broke or became flaky from stability and result history, diagnose whether a case needs repair vs regeneration, repair test assets (update, move, reorganize cases), refresh coverage after application or requirement changes, and feed the resulting gap list back into planning. Closes the lifecycle loop. For classifying a specific run's failures use analyze-failures; for authoring brand-new cases use create-test-cases.
+description: Maintain and evolve a Katalon True Platform/TestOps regression suite as the application changes. Use when you need to detect which tests broke or became flaky from stability and result history, diagnose whether a case needs repair vs regeneration, repair test assets (update, move, reorganize cases), refresh coverage after application or requirement changes, and feed the resulting gap list back into planning. Closes the lifecycle loop. For classifying a specific run's failures use analyze-failures; for authoring brand-new cases use create-test-cases. Written for the automation tester repairing a suite that has started lying, and the test lead who has to keep it trustworthy.
 alwaysApply: false
 ---
 

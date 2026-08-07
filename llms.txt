@@ -1,6 +1,6 @@
 # Katalon True Skills
 
-> Open, agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Thirteen skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
+> Agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Thirteen skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
 
 ## Start here
 

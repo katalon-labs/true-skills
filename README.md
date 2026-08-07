@@ -2,12 +2,12 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.svg">
-  <img src="docs/images/hero-light.svg" alt="True Skills: open testing skills for Katalon True Platform, in the AI coding agent you already use" width="100%">
+  <img src="docs/images/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
 </picture>
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![13 skills](https://img.shields.io/badge/skills-13-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
 
-[Quickstart](#quickstart) · [Skills](#the-skills) · [Lifecycle](#the-lifecycle) · [Install](#install) · [MCP](#connect-the-katalon-mcp) · [Contributing](CONTRIBUTING.md)
+[Start here](#start-where-you-are) · [Quickstart](#quickstart) · [Skills](#the-skills) · [Lifecycle](#the-lifecycle) · [Install](#install) · [MCP](#connect-the-katalon-mcp) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -53,6 +53,21 @@ Is release 3.2 safe to ship?
 ```
 
 Or hand over the whole chain: *"Analyze CEL-6, design and import the cases, build a suite, run it with AI, and tell me if we can ship."*
+
+## Start where you are
+
+Four jobs. Say the situation in your own words and the agent picks the skill.
+
+| You are a | You say | It starts at |
+| --- | --- | --- |
+| **Manual tester** <br><sub>QA analyst, test analyst</sub> | *I just got requirement CEL-6 and need cases* · *Run this suite with AI and tell me what broke* · *Is this failure the app or my test* | [`create-test-cases`](skills/create-test-cases/SKILL.md) → [`execute-test`](skills/execute-test/SKILL.md) → [`analyze-failures`](skills/analyze-failures/SKILL.md) |
+| **Automation tester** <br><sub>SDET, automation engineer</sub> | *Turn TC-1042 into a Playwright spec* · *Get my Playwright run into the platform* · *Our suite went flaky this month* | [`test-case-to-playwright`](skills/test-case-to-playwright/SKILL.md) → [`playwright-execute`](skills/playwright-execute/SKILL.md) → [`test-maintenance`](skills/test-maintenance/SKILL.md) |
+| **Test lead** <br><sub>QA lead, QE lead</sub> | *What should we test first this sprint* · *Is this suite ready for the pipeline* · *Which requirements have no coverage* | [`test-plan`](skills/test-plan/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) → [`test-management`](skills/test-management/SKILL.md) |
+| **Test manager** <br><sub>QA manager, head of quality</sub> | *Can we ship 3.2* · *Where is coverage weakest in this release* | [`release-analyze`](skills/release-analyze/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) <br><sub>Portfolio reporting, estimation, and cross-release trends are not built yet.</sub> |
+
+Not connected yet? Start at [`platform-setup`](skills/platform-setup/SKILL.md), which everyone runs once.
+
+Not sure which one you are, or the request spans several? Ask [`true-platform-testing`](skills/true-platform-testing/SKILL.md) and it routes by role and by stage. The full map from intent to skill, including what to fall back to for the parts not built yet, is in [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md).
 
 ## The skills
 

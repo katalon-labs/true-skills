@@ -1,11 +1,24 @@
 ---
 name: true-platform-testing
-description: End-to-end Katalon True Platform testing workflow and lifecycle router. Use when you need to analyze requirements, design manual test cases, import them into Katalon/TestOps, link requirements, organize test suites, create manual executions, start Run with AI, monitor execution results, or report Katalon True Platform test outcomes. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools.
+description: End-to-end Katalon True Platform testing workflow and lifecycle router. Use when one request spans several stages and no single skill owns all of it, for example analyze a requirement, design and import the cases, build a suite, run it with AI, and report the outcome. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools. Start here when a request names a job rather than one task, such as drive the whole chain from requirement to ship call, or I own quality for this release and do not know where to begin. Routes the asker to the skill that owns their next step, whether they say manual tester, QA analyst, test analyst, automation tester, SDET, automation engineer, QA engineer, test lead, QA lead, test manager, or QA manager.
 ---
 
 # Katalon True Platform Testing
 
 Use this skill for requirement-to-execution workflows in Katalon True Platform/TestOps, and as the **router across the full 7-stage testing lifecycle**. Prefer Katalon MCP tools for platform operations and Browser/Playwright only for external AUT exploration or visual verification.
+
+## Role Routing
+
+Ask who is in front of you before asking which stage they are in. A skill is listed here when a request phrased in role terms, naming no skill, should land there first. Everything else is reached by handoff.
+
+| Role | Comes here to | Starts at | Then |
+|---|---|---|---|
+| Manual tester | turn a written requirement into cases and run them | `create-test-cases` | `execute-test`, `analyze-failures` |
+| Automation tester | turn cases into code, run it, ship the results | `test-case-to-playwright` | `playwright-execute`, `upload-report`, `test-maintenance` |
+| Test lead | scope the cycle, judge readiness, keep the suite healthy | `test-plan` | `test-review`, `test-management`, `release-analyze` |
+| Test manager | read coverage and risk, and call ship | `release-analyze` | `test-review`, `test-management` |
+
+`platform-setup` is role-neutral and comes first for everyone who has not connected the MCP yet. Synonyms (SDET, automation engineer, QA engineer, QA analyst, test analyst, QA lead, QA manager), the full intent-to-skill map, and what to fall back to for the parts not built yet are in `references/lifecycle-map.md`.
 
 ## Lifecycle Routing
 

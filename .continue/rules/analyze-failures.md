@@ -1,6 +1,6 @@
 ---
 name: Katalon Analyze Failures
-description: "Triage Katalon True Platform/TestOps test failures and file defects. Use when you need to investigate failed test results, classify each failure as product defect vs automation defect vs environment/data issue, cluster failures by common signature, find likely root cause from execution data, and optionally create ALM-linked defects for real product bugs. This is failure diagnosis and defect filing; for the overall ship/no-ship release call use release-analyze, and for repairing the tests themselves use test-maintenance."
+description: "Triage Katalon True Platform/TestOps test failures and file defects. Use when you need to investigate failed test results, classify each failure as product defect vs automation defect vs environment/data issue, cluster failures by common signature, find likely root cause from execution data, and optionally create ALM-linked defects for real product bugs. This is failure diagnosis and defect filing; for the overall ship/no-ship release call use release-analyze, and for repairing the tests themselves use test-maintenance. Written for the manual tester and the automation tester looking at a red run and needing to know whether the application broke or the test did."
 alwaysApply: false
 ---
 

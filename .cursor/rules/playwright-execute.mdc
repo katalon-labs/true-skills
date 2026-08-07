@@ -1,5 +1,5 @@
 ---
-description: Run Playwright tests or suites and upload the resulting report to Katalon True Platform. Use when you need to execute Playwright scripts, package scripts, spec files, projects, or suites, configure or verify @katalon/playwright-reporter, upload Playwright reports with Katalon CLI/reporter commands, and verify uploaded Katalon Platform runs or reports.
+description: Run Playwright tests or suites and upload the resulting report to Katalon True Platform. Use when you need to execute Playwright scripts, package scripts, spec files, projects, or suites, configure or verify @katalon/playwright-reporter, upload Playwright reports with Katalon CLI/reporter commands, and verify uploaded Katalon Platform runs or reports. Written for the automation tester who wants the suite driven and the results landed in the platform in one step. For a report from a run that has already finished, or from any other framework, use upload-report.
 alwaysApply: false
 ---
 

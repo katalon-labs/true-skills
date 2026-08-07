@@ -1,6 +1,6 @@
 ---
 name: platform-setup
-description: Set up, verify, and troubleshoot Katalon True Platform/TestOps MCP connectivity for any AI coding agent. Use when you need to install or configure the Katalon MCP server, connect to a Katalon platform account, verify available Katalon MCP tools, diagnose missing authentication or repository access, confirm project/repository discovery, or explain what platform operations are and are not exposed through the MCP.
+description: Set up, verify, and troubleshoot Katalon True Platform/TestOps MCP connectivity for any AI coding agent. Use when you need to install or configure the Katalon MCP server, connect to a Katalon platform account, verify available Katalon MCP tools, diagnose missing authentication or repository access, confirm project/repository discovery, or explain what platform operations are and are not exposed through the MCP. One-time cross-cutting setup, run once by whoever wires the agent to the platform, before any lifecycle skill can work.
 ---
 
 # Katalon Platform Setup

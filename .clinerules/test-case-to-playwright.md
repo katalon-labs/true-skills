@@ -2,7 +2,7 @@
 
 # Katalon Test Case to Playwright Script
 
-> Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Playwright TypeScript automation. Use when you need to fetch/read Katalon Platform test cases and implement Playwright scripts, create or adapt a Playwright framework, apply Page Object Model and fixtures, or translate manual steps into meaningful automated test keywords.
+> Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Playwright TypeScript automation. Use when you need to fetch/read Katalon Platform test cases and implement Playwright scripts, create or adapt a Playwright framework, apply Page Object Model and fixtures, or translate manual steps into meaningful automated test keywords. Written for the automation tester converting a manual case into code that fits an existing page-object layer.
 
 # Katalon Test Case To Playwright Script
 
