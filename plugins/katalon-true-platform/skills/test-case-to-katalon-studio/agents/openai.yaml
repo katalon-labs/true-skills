@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Case to Studio"
+  short_description: "Generate Katalon Studio tests from cases"
+  default_prompt: "Use $test-case-to-katalon-studio to turn test case TC-1042 into a Katalon Studio test case and script."

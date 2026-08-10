@@ -8,10 +8,10 @@ This file lets any AI coding agent that reads `AGENTS.md` use the Katalon True P
 
 | Role | Starts at |
 | --- | --- |
-| Manual tester | `create-test-cases`, `execute-test`, `analyze-failures` |
-| Automation tester | `upload-report`, `test-case-to-playwright`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
-| Test lead | `test-plan`, `test-management`, `test-review`, `release-analyze`, `test-maintenance` |
-| Test manager | `release-analyze` |
+| Manual tester | `create-test-cases`, `test-data`, `exploratory-charter`, `execute-test`, `analyze-failures` |
+| Automation tester | `test-data`, `upload-report`, `test-case-to-playwright`, `test-case-to-selenium`, `test-case-to-cypress`, `test-case-to-katalon-studio`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
+| Test lead | `test-plan`, `test-estimation`, `test-management`, `test-review`, `release-analyze`, `test-reporting`, `test-maintenance` |
+| Test manager | `test-estimation`, `release-analyze`, `test-reporting` |
 
 `platform-setup` is role-neutral and comes first for anyone not yet connected. A request that names a job rather than one task starts at `true-platform-testing`, which routes by role and by stage.
 
@@ -31,11 +31,29 @@ Plan Katalon True Platform/TestOps testing for a release, sprint, or feature. Us
 
 File: `skills/test-plan/SKILL.md`
 
+### test-estimation
+
+Estimate testing effort, duration, and resourcing for a Katalon True Platform/TestOps cycle. Use when the question is how long testing will take, how many testers it needs, whether the scope fits the sprint window, or what a scope change costs in person-hours. Sizes design, manual execution, automated execution and triage, and rework separately, counts the countable part from platform data (case counts, automation split, historical pass and stability rates, configuration matrix), calibrates the rest against a rate the team supplies, and returns a three-point range with a confidence label instead of a single number. Splits resourcing across the manual and automated lanes and names the assumptions that would move the number most. For what to test and in what order, use test-plan; for a verdict on a cycle that has already run, use release-analyze. Written for the test lead sizing a cycle before it starts and the test manager who has to fund it.
+
+File: `skills/test-estimation/SKILL.md`
+
 ### create-test-cases
 
 Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design manual test cases using ISTQB techniques as a reference, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has a written requirement in hand and no cases for it yet.
 
 File: `skills/create-test-cases/SKILL.md`
+
+### test-data
+
+Design, source, seed, and tear down the test data a Katalon True Platform test case or an automated suite runs on. Use when the steps are already settled and the blocker is the values, for example which data classes a case needs, which records must exist before a run, how to keep literals out of the step text and into the Test Data column or a fixture, and how to reset state afterwards so the next run starts clean. Covers choosing between static, generated, and cloned production data, keeping credentials out of test data, and the boundary that the Katalon MCP has no test data, fixture, seeding, or secrets tool of its own. If the cases do not exist yet, start at create-test-cases. Written for the manual tester filling in a case's Test Data column and precondition, and the automation tester wiring fixtures and teardown for a suite.
+
+File: `skills/test-data/SKILL.md`
+
+### exploratory-charter
+
+Write, run, and debrief exploratory testing charters against Katalon True Platform/TestOps when there is no script to follow. Use when you need to turn a vague area into a charter (mission, areas, oracles, timebox), run a timeboxed unscripted session, log what you find as session notes, judge which findings are real defects, and promote what was learned into atomic manual cases plus the folder or suite that holds them. This is unscripted discovery and the debrief after it; when a written requirement is already in hand and the job is designing cases from it, use create-test-cases instead. Written for the manual tester who has an hour, a feature, and no cases to run against it.
+
+File: `skills/exploratory-charter/SKILL.md`
 
 ### test-management
 
@@ -67,6 +85,24 @@ Convert Katalon True Platform/TestOps manual test cases, test suites, or require
 
 File: `skills/test-case-to-playwright/SKILL.md`
 
+### test-case-to-selenium
+
+Convert Katalon True Platform/TestOps manual test cases into Selenium WebDriver automation in whichever language binding the project already uses. Use when you need to read Katalon Platform cases and write Selenium code, detect the binding from pom.xml, build.gradle, requirements.txt, pyproject.toml, or package.json, scaffold or extend a Page Object Model layer, wire the project's own runner (JUnit 5, TestNG, pytest, or Mocha) that owns execution and reporting, and turn manual steps into stable locators and explicit waits. Selenium is a library rather than a runner, so this skill generates and compiles the code and stops at the runner boundary; to land an already-executed run in the platform use upload-report. Written for the automation tester who already has a Java, Python, or JavaScript Selenium project and needs a manual case expressed in its idiom.
+
+File: `skills/test-case-to-selenium/SKILL.md`
+
+### test-case-to-cypress
+
+Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Cypress end-to-end automation in JavaScript or TypeScript. Use when you need to fetch/read Katalon Platform test cases and write specs under cypress/e2e, scaffold or adapt the project and its config, apply custom commands in cypress/support, fixtures in cypress/fixtures, and an app-action or page-object layer, or translate manual steps into readable cy commands and Chai assertions. The runner underneath is Mocha, so this skill also wires a Mocha JUnit reporter so the finished run can be shipped to the platform. This skill writes specs that do not exist yet. An existing suite that has become unreliable belongs to test-maintenance, and a report already sitting on disk belongs to upload-report. Written for the automation tester converting a manual case into specs that fit an existing custom-command and fixture layer.
+
+File: `skills/test-case-to-cypress/SKILL.md`
+
+### test-case-to-katalon-studio
+
+Convert Katalon True Platform/TestOps manual test cases into Katalon Studio automation inside a local Studio Test Project checkout. Use when you need to author or extend a .tc test case file and its paired Groovy script under Scripts/, keep test case variable GUIDs consistent with the .ts test suite bindings that read them, model page elements as .rs test objects in the Object Repository instead of inline selectors, write WebUI, Mobile, or WS keyword steps in Groovy with Java interop, or wire data files, execution profiles, and GlobalVariable into a generated case. Also use to decide whether a headless katalonc run is possible at all, since Katalon Runtime Engine is a separately licensed paid runtime whose CLI requires -apiKey. Once a Studio run has finished and its report exists, hand off to upload-report. Written for the automation tester who has to land a manual case inside a Katalon Studio project rather than a code-first framework.
+
+File: `skills/test-case-to-katalon-studio/SKILL.md`
+
 ### playwright-execute
 
 Run Playwright tests or suites and upload the resulting report to Katalon True Platform. Use when you need to execute Playwright scripts, package scripts, spec files, projects, or suites, configure or verify @katalon/playwright-reporter, upload Playwright reports with Katalon CLI/reporter commands, and verify uploaded Katalon Platform runs or reports. Written for the automation tester who wants the suite driven and the results landed in the platform in one step. For a report from a run that has already finished, or from any other framework, use upload-report.
@@ -84,6 +120,12 @@ File: `skills/analyze-failures/SKILL.md`
 Analyze Katalon True Platform/TestOps release readiness from testing quality data. Use when you need to use Katalon MCP metrics and results to assess whether a release, sprint, iteration, version, test plan, suite, or repository is ready to ship; summarize requirement coverage, execution health, defect risk, test stability, configuration coverage, release blockers, quality gaps, and produce a Ready / Ready with risk / Not ready recommendation. Written for the test manager who owns the ship call and the test lead who has to defend it.
 
 File: `skills/release-analyze/SKILL.md`
+
+### test-reporting
+
+Report Katalon True Platform/TestOps quality metrics to people outside QA. Use when you need to answer a stakeholder question with testing data, choose the few metrics that actually answer it, trend coverage, execution health, defect risk and stability across several releases, sprints, or iterations rather than inside one, and write the summary a manager presents upward at a steering committee, an exec review, or a quality business review. Produces a headline answer with the named specifics behind it, never a metric dump. The MCP returns current state with no history tool, so trends are built from execution dates plus snapshots this skill stores per period. For the ship or no-ship call on a single release, use release-analyze; for a pre-pipeline suite verdict, use test-review. Written for the test manager who has to present quality upward and the test lead who assembles the numbers.
+
+File: `skills/test-reporting/SKILL.md`
 
 ### test-maintenance
 

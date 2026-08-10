@@ -8,15 +8,22 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 
 - `platform-setup` - Install and connect the Katalon MCP.
 - `test-plan` - Plan and prioritize Katalon testing.
+- `test-estimation` - Size and resource a test cycle.
 - `create-test-cases` - Create and link Katalon manual tests.
+- `test-data` - Design, seed, and tear down test data.
+- `exploratory-charter` - Charter and run an exploratory session.
 - `test-management` - Organize and trace Katalon test assets.
 - `test-review` - Review coverage and quality before the pipeline.
 - `execute-test` - Run Katalon cases or suites.
 - `upload-report` - Upload and verify Katalon reports.
 - `test-case-to-playwright` - Generate Playwright from Katalon cases.
+- `test-case-to-selenium` - Generate Selenium from Katalon cases.
+- `test-case-to-cypress` - Generate Cypress from Katalon cases.
+- `test-case-to-katalon-studio` - Generate Katalon Studio tests from cases.
 - `playwright-execute` - Run Playwright and upload Katalon reports.
 - `analyze-failures` - Triage failures and file defects.
 - `release-analyze` - Assess release testing readiness.
+- `test-reporting` - Metrics and stakeholder reporting.
 - `test-maintenance` - Repair and evolve the regression suite.
 - `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
 

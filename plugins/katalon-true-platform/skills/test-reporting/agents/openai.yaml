@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Reporting"
+  short_description: "Metrics and stakeholder reporting"
+  default_prompt: "Use $test-reporting to build the quality summary I can present to stakeholders for this release."

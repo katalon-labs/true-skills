@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Exploratory Charter"
+  short_description: "Charter and run an exploratory session"
+  default_prompt: "Use $exploratory-charter to write me a charter to explore this feature and capture what I find."

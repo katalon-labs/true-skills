@@ -538,7 +538,7 @@ A skill is named here when a request phrased in role terms, naming no skill, sho
 | I just got requirement CEL-6 and need cases | `create-test-cases` | covered |
 | What test data do these cases need | `create-test-cases`, per-case test data field only | `test-data` |
 | Seed and tear down data for the run | **boundary only.** No skill owns this. State it | `test-data` |
-| Run an exploratory session on checkout | `create-test-cases`, scenario and error-guessing techniques | exploratory charter skill, not yet named |
+| Run an exploratory session on checkout | `exploratory-charter` | covered |
 | What should we test first this sprint | `test-plan` | covered |
 | How many testers, how long, for this release | `test-plan`, scope only. State the boundary | `test-estimation` |
 | Which product areas carry the most risk this quarter | `test-plan`, per-cycle risk ranking only. State the boundary | `risk-portfolio` |

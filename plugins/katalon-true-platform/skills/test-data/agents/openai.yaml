@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Data"
+  short_description: "Design, seed, and tear down test data"
+  default_prompt: "Use $test-data to which data does this case need, and how do I seed and reset it?"

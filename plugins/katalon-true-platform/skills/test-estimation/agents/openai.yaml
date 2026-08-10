@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Estimation"
+  short_description: "Size and resource a test cycle"
+  default_prompt: "Use $test-estimation to how long will testing this release take, and with how many people?"

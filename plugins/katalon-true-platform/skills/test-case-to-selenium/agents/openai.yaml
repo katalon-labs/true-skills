@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Test Case to Selenium"
+  short_description: "Generate Selenium from Katalon cases"
+  default_prompt: "Use $test-case-to-selenium to turn test case TC-1042 into Selenium automation in this project's language."

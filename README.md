@@ -5,7 +5,7 @@
   <img src="docs/images/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
 </picture>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![13 skills](https://img.shields.io/badge/skills-13-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![20 skills](https://img.shields.io/badge/skills-20-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
 
 [Start here](#start-where-you-are) · [Quickstart](#quickstart) · [Skills](#the-skills) · [Lifecycle](#the-lifecycle) · [Install](#install) · [MCP](#connect-the-katalon-mcp) · [Contributing](CONTRIBUTING.md)
 
@@ -60,10 +60,10 @@ Four jobs. Say the situation in your own words and the agent picks the skill.
 
 | You are a | You say | It starts at |
 | --- | --- | --- |
-| **Manual tester** <br><sub>QA analyst, test analyst</sub> | *I just got requirement CEL-6 and need cases* · *Run this suite with AI and tell me what broke* · *Is this failure the app or my test* | [`create-test-cases`](skills/create-test-cases/SKILL.md) → [`execute-test`](skills/execute-test/SKILL.md) → [`analyze-failures`](skills/analyze-failures/SKILL.md) |
-| **Automation tester** <br><sub>SDET, automation engineer</sub> | *Turn TC-1042 into a Playwright spec* · *Get my Playwright run into the platform* · *Our suite went flaky this month* | [`test-case-to-playwright`](skills/test-case-to-playwright/SKILL.md) → [`playwright-execute`](skills/playwright-execute/SKILL.md) → [`test-maintenance`](skills/test-maintenance/SKILL.md) |
-| **Test lead** <br><sub>QA lead, QE lead</sub> | *What should we test first this sprint* · *Is this suite ready for the pipeline* · *Which requirements have no coverage* | [`test-plan`](skills/test-plan/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) → [`test-management`](skills/test-management/SKILL.md) |
-| **Test manager** <br><sub>QA manager, head of quality</sub> | *Can we ship 3.2* · *Where is coverage weakest in this release* | [`release-analyze`](skills/release-analyze/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) <br><sub>Portfolio reporting, estimation, and cross-release trends are not built yet.</sub> |
+| **Manual tester** <br><sub>QA analyst, test analyst</sub> | *I just got requirement CEL-6 and need cases* · *Run this suite with AI and tell me what broke* · *Is this failure the app or my test* | [`create-test-cases`](skills/create-test-cases/SKILL.md) → [`test-data`](skills/test-data/SKILL.md) → [`execute-test`](skills/execute-test/SKILL.md) → [`analyze-failures`](skills/analyze-failures/SKILL.md) <br><sub>Unscripted session? [`exploratory-charter`](skills/exploratory-charter/SKILL.md).</sub> |
+| **Automation tester** <br><sub>SDET, automation engineer</sub> | *Turn TC-1042 into a Playwright, Selenium, Cypress, or Studio test* · *Get my run into the platform* · *Our suite went flaky this month* | [`test-case-to-playwright`](skills/test-case-to-playwright/SKILL.md) → [`playwright-execute`](skills/playwright-execute/SKILL.md) → [`test-maintenance`](skills/test-maintenance/SKILL.md) |
+| **Test lead** <br><sub>QA lead, QE lead</sub> | *What should we test first this sprint* · *Is this suite ready for the pipeline* · *Which requirements have no coverage* | [`test-plan`](skills/test-plan/SKILL.md) → [`test-estimation`](skills/test-estimation/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) → [`test-management`](skills/test-management/SKILL.md) |
+| **Test manager** <br><sub>QA manager, head of quality</sub> | *Can we ship 3.2* · *How long will this take and with how many people* · *Build the summary I present upward* | [`release-analyze`](skills/release-analyze/SKILL.md) → [`test-estimation`](skills/test-estimation/SKILL.md) → [`test-reporting`](skills/test-reporting/SKILL.md) |
 
 Not connected yet? Start at [`platform-setup`](skills/platform-setup/SKILL.md), which everyone runs once.
 
@@ -71,21 +71,28 @@ Not sure which one you are, or the request spans several? Ask [`true-platform-te
 
 ## The skills
 
-Thirteen skills, one folder each under [`skills/`](skills/). The agent picks the right one from its description, so you rarely name a skill yourself.
+Twenty skills, one folder each under [`skills/`](skills/). The agent picks the right one from its description, so you rarely name a skill yourself.
 
 | Skill | Stage | What it does |
 | --- | --- | --- |
 | [platform-setup](skills/platform-setup/SKILL.md) | setup | Installs and verifies the Katalon MCP, and diagnoses auth or access failures. Start here. |
 | [test-plan](skills/test-plan/SKILL.md) | 1 plan | Turns quality goals into scope, ranks the work by requirement coverage and risk, and builds the folder and suite structure that acts as the executable plan. |
+| [test-estimation](skills/test-estimation/SKILL.md) | 1 plan | Sizes a test cycle from scope, risk, and historical execution data, resources it across the manual and automated lanes, and states the uncertainty instead of inventing precision. |
 | [create-test-cases](skills/create-test-cases/SKILL.md) | 2 design | Reads a requirement or free text, designs atomic manual cases with ISTQB techniques as reference, skips duplicates, imports only what is missing, and links each case back to the requirement. |
+| [test-data](skills/test-data/SKILL.md) | 2 design | Designs the data a case runs on, decides what must exist before a run, keeps literals out of the step text, and resets state afterwards so the next run starts clean. |
+| [exploratory-charter](skills/exploratory-charter/SKILL.md) | 2 design | Writes a charter with a mission, areas, oracles, and a timebox, runs the session, and turns what was found into defects and scripted cases. |
 | [test-management](skills/test-management/SKILL.md) | 3 manage | Organizes folders and suites, finds assets at scale, and produces a requirement to case to suite traceability report with coverage percentage and orphans. |
 | [test-review](skills/test-review/SKILL.md) | 4 review | Reviews coverage, case quality, and flakiness before anything enters the pipeline, and returns Approve, Approve with fixes, or Reject plus the specific weak cases. |
 | [execute-test](skills/execute-test/SKILL.md) | 5 execute | Runs a case, a list, or a suite as a manual run, a Run with AI session, or scheduled automation, then reports pass, fail, and blocked. |
 | [upload-report](skills/upload-report/SKILL.md) | 5 execute | Runs automation and uploads or verifies Katalon Studio/KRE, JUnit XML, and Playwright reports on the platform. |
 | [test-case-to-playwright](skills/test-case-to-playwright/SKILL.md) | 5 execute | Converts manual cases into Playwright TypeScript with Page Object Model and fixtures. |
+| [test-case-to-selenium](skills/test-case-to-selenium/SKILL.md) | 5 execute | Converts manual cases into Selenium automation, detecting the project's language binding rather than assuming one. |
+| [test-case-to-cypress](skills/test-case-to-cypress/SKILL.md) | 5 execute | Converts manual cases into Cypress specs with custom commands and fixtures. |
+| [test-case-to-katalon-studio](skills/test-case-to-katalon-studio/SKILL.md) | 5 execute | Converts manual cases into Katalon Studio test cases and Groovy scripts, keeping the .tc and .ts pair GUID-consistent. |
 | [playwright-execute](skills/playwright-execute/SKILL.md) | 5 execute | Runs Playwright specs, ships the report with `@katalon/playwright-reporter`, and verifies the run landed. |
 | [analyze-failures](skills/analyze-failures/SKILL.md) | 6 analyze | Sorts failures into product defect, automation defect, and environment noise, clusters them by signature, and files ALM defects for the real bugs. |
 | [release-analyze](skills/release-analyze/SKILL.md) | 6 analyze | Reads coverage, stability, and defect data to return Ready, Ready with risk, or Not ready, with the reasons attached. |
+| [test-reporting](skills/test-reporting/SKILL.md) | 6 analyze | Turns platform quality data into the few metrics that answer a stakeholder question, trended across releases, as a summary a manager can present upward. |
 | [test-maintenance](skills/test-maintenance/SKILL.md) | 7 maintain | Finds flaky and broken cases from stability history, repairs or regenerates them, and hands the refreshed gap list back to planning. |
 | [true-platform-testing](skills/true-platform-testing/SKILL.md) | all | The router and end to end runner. Routes any request to the right stage, or drives the full chain from requirement to ship decision. |
 
