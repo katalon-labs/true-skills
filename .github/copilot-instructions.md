@@ -17,8 +17,6 @@ This repository ships the Katalon True Platform testing toolkit as GitHub Copilo
 - `execute-test` - Run Katalon cases or suites.
 - `upload-report` - Upload and verify Katalon reports.
 - `test-case-to-playwright` - Generate Playwright from Katalon cases.
-- `test-case-to-selenium` - Generate Selenium from Katalon cases.
-- `test-case-to-cypress` - Generate Cypress from Katalon cases.
 - `test-case-to-katalon-studio` - Generate Katalon Studio tests from cases.
 - `playwright-execute` - Run Playwright and upload Katalon reports.
 - `analyze-failures` - Triage failures and file defects.

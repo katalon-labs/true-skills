@@ -9,7 +9,7 @@ This file lets any AI coding agent that reads `AGENTS.md` use the Katalon True P
 | Role | Starts at |
 | --- | --- |
 | Manual tester | `create-test-cases`, `test-data`, `exploratory-charter`, `execute-test`, `analyze-failures` |
-| Automation tester | `test-data`, `upload-report`, `test-case-to-playwright`, `test-case-to-selenium`, `test-case-to-cypress`, `test-case-to-katalon-studio`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
+| Automation tester | `test-data`, `upload-report`, `test-case-to-playwright`, `test-case-to-katalon-studio`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
 | Test lead | `test-plan`, `test-estimation`, `test-management`, `test-review`, `release-analyze`, `test-reporting`, `test-maintenance` |
 | Test manager | `test-estimation`, `release-analyze`, `test-reporting` |
 
@@ -84,18 +84,6 @@ File: `skills/upload-report/SKILL.md`
 Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Playwright TypeScript automation. Use when you need to fetch/read Katalon Platform test cases and implement Playwright scripts, create or adapt a Playwright framework, apply Page Object Model and fixtures, or translate manual steps into meaningful automated test keywords. Written for the automation tester converting a manual case into code that fits an existing page-object layer.
 
 File: `skills/test-case-to-playwright/SKILL.md`
-
-### test-case-to-selenium
-
-Convert Katalon True Platform/TestOps manual test cases into Selenium WebDriver automation in whichever language binding the project already uses. Use when you need to read Katalon Platform cases and write Selenium code, detect the binding from pom.xml, build.gradle, requirements.txt, pyproject.toml, or package.json, scaffold or extend a Page Object Model layer, wire the project's own runner (JUnit 5, TestNG, pytest, or Mocha) that owns execution and reporting, and turn manual steps into stable locators and explicit waits. Selenium is a library rather than a runner, so this skill generates and compiles the code and stops at the runner boundary; to land an already-executed run in the platform use upload-report. Written for the automation tester who already has a Java, Python, or JavaScript Selenium project and needs a manual case expressed in its idiom.
-
-File: `skills/test-case-to-selenium/SKILL.md`
-
-### test-case-to-cypress
-
-Convert Katalon True Platform/TestOps manual test cases, test suites, or requirement-linked cases into Cypress end-to-end automation in JavaScript or TypeScript. Use when you need to fetch/read Katalon Platform test cases and write specs under cypress/e2e, scaffold or adapt the project and its config, apply custom commands in cypress/support, fixtures in cypress/fixtures, and an app-action or page-object layer, or translate manual steps into readable cy commands and Chai assertions. The runner underneath is Mocha, so this skill also wires a Mocha JUnit reporter so the finished run can be shipped to the platform. This skill writes specs that do not exist yet. An existing suite that has become unreliable belongs to test-maintenance, and a report already sitting on disk belongs to upload-report. Written for the automation tester converting a manual case into specs that fit an existing custom-command and fixture layer.
-
-File: `skills/test-case-to-cypress/SKILL.md`
 
 ### test-case-to-katalon-studio
 

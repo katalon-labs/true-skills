@@ -113,18 +113,6 @@ export const INTERFACE = {
     prompt: "Write me a charter to explore this feature and capture what I find.",
     roles: ["manual tester"],
   },
-  "test-case-to-selenium": {
-    title: "Katalon Test Case to Selenium",
-    short: "Generate Selenium from Katalon cases",
-    prompt: "Turn test case TC-1042 into Selenium automation in this project's language.",
-    roles: ["automation tester"],
-  },
-  "test-case-to-cypress": {
-    title: "Katalon Test Case to Cypress",
-    short: "Generate Cypress from Katalon cases",
-    prompt: "Turn test case TC-1042 into a Cypress spec.",
-    roles: ["automation tester"],
-  },
   "test-case-to-katalon-studio": {
     title: "Katalon Test Case to Studio",
     short: "Generate Katalon Studio tests from cases",
@@ -158,8 +146,6 @@ export const ORDER = [
   "execute-test",
   "upload-report",
   "test-case-to-playwright",
-  "test-case-to-selenium",
-  "test-case-to-cypress",
   "test-case-to-katalon-studio",
   "playwright-execute",
   "analyze-failures",

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Katalon Test Case to Cypress"
-  short_description: "Generate Cypress from Katalon cases"
-  default_prompt: "Use $test-case-to-cypress to turn test case TC-1042 into a Cypress spec."
