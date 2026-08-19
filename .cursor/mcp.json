@@ -1,14 +1,7 @@
 {
   "mcpServers": {
     "katalon-prod-mcp": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://<your.sub.domain>.katalon.io/mcp",
-        "--transport",
-        "http-first"
-      ]
+      "url": "https://platform.katalon.io/mcp"
     }
   }
 }

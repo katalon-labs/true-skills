@@ -1,15 +1,8 @@
 {
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "katalon-subdomain",
-      "description": "Katalon tenant subdomain (the <sub> in https://<sub>.katalon.io)"
-    }
-  ],
   "servers": {
     "katalon-prod-mcp": {
       "type": "http",
-      "url": "https://${input:katalon-subdomain}.katalon.io/mcp"
+      "url": "https://platform.katalon.io/mcp"
     }
   }
 }

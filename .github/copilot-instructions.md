@@ -29,8 +29,8 @@ This repository ships the Katalon True Platform testing toolkit as GitHub Copilo
 
 These workflows depend on the Katalon MCP server.
 
-- **VS Code**: `.vscode/mcp.json` (included) defines the `katalon-prod-mcp` server as a remote HTTP server. On first start VS Code prompts for your Katalon subdomain and signs you in through the browser OAuth flow.
-- **Copilot CLI**: `.github/mcp.json` (included) is auto-loaded - replace `<your.sub.domain>` with your subdomain, or register interactively with `/mcp add` (type `http`, URL `https://<your.sub.domain>.katalon.io/mcp`).
+- **VS Code**: `.vscode/mcp.json` (included) defines the `katalon-prod-mcp` server as a remote HTTP server on `https://platform.katalon.io/mcp`. Start it and VS Code signs you in through the browser OAuth flow - no subdomain to supply.
+- **Copilot CLI**: `.github/mcp.json` (included) is auto-loaded and needs no edits, or register interactively with `/mcp add` (type `http`, URL `https://platform.katalon.io/mcp`).
 - **Copilot coding agent / code review**: skills work out of the box, but neither surface supports OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.
 
 Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.

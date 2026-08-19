@@ -35,12 +35,17 @@ const ORG = "katalon-labs";
 const REPO = "true-skills";
 const REPO_URL = `https://github.com/${ORG}/${REPO}`;
 const PLUGIN_NAME = "katalon-true-platform";
-const PLUGIN_VERSION = "0.3.0";
+const PLUGIN_VERSION = "0.4.0";
 // Agent Plugins standard (https://agent-plugins.org) schema URLs, spec 1.0.0.
 const AP_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const AP_MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 const MCP_SERVER = "katalon-prod-mcp";
-const MCP_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
+// Canonical universal endpoint. It presents a workspace picker after sign-in, so a
+// user never has to know their tenant subdomain and no config needs hand-editing.
+// Enterprises on a dedicated domain may substitute MCP_TENANT_ENDPOINT themselves.
+const MCP_ENDPOINT = "https://platform.katalon.io/mcp";
+const MCP_TENANT_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
+// stdio fallback for clients without native remote-MCP support (Kiro, Continue).
 const MCP_ARGS = ["-y", "mcp-remote", MCP_ENDPOINT, "--transport", "http-first"];
 const HOMEPAGE = "https://docs.katalon.com/katalon-platform/testops-mcp-server";
 
@@ -129,7 +134,9 @@ function lc(str) {
 
 // shared assets + mcp
 cpSync(join(ROOT, "assets"), join(ROOT, PLUGIN_DIR, "assets"), { recursive: true });
-const mcpJson = { mcpServers: { [MCP_SERVER]: { command: "npx", args: MCP_ARGS } } };
+// Claude Code speaks remote MCP natively ("type": "http") and drives the OAuth
+// browser flow itself, so there is nothing to install and nothing to edit.
+const mcpJson = { mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } };
 track(writeFile(join(PLUGIN_DIR, ".mcp.json"), j(mcpJson)));
 
 const author = { name: ORG, url: `https://github.com/${ORG}` };
@@ -146,8 +153,8 @@ track(
 
 // Agent Plugins standard (agent-plugins.org, spec 1.0.0): one portable manifest
 // any conformant client can load. The contract is plugin.json + skills/ + mcp.json
-// at the plugin root. The MCP server uses the stdio variant (npx mcp-remote) because
-// the tenant subdomain is a documented placeholder, not a resolvable URL.
+// at the plugin root. The MCP server is declared as streamable-http against the
+// canonical endpoint, so a conformant client connects with no user configuration.
 const agentPluginManifest = {
   $schema: AP_PLUGIN_SCHEMA,
   name: PLUGIN_NAME,
@@ -161,7 +168,7 @@ const agentPluginManifest = {
 };
 const agentPluginMcp = {
   $schema: AP_MCP_SCHEMA,
-  mcpServers: { [MCP_SERVER]: { type: "stdio", command: "npx", args: MCP_ARGS } },
+  mcpServers: { [MCP_SERVER]: { type: "streamable-http", url: MCP_ENDPOINT } },
 };
 track(writeFile(join(PLUGIN_DIR, "plugin.json"), j(agentPluginManifest)));
 track(writeFile(join(PLUGIN_DIR, "mcp.json"), j(agentPluginMcp)));
@@ -218,8 +225,10 @@ track(
       `the \`skills/\` and \`assets/\` folders are shared.\n\n` +
       `## Included skills\n\n` +
       skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
-      `\n\n## Bundled MCP server\n\nSee \`.mcp.json\`. Replace \`<your.sub.domain>\` with your Katalon subdomain. ` +
-      `Authentication is handled through the browser/OAuth flow; never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
+      `\n\n## Bundled MCP server\n\n\`.mcp.json\` points at \`${MCP_ENDPOINT}\`, the canonical endpoint. ` +
+      `Nothing to edit: on first use the browser opens for sign-in and you pick your workspace. ` +
+      `Enterprises on a dedicated Katalon domain can substitute \`${MCP_TENANT_ENDPOINT}\`. ` +
+      `Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
       `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`) ` +
       `and as an [Agent Plugins standard](https://agent-plugins.org) plugin (\`plugin.json\` + \`mcp.json\` + \`skills/\`, spec 1.0.0) ` +
       `for any conformant client. ` +
@@ -286,7 +295,7 @@ for (const s of skills) {
   const fm = `---\ndescription: ${s.fm.description}\nalwaysApply: false\n---`;
   track(writeFile(`.cursor/rules/${s.name}.mdc`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
 }
-track(writeFile(".cursor/mcp.json", j(mcpJson)));
+track(writeFile(".cursor/mcp.json", j({ mcpServers: { [MCP_SERVER]: { url: MCP_ENDPOINT } } })));
 
 // ===========================================================================
 // 3. Kiro - .kiro/steering/*.md + .kiro/settings/mcp.json
@@ -355,9 +364,9 @@ track(
       skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
       `\n\n## Katalon MCP server\n\n` +
       `These workflows depend on the Katalon MCP server.\n\n` +
-      `- **VS Code**: \`.vscode/mcp.json\` (included) defines the \`${MCP_SERVER}\` server as a remote HTTP server. ` +
-      `On first start VS Code prompts for your Katalon subdomain and signs you in through the browser OAuth flow.\n` +
-      `- **Copilot CLI**: \`.github/mcp.json\` (included) is auto-loaded - replace \`<your.sub.domain>\` with your subdomain, ` +
+      `- **VS Code**: \`.vscode/mcp.json\` (included) defines the \`${MCP_SERVER}\` server as a remote HTTP server ` +
+      `on \`${MCP_ENDPOINT}\`. Start it and VS Code signs you in through the browser OAuth flow - no subdomain to supply.\n` +
+      `- **Copilot CLI**: \`.github/mcp.json\` (included) is auto-loaded and needs no edits, ` +
       `or register interactively with \`/mcp add\` (type \`http\`, URL \`${MCP_ENDPOINT}\`).\n` +
       `- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports ` +
       `OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.\n\n` +
@@ -366,27 +375,13 @@ track(
       `Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.\n`,
   ),
 );
-// VS Code MCP: native remote HTTP server. VS Code runs the OAuth browser flow
-// itself (the Katalon server supports dynamic client registration) and prompts
-// for the tenant subdomain via the "inputs" mechanism - no npx shim needed.
+// VS Code MCP: native remote HTTP server on the canonical endpoint. VS Code runs
+// the OAuth browser flow itself (the Katalon server supports dynamic client
+// registration) and the workspace picker replaces the old subdomain prompt.
 track(
   writeFile(
     ".vscode/mcp.json",
-    j({
-      inputs: [
-        {
-          type: "promptString",
-          id: "katalon-subdomain",
-          description: "Katalon tenant subdomain (the <sub> in https://<sub>.katalon.io)",
-        },
-      ],
-      servers: {
-        [MCP_SERVER]: {
-          type: "http",
-          url: "https://${input:katalon-subdomain}.katalon.io/mcp",
-        },
-      },
-    }),
+    j({ servers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } }),
   ),
 );
 
@@ -458,7 +453,11 @@ track(
         .join("\n\n") +
       `\n\n## Katalon MCP server\n\n` +
       `These workflows depend on the Katalon MCP server. Add an \`mcpServers\` entry to your agent's MCP config ` +
-      `using the canonical shape in \`.mcp.json\` at the repo root, replacing \`<your.sub.domain>\` with your Katalon subdomain.\n\n` +
+      `using the canonical shape in \`.mcp.json\` at the repo root. One endpoint serves every workspace - sign-in presents a picker, so there is nothing to fill in.\n\n` +
+      "```json\n" +
+      `{ "mcpServers": { "${MCP_SERVER}": { "type": "http", "url": "${MCP_ENDPOINT}" } } }\n` +
+      "```\n\n" +
+      `Agents without native remote-MCP support use the wrapper against the same endpoint:\n\n` +
       "```sh\n" +
       `npx ${MCP_ARGS.join(" ")}\n` +
       "```\n\n" +

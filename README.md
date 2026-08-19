@@ -31,14 +31,14 @@ npx skills add katalon-labs/true-skills
 {
   "mcpServers": {
     "katalon-prod-mcp": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your.sub.domain>.katalon.io/mcp", "--transport", "http-first"]
+      "type": "http",
+      "url": "https://platform.katalon.io/mcp"
     }
   }
 }
 ```
 
-First connect opens a browser OAuth flow. No tokens to paste, no keys to store.
+First connect opens a browser OAuth flow and lets you pick your workspace. Nothing to fill in, no tokens to paste, no keys to store.
 
 **3. Ask for something real.**
 
@@ -137,7 +137,7 @@ The CLI installs skill files only. Configure the MCP yourself with the snippet b
 <details>
 <summary><b>Any agent</b> via the <a href="https://agent-plugins.org">Agent Plugins</a> standard</summary>
 
-This repository conforms to the [Agent Plugins specification 1.0.0](https://agent-plugins.org/specification): `plugin.json` + `skills/` + `mcp.json` at the repo root form a portable plugin any conformant client can load directly, and `plugins/katalon-true-platform/` ships the same contract as a standalone plugin directory. Skills follow the [Agent Skills](https://agentskills.io) format. Point your standard-aware client at either directory; replace `<your.sub.domain>` in `mcp.json` with your Katalon subdomain.
+This repository conforms to the [Agent Plugins specification 1.0.0](https://agent-plugins.org/specification): `plugin.json` + `skills/` + `mcp.json` at the repo root form a portable plugin any conformant client can load directly, and `plugins/katalon-true-platform/` ships the same contract as a standalone plugin directory. Skills follow the [Agent Skills](https://agentskills.io) format. Point your standard-aware client at either directory; `mcp.json` already declares the canonical endpoint as a `streamable-http` server, so there is nothing to fill in.
 </details>
 
 <details>
@@ -179,8 +179,8 @@ mkdir -p .github .vscode \
   && cp <checkout>/.vscode/mcp.json .vscode/
 ```
 
-- **VS Code (agent mode)** - skills in `.github/skills/` load automatically; prompt files stay available as `/platform-setup` etc. Start the `katalon-prod-mcp` server when VS Code offers it: it prompts for your Katalon subdomain, then signs you in through the browser OAuth flow. No token pasting.
-- **Copilot CLI** - the same skills are auto-discovered (`/skills list` to see them). The MCP server auto-loads from `.github/mcp.json` once you replace `<your.sub.domain>`; or register it interactively with `/mcp add` (type `http`, same URL). The CLI does not read `.vscode/mcp.json`.
+- **VS Code (agent mode)** - skills in `.github/skills/` load automatically; prompt files stay available as `/platform-setup` etc. Start the `katalon-prod-mcp` server when VS Code offers it: it signs you in through the browser OAuth flow and you pick your workspace. Nothing to configure, no token pasting.
+- **Copilot CLI** - the same skills are auto-discovered (`/skills list` to see them). The MCP server auto-loads from `.github/mcp.json` with no edits; or register it interactively with `/mcp add` (type `http`, same URL). The CLI does not read `.vscode/mcp.json`.
 - **Copilot coding agent & code review** - read `.github/skills/` from your repository automatically. Neither surface supports OAuth remote MCP servers yet, so keep Katalon platform operations in VS Code or the CLI for now.
 </details>
 
@@ -242,22 +242,30 @@ Point your agent at [`AGENTS.md`](AGENTS.md). It indexes every skill and tells t
 
 ## Connect the Katalon MCP
 
-The command is the same for every agent. Only the surrounding config file changes. The canonical shape lives in [`.mcp.json`](.mcp.json):
+One endpoint serves every workspace: `https://platform.katalon.io/mcp`. Sign-in presents a workspace picker, so there is no subdomain to look up. The canonical shape lives in [`.mcp.json`](.mcp.json):
 
 ```json
 {
   "mcpServers": {
     "katalon-prod-mcp": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your.sub.domain>.katalon.io/mcp", "--transport", "http-first"]
+      "type": "http",
+      "url": "https://platform.katalon.io/mcp"
     }
   }
 }
 ```
 
-1. Replace `<your.sub.domain>` with your Katalon workspace subdomain.
-2. Complete the browser OAuth flow that `mcp-remote` opens on first connect.
+Agents without native remote-MCP support (Kiro, Continue, Codex) use the `mcp-remote` wrapper against the same endpoint:
+
+```sh
+npx -y mcp-remote https://platform.katalon.io/mcp --transport http-first
+```
+
+1. Complete the browser OAuth flow that opens on first connect.
+2. Pick your workspace.
 3. Reload the agent if the tools do not show up.
+
+On a dedicated Katalon domain, substitute `https://<your-sub-domain>.katalon.io/mcp`.
 
 > **Auth is browser OAuth only.** Never paste passwords, API tokens, cookies, JWTs, MFA codes, or OAuth callback URLs into chat, and never commit them. The skills enforce this.
 
@@ -278,7 +286,7 @@ The skill bodies live once. Everything each agent needs is generated from them, 
 ```
 
 ```text
-skills/                              source of truth, 13 skills
+skills/                              source of truth, 18 skills
 scripts/build-adapters.mjs           generates every agent config
 plugins/katalon-true-platform/       Claude Code and Codex plugin      (generated)
 .claude-plugin/  .agents/            plugin marketplaces               (generated)

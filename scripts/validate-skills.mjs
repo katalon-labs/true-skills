@@ -50,15 +50,21 @@ function listMarkdown(dir) {
   return out;
 }
 
-// Find a real Katalon MCP endpoint, with or without scheme
+// Find a leaked *customer* Katalon MCP endpoint, with or without scheme
 // (e.g. https://acme.katalon.io/mcp or bare acme.katalon.io/mcp).
 // The documented placeholder <your.sub.domain>.katalon.io/mcp never matches
 // because '>' is not a valid host-label character, so it cannot sit adjacent
 // to '.katalon.io'.
+// 'platform' is the canonical public endpoint documented at
+// docs.katalon.com and published in the official MCP registry - it names no
+// workspace, so it is the one host that is safe to commit.
+const PUBLIC_MCP_HOSTS = new Set(["platform"]);
 function findEndpointLeak(text) {
-  const re = /(?:https?:\/\/)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.katalon\.io\/mcp/i;
-  const m = text.match(re);
-  return m ? m[0] : null;
+  const re = /(?:https?:\/\/)?([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\.katalon\.io\/mcp/gi;
+  for (const m of text.matchAll(re)) {
+    if (!PUBLIC_MCP_HOSTS.has(m[1].toLowerCase())) return m[0];
+  }
+  return null;
 }
 
 // Folders actually present under skills/

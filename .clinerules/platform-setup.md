@@ -25,9 +25,10 @@ Read `references/capability-boundaries.md` when explaining available operations.
 For setup requests, collect the minimum routing and authentication choices before writing or testing MCP config:
 
 1. Resolve the Katalon MCP endpoint:
-   - If the installed config still contains `https://<your.sub.domain>.katalon.io/mcp`, ask for the Katalon subdomain or full MCP URL before attempting a connection.
-   - If the user or local config mentions more than one Katalon domain, list the candidate domains and ask which domain they want to work with.
-   - Normalize a bare subdomain such as `<your.sub.domain>` to `https://<your.sub.domain>.katalon.io/mcp`.
+   - Default to the canonical endpoint `https://platform.katalon.io/mcp`. It serves every workspace and presents a picker after sign-in, so do not ask for a subdomain unless something below applies.
+   - If the installed config still contains the `<your.sub.domain>` placeholder, replace it with the canonical endpoint rather than asking the user to fill it in.
+   - Only ask for a domain when the user names a dedicated Katalon domain, or when the local config mentions more than one Katalon domain - then list the candidates and ask which one they want.
+   - Normalize a bare subdomain to `https://<sub>.katalon.io/mcp`.
 2. Ask how the user wants to authenticate when auth is required:
    - Browser OAuth flow with an agent restart/reload after login.
    - CLI/local `mcp-remote` login bootstrap.
@@ -64,20 +65,26 @@ Report the exact boundary:
 When MCP tools are missing:
 
 1. Inspect local agent/plugin context for an existing Katalon MCP install path or configuration.
-2. If the config contains `https://<your.sub.domain>.katalon.io/mcp`, ask the user for the target Katalon subdomain or full MCP URL, then write the resolved endpoint into the agent's MCP config. Do not leave the placeholder in an active user config.
-3. The recommended transport is the `mcp-remote` wrapper, which works across every agent. The command and args are identical everywhere; only the surrounding config format changes per agent:
+2. If the config still contains a `<your.sub.domain>` placeholder, replace it with `https://platform.katalon.io/mcp`. Never leave a placeholder in an active user config.
+3. Prefer a native remote MCP entry. Agents that speak remote MCP directly (Claude Code, Copilot/VS Code, Copilot CLI, Cursor) need only the endpoint and run the browser OAuth flow themselves:
 
-   ```sh
-   npx -y mcp-remote https://<your.sub.domain>.katalon.io/mcp --transport http-first
+   ```json
+   { "mcpServers": { "katalon-prod-mcp": { "type": "http", "url": "https://platform.katalon.io/mcp" } } }
    ```
 
-   - JSON agents (Claude Code, Cursor, Kiro, Copilot/VS Code, Windsurf, Cline) declare this as an `mcpServers` entry. See the bundled `.mcp.json` for the canonical shape.
+   See the bundled `.mcp.json` for the canonical shape.
+4. Fall back to the `mcp-remote` wrapper only for agents without native remote-MCP support (Kiro, Continue, Codex):
+
+   ```sh
+   npx -y mcp-remote https://platform.katalon.io/mcp --transport http-first
+   ```
+
    - Codex declares the same command/args in TOML under `[mcp_servers.katalon-prod-mcp]`.
    - For the exact file path per agent, read the repository `README.md` install section.
-4. If the install command, package name, or server URL is not present in local context, use official Katalon-provided setup instructions or ask the user for the MCP package/source. Do not invent install commands.
-5. Configure only the minimum required MCP server entry for the user's agent environment.
-6. Store secrets using the environment's secret mechanism or environment variables. Never write access tokens, passwords, cookies, or raw auth callback URLs into repo files, skill files, logs, or final answers.
-7. Re-run the connection check. Restart or reload the MCP host only if Katalon works through the local proxy but the current agent session still does not expose the tools.
+5. If the install command, package name, or server URL is not present in local context, use official Katalon-provided setup instructions or ask the user for the MCP package/source. Do not invent install commands.
+6. Configure only the minimum required MCP server entry for the user's agent environment.
+7. Store secrets using the environment's secret mechanism or environment variables. Never write access tokens, passwords, cookies, or raw auth callback URLs into repo files, skill files, logs, or final answers.
+8. Re-run the connection check. Restart or reload the MCP host only if Katalon works through the local proxy but the current agent session still does not expose the tools.
 
 If the user explicitly asks to install but the environment does not permit plugin/MCP installation from the current session, give the exact missing prerequisite and the safest next step.
 
@@ -86,7 +93,7 @@ If the user explicitly asks to install but the environment does not permit plugi
 Use this when Katalon MCP tools are missing from the active session or direct remote MCP config returns `401 Invalid JWT token format`.
 
 1. Ask only for non-secret information needed to target the right server or verify access, such as:
-   - Katalon subdomain or full MCP URL, for example `https://<your.sub.domain>.katalon.io/mcp`.
+   - Katalon MCP URL, only if the user is on a dedicated domain rather than the canonical `https://platform.katalon.io/mcp`.
    - Project name or project ID.
    - Repository/Test Project name, if the user wants a specific target verified.
    - Login email, only if it helps the user choose the right account in the browser.
@@ -94,7 +101,7 @@ Use this when Katalon MCP tools are missing from the active session or direct re
 3. Run the proxy with the Katalon endpoint:
 
    ```sh
-   npx -y mcp-remote "https://<your.sub.domain>.katalon.io/mcp" --transport http-first
+   npx -y mcp-remote "https://platform.katalon.io/mcp" --transport http-first
    ```
 
    If this prints an authorization URL or opens the browser, wait for the user/browser callback to complete. `mcp-remote` stores OAuth state under its own auth cache, such as `~/.mcp-auth`, not in the workspace.
@@ -105,14 +112,22 @@ Use this when Katalon MCP tools are missing from the active session or direct re
    - Call `list_repositories` with the exact schema field `project_id`.
 5. If local proxy verification succeeds but the agent's tool discovery still does not expose Katalon tools, report that MCP is authenticated and usable through `mcp-remote`, but the active agent host needs a reload/new session/new thread to expose the tools natively.
 
-Known working MCP server entry (JSON form; Codex uses the same command/args in TOML):
+Known working MCP server entries. Prefer the native form; use the `mcp-remote` form only where the agent cannot reach a remote server directly (Codex uses the same command/args in TOML):
+
+```json
+{
+  "mcpServers": {
+    "katalon-prod-mcp": { "type": "http", "url": "https://platform.katalon.io/mcp" }
+  }
+}
+```
 
 ```json
 {
   "mcpServers": {
     "katalon-prod-mcp": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your.sub.domain>.katalon.io/mcp", "--transport", "http-first"]
+      "args": ["-y", "mcp-remote", "https://platform.katalon.io/mcp", "--transport", "http-first"]
     }
   }
 }
