@@ -307,6 +307,16 @@ node scripts/build-adapters.mjs     # regenerate every agent config
 
 The build is deterministic. Re-running it with no skill changes produces no diff, and CI rejects out-of-sync adapters. Details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Support
+
+- Bugs, questions, and skill requests: [open an issue](https://github.com/katalon-labs/true-skills/issues)
+- Katalon platform and MCP support: [support.katalon.com](https://support.katalon.com), or your Katalon Customer Success Manager
+- MCP server documentation: [docs.katalon.com](https://docs.katalon.com/katalon-platform/testops-mcp-server)
+
+## Privacy
+
+The skills are plain markdown that runs inside the agent you already use. This repository collects nothing. Platform operations go to your own Katalon workspace over OAuth, and what Katalon does with that data is covered by the [Katalon Privacy Policy](https://katalon.com/terms#privacy-policy).
+
 ## License
 
 [MIT](LICENSE) © Katalon. "Katalon" and "Katalon True Platform" are trademarks of Katalon, Inc.
