@@ -205,6 +205,19 @@ Steering docs use manual inclusion, so reference one in chat with `#true-platfor
 </details>
 
 <details>
+<summary><b>Kiro Crew</b> app</summary>
+
+[Kiro Crew](https://kirocrew.com) installs this as an **app** — `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 18 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
+
+```bash
+# local/developer install: point Kiro Crew at the app directory
+apps/katalon-testing-skills/
+```
+
+Details in [`apps/katalon-testing-skills/README.md`](apps/katalon-testing-skills/README.md).
+</details>
+
+<details>
 <summary><b>Windsurf</b> rules</summary>
 
 ```bash
@@ -292,6 +305,7 @@ plugins/katalon-true-platform/       Claude Code and Codex plugin      (generate
 .claude-plugin/  .agents/            plugin marketplaces               (generated)
 .cursor/  .kiro/  .github/           Cursor, Kiro, Copilot             (generated)
 .windsurf/  .clinerules/  .continue/ Windsurf, Cline, Continue         (generated)
+apps/katalon-testing-skills/         Kiro Crew app                     (generated)
 .mcp.json  .vscode/mcp.json          MCP config                        (generated)
 AGENTS.md  llms.txt                  agent-readable index              (generated)
 ```

@@ -1,0 +1,16 @@
+<svg width="960" height="360" viewBox="0 0 960 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="360" fill="#F3FBF8"/>
+  <rect width="960" height="360" fill="url(#g)"/>
+  <g opacity="0.9">
+    <circle cx="720" cy="180" r="120" stroke="#0F8461" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="720" cy="180" r="82" stroke="#0F8461" stroke-width="1.5" opacity="0.4"/>
+    <circle cx="720" cy="180" r="44" stroke="#0F8461" stroke-width="1.5" opacity="0.55"/>
+    <path d="M720 180L812 118" stroke="#0F8461" stroke-width="2" opacity="0.7"/>
+  </g>
+  <text x="72" y="150" font-family="Georgia, serif" font-size="46" fill="#0B3B2C" font-weight="700">Katalon Testing Skills</text>
+  <text x="72" y="196" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#2C5B4C">The full testing lifecycle for your agent - through the Katalon True Platform MCP.</text>
+  <text x="72" y="236" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#4B7A6B">18 skills - plan - design - manage - review - execute - analyze - maintain</text>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="960" y2="360" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#EAFBF3"/><stop offset="1" stop-color="#D5F3E6"/>
+  </linearGradient></defs>
+</svg>
