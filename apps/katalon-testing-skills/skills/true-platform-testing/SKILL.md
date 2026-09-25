@@ -41,7 +41,7 @@ This skill can run any stage inline itself (the workflows below cover requiremen
 
 ## Autonomy Policy
 
-When the user asks for an end-to-end Katalon flow, try to complete the full available workflow without pausing for optional decisions:
+When the user asks for an end-to-end Katalon flow, complete the requested stages without pausing for optional decisions. The full sequence below includes Run with AI only when the user explicitly requests AI execution; stop after creating the run for a creation-only request:
 
 ```text
 +--------------+ --> +-------------+ --> +--------------+ --> +-------------+ --> +-------------+
@@ -60,7 +60,7 @@ Default assumptions:
 - If exactly one repository exists, use it.
 - If no AUT environments exist and the user supplied or requirement contains a URL, use that URL as `default_aut_environment_url` for AI execution.
 - If AUT environments exist, choose the environment whose URL/name best matches the target AUT. Ask only if no match is clear.
-- After creating any manual test execution, start Run with AI automatically and wait for completion unless the user explicitly says not to run AI.
+- Start Run with AI and wait for completion only when the user explicitly requests AI execution. A request to create a manual run does not authorize AI execution.
 - If a matching test case already exists, reuse and update/link it instead of creating a duplicate.
 - If a matching test suite already exists, reuse it and add missing cases instead of creating a duplicate.
 
@@ -197,7 +197,7 @@ For formal Test Plan entity creation, state that the current MCP does not expose
 
 ## Manual Execution And Run With AI
 
-Use this flow for manual execution:
+Create the requested manual run first. Continue through the AI-session steps below only when the user explicitly requests AI execution:
 
 ```text
 +------------------+     +----------------------+     +-----------------------+
@@ -217,9 +217,10 @@ Rules:
 - For manual execution, always call `read_auts` immediately before `create_manual_test_run`.
 - Choose the best matching AUT/environment automatically when URL/name clearly matches the target AUT. Ask only when multiple AUTs are equally plausible.
 - Never reuse AUT environment selection from an earlier turn or earlier run.
-- After any manual test execution is created, start Run with AI automatically unless the user explicitly says not to. Do not ask whether to continue with AI.
+- Call `create_manual_ai_session` only when the user explicitly requests AI execution, such as "run with AI" or "execute using AI". Do not ask for confirmation again when that request is already clear. Honor an explicit request not to use AI.
+- For a creation-only request, stop after creating the run and return its link and current status. For a generic "execute now" with no execution method selected, clarify the method before starting execution. Run creation alone does not mean tests have executed.
 - Before `create_manual_ai_session`, call `read_test_suite` for every suite from the manual run and pass non-empty test case lists.
-- Poll `read_manual_ai_session` until all items are no longer TODO/IN_TESTING. If the session stays queued or running for a long time, keep polling at practical intervals and report an in-progress state only when the user asks for status or an external platform timeout/error is observed.
+- For a started AI session, poll `read_manual_ai_session` until all items are no longer TODO/IN_TESTING. If the session stays queued or running for a long time, keep polling at practical intervals and report an in-progress state only when the user asks for status or an external platform timeout/error is observed.
 
 Read `references/execution-workflow.md` before creating executions.
 
