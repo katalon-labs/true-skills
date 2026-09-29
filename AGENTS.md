@@ -69,7 +69,7 @@ File: `skills/test-review/SKILL.md`
 
 ### execute-test
 
-Execute Katalon True Platform/TestOps tests when the input is an existing test case, manual test case list, test suite, suite collection, execution request, or "run with AI" instruction. Use when you need to create a manual test run, start Run with AI, poll AI session results, schedule automated suites, read execution/test results, or summarize pass/fail/blocked outcomes. For full requirement-to-test-design-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has cases and needs a result, by hand or through Run with AI. A coded suite driven from a framework starts at playwright-execute or upload-report.
+Execute existing Katalon True Platform/TestOps test cases, suites, or TestPak runs. Use to start or end a TestPak, guide human testing, run pinned steps with the agent's own browser/computer tools, upload evidence and record results, or explicitly launch and monitor Katalon Run With AI. Also covers scheduling automated suites and reading execution outcomes. Written for the manual tester who needs observed results from existing cases. A coded Playwright suite starts at playwright-execute; a completed framework report starts at upload-report.
 
 File: `skills/execute-test/SKILL.md`
 

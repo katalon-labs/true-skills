@@ -5,9 +5,9 @@ Each recipe chains several skills and MCP tools into one end-to-end play. Trigge
 ## R1 — Requirement to ship call  (stages 1->6)
 - **Trigger:** "test CEL-6 end to end and tell me if we can ship."
 - **Skills:** `test-plan` -> `create-test-cases` -> `execute-test` -> `analyze-failures` -> `release-analyze`.
-- **Tools:** `fetch_requirement_data`, `find_test_cases_by_requirement`, `create_test_case`, `link_requirements_to_test_case`, `manage_test_suite`, `read_auts`, `create_manual_test_run`, `create_manual_ai_session`, `read_manual_ai_session`, `read_test_result`, then the `fetch_*` quality tools.
+- **Tools:** `fetch_requirement_data`, `find_test_cases_by_requirement`, `create_test_case`, `link_requirements_to_test_case`, `manage_test_suite`, `read_auts`, `create_test_run`, `update_test_run`, `update_test_results`, optional evidence upload tools and `read_manual_ai_session` for hosted execution, `read_test_result`, then the `fetch_*` quality tools.
 - **Stop when:** release verdict issued (Ready / Ready with risk / Not ready).
-- **Boundary:** no release-gate authoring; the ship call reads gates, it does not set them.
+- **Boundary:** execution method follows the user's choice through `execute-test`, not an automatic hosted-AI launch; no release-gate authoring; the ship call reads gates, it does not set them.
 
 ## R2 — Coverage rescue  (stages 3->4->2)
 - **Trigger:** "we have gaps, fix our coverage for project X."
@@ -30,7 +30,7 @@ Each recipe chains several skills and MCP tools into one end-to-end play. Trigge
 ## R5 — Cross-lane trust check  (stages 5->6)
 - **Trigger:** "don't trust the AI pass, verify it against real automation."
 - **Skills:** `execute-test` (manual Run with AI) + `playwright-execute` (code lane) -> `analyze-failures`.
-- **Tools:** `create_manual_ai_session`, `read_manual_ai_session`, Playwright run + `@katalon/playwright-reporter` upload, then `read_test_result` on both.
+- **Tools:** `update_test_run` START KATALON_AI, `read_manual_ai_session`, Playwright run + `@katalon/playwright-reporter` upload, then `read_test_result` on both.
 - **Stop when:** every critical case's manual AI verdict is confirmed against the code-lane ground truth; discrepancies recorded.
 - **Boundary:** a self-reported AI PASS contradicted by the code lane is not a PASS.
 
