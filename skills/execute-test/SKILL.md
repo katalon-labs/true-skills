@@ -30,7 +30,7 @@ Being an AI agent does not select KATALON_AI. Preserve the user's chosen executi
 
 1. Call `update_test_run` with the Platform `execution_id` and `update={"action":"START","execution_mode":"MANUAL"}`. This starts/resumes a case timer and returns `current_case` with pinned instructions, expected results, preconditions, test data, and selectors.
 2. Execute those steps with available client tools, or present them to the human and wait for observations. If the request is only to start or hand off, return this context and stop there.
-3. Upload actual evidence when available using `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
+3. Save/capture actual evidence and measure the saved file's byte size before `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`; never guess `content_length` or send 0. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
 4. After the case result is recorded, call MANUAL START again for the next unfinished case. Repeat for the run's required environments. Do not rewrite completed outcomes to force a pass.
 5. When all case/environment results are terminal, call `update_test_run` with `update={"action":"END"}`. FAILED, BLOCKED, and SKIPPED are also terminal; End does not imply PASSED.
 

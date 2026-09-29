@@ -33,7 +33,7 @@ Being an AI agent does not select KATALON_AI. Preserve the user's chosen executi
 
 1. Call `update_test_run` with the Platform `execution_id` and `update={"action":"START","execution_mode":"MANUAL"}`. This starts/resumes a case timer and returns `current_case` with pinned instructions, expected results, preconditions, test data, and selectors.
 2. Execute those steps with available client tools, or present them to the human and wait for observations. If the request is only to start or hand off, return this context and stop there.
-3. Upload actual evidence when available using `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
+3. Save/capture actual evidence and measure the saved file's byte size before `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`; never guess `content_length` or send 0. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
 4. After the case result is recorded, call MANUAL START again for the next unfinished case. Repeat for the run's required environments. Do not rewrite completed outcomes to force a pass.
 5. When all case/environment results are terminal, call `update_test_run` with `update={"action":"END"}`. FAILED, BLOCKED, and SKIPPED are also terminal; End does not imply PASSED.
 
@@ -111,6 +111,8 @@ For a new manual run, resolve the requested cases/suites and read `read_auts` im
 
 Use the live tool schema: modern creation is `create_test_run(mode="manual")`; older servers may expose `create_manual_test_run`. Creating a run alone is never execution evidence. Do not automatically launch hosted AI after creating it.
 
+For local execution, inspect the client runtime and pass its actual OS/browser when creating the run; a remote server cannot detect them. Omit unknown versions instead of using `latest`. Omit `executor` to use the authenticated user, even when the agent operates the browser; an agent name or email is not a user UUID. Correct only the rejected field and preserve the selected cases, AUT, and known environment.
+
 ## Start and carry the pinned context
 
 Call `update_test_run(execution_id, update={"action":"START","execution_mode":"MANUAL"})` for a human or a local agent harness. For multiple run environments, supply the selected `environment_id`. An optional `execution_test_case_id` selects a pinned case; omission selects the running or first unfinished case. START does not retest completed cases.
@@ -130,10 +132,12 @@ An agent with browser/computer tools can perform the steps and capture evidence.
 
 For each actual screenshot/file:
 
-1. Call `prepare_artifact_upload` with its real metadata.
+1. Finish saving/capturing the file, verify the returned local path exists, and measure its actual byte size with the client runtime. Only then call `prepare_artifact_upload` with that positive `content_length`; never use 0 or guess. A failed screenshot command has not produced evidence.
 2. Upload the actual bytes to the returned URL using the returned method/headers. Do not forward Platform credentials to the upload host.
 3. Call `confirm_artifact_upload` and use the confirmed `artifact_id` in `evidence` for the relevant step or case. Do not invent an ID or treat a local path as an uploaded artifact.
 4. Inspect the recording response, including partial/conflict/unknown outcomes; do not assume everything was saved.
+
+Keep and use each prepared upload while it is valid instead of preparing the same file again. Reuse a confirmed `artifact_id` when the same evidence applies to several steps/cases.
 
 Evidence is optional for this lifecycle. If no upload tool/HTTP capability exists, record valid text observations and explain how the human can attach their evidence in TestPak. Missing client automation/upload is a capability gap, not a FAILED/BLOCKED test. If the AUT itself prevents a test, record BLOCKED only from the actual observation.
 
