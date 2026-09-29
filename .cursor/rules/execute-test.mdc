@@ -7,7 +7,7 @@ alwaysApply: false
 
 # Katalon Execute Test
 
-A **TestPak** is the workspace for a manual test run's pinned cases, environments, timers, results, and evidence. Creating a run does not execute its tests or give the calling agent browser/computer tools. Lifecycle stage and test verdict are different; an ended run may be FAILED, BLOCKED, or incomplete.
+A **TestPak** is the workspace for a manual test run's pinned cases, environments, timers, results, and evidence. Hosted Run With AI executes cases inside that workspace; "AI versus TestPak" is not an execution choice. Creating a run does not execute its tests or give the calling agent browser/computer tools. Lifecycle stage and test verdict are different; an ended run may be FAILED, BLOCKED, or incomplete.
 
 ## Discover and preserve scope
 
@@ -22,14 +22,14 @@ Read [references/execution-workflow.md](references/execution-workflow.md) for se
 | User intent and actual client capabilities | Execution path |
 | --- | --- |
 | User wants to test manually | MANUAL; show pinned steps and wait for the user's actual observations |
-| User asks the agent to run tests, but its harness has no browser/computer tools | Explain hosted Run With AI and guided human testing; resolve the execution choice before START |
+| User asks a chat-only agent such as Kai to execute tests, without specifying local/human execution | KATALON_AI if the connected server supports it; explain that Katalon's hosted browser executes the TestPak |
 | User asks the agent to execute locally and its harness has suitable browser/computer tools | MANUAL; the agent executes and captures real evidence with those tools |
 | User explicitly chooses Katalon's hosted Run With AI | KATALON_AI; the server launches a hosted session |
 | User provides a coded/automated suite | Automated execution, below |
 
 Being an AI agent does not select KATALON_AI. Preserve the user's chosen execution path. If "run with AI" could mean either a local harness or the hosted runner, resolve that ambiguity before launching; do not ask again when the choice is already clear. A missing browser or uploader does not establish a FAILED/BLOCKED test outcome.
 
-For a chat-only agent such as Kai, explain that hosted Run With AI uses a Katalon browser and records its own results and available evidence. Collect the execution choice, required browser profile, AUT/private-access and environment choices together where possible, before launching. Do not promise local browser control or ask the user to supply screenshots when they already chose hosted execution.
+For a chat-only agent such as Kai, "run this TestPak" requests hosted execution; do not introduce an AI-versus-TestPak or AI-versus-human question. Collect only missing profile, AUT/private-access and environment choices before launching. If the user explicitly requests their own/local browser and those tools are absent, explain the limitation and resolve an alternative before switching to hosted execution. Do not promise local browser control or ask the user to supply screenshots for hosted execution.
 
 ## Human or local-agent TestPak loop
 
