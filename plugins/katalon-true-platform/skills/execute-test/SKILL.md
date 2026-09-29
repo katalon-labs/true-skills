@@ -47,7 +47,7 @@ PENDING provisioning, empty results and TODO are unfinished. Use the runtime's w
 
 AI-only runs can auto-end after all results become terminal. Read the state before reporting completion; use END if closure is still needed and authorized. For an explicit stop-now/skip-remaining request, use `update={"action":"END","unfinished_cases":"SKIP"}`. It closes the entire run and stops hosted AI, preserving existing terminal results. Default END rejects unfinished work; do not silently escalate it to SKIP.
 
-Do not start a second session or switch an existing manual run to hosted AI when that would reset results. The older `create_manual_ai_session` is a launch capability on older servers, not a replacement for lifecycle retry/End handling; never call both launch paths for one request.
+Do not start a second session or switch an existing manual run to hosted AI when that would reset results. Use `update_test_run` as the primary full-TestPak lifecycle tool. The older `create_manual_ai_session` remains only for legacy workflows or an explicitly selected subset on a fresh run; it rejects existing sessions/results before configuration writes. Never call both launch paths on the same run, including retries. Neither launch tool is a progress query; use `read_manual_ai_session`.
 
 ## Automated execution
 
