@@ -69,7 +69,7 @@ File: `skills/test-review/SKILL.md`
 
 ### execute-test
 
-Execute existing Katalon True Platform/TestOps test cases, suites, or TestPak runs. Use to start or end a TestPak, guide human testing, run pinned steps with the agent's own browser/computer tools, upload evidence and record results, or explicitly launch and monitor Katalon Run With AI. Also covers scheduling automated suites and reading execution outcomes. Written for the manual tester who needs observed results from existing cases. A coded Playwright suite starts at playwright-execute; a completed framework report starts at upload-report.
+Create TestPak runs for later or execute existing Katalon True Platform/TestOps test cases, suites, or TestPak runs. Use to start or end a TestPak, guide human testing, run pinned steps with the agent's own browser/computer tools, upload evidence and record results, or explicitly launch and monitor Katalon Run With AI. Also covers scheduling automated suites and reading execution outcomes. Written for the manual tester. A TestPak is a manual test run, not a test suite. A coded Playwright suite starts at playwright-execute; a completed framework report starts at upload-report.
 
 File: `skills/execute-test/SKILL.md`
 
