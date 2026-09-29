@@ -21,12 +21,15 @@ Read [references/execution-workflow.md](references/execution-workflow.md) for se
 
 | User intent and actual client capabilities | Execution path |
 | --- | --- |
-| User wants to test manually, or the agent has no browser/computer tools | MANUAL; show pinned steps and wait for the user's actual observations |
+| User wants to test manually | MANUAL; show pinned steps and wait for the user's actual observations |
+| User asks the agent to run tests, but its harness has no browser/computer tools | Explain hosted Run With AI and guided human testing; resolve the execution choice before START |
 | User asks the agent to execute locally and its harness has suitable browser/computer tools | MANUAL; the agent executes and captures real evidence with those tools |
 | User explicitly chooses Katalon's hosted Run With AI | KATALON_AI; the server launches a hosted session |
 | User provides a coded/automated suite | Automated execution, below |
 
 Being an AI agent does not select KATALON_AI. Preserve the user's chosen execution path. If "run with AI" could mean either a local harness or the hosted runner, resolve that ambiguity before launching; do not ask again when the choice is already clear. A missing browser or uploader does not establish a FAILED/BLOCKED test outcome.
+
+For a chat-only agent such as Kai, explain that hosted Run With AI uses a Katalon browser and records its own results and available evidence. Collect the execution choice, required browser profile, AUT/private-access and environment choices together where possible, before launching. Do not promise local browser control or ask the user to supply screenshots when they already chose hosted execution.
 
 ## Human or local-agent TestPak loop
 
@@ -41,6 +44,8 @@ Being an AI agent does not select KATALON_AI. Preserve the user's chosen executi
 Use `update_test_run` with `update={"action":"START","execution_mode":"KATALON_AI","browser_profile_mode":"SEPARATE"}` or SHARED, according to the user's choice. SEPARATE isolates browser state by case; SHARED carries it between cases. Reuse an already supplied choice. The existing run must have one Linux/Windows Chrome environment and the required AUT settings. This command does not reconfigure them.
 
 START launches the full pinned run, or returns its existing AI session without resetting results. Use the returned `manual_execution_id` and `session_id` with `read_manual_ai_session`. Session creation or a running status does not prove tests passed. Observe the requested monitoring scope: one progress check or a handoff request can return while running; a full-execution request continues monitoring until terminal results or an actionable external limit/error. Do not loop indefinitely without progress.
+
+PENDING provisioning, empty results and TODO are unfinished. Use the runtime's wait capability if available; if the turn cannot remain active or progress stalls, report the last observed state and how to check the same run again. Do not promise background monitoring without a scheduler. The hosted runner owns result/evidence capture; read what it produced rather than fabricating uploads or overwriting AI-owned results.
 
 AI-only runs can auto-end after all results become terminal. Read the state before reporting completion; use END if closure is still needed and authorized. For an explicit stop-now/skip-remaining request, use `update={"action":"END","unfinished_cases":"SKIP"}`. It closes the entire run and stops hosted AI, preserving existing terminal results. Default END rejects unfinished work; do not silently escalate it to SKIP.
 
