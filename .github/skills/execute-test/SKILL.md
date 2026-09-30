@@ -13,6 +13,8 @@ Use the connected MCP tool catalog and schemas as the authority. Discover `updat
 
 Reuse an existing Platform execution ID when the user supplies one. Do not create another run, reselect its AUT, or replace its pinned cases. Resolve project and repository through `list_projects` / `list_repositories` when context is missing or ambiguous. For a new manual run, resolve the selected cases/suite, read the matching AUT with `read_auts`, honor the creation tool's AUT-choice requirements, and use `create_test_run(mode="manual")` (or the older `create_manual_test_run` if that is what the connected server exposes). Creating a test suite alone does not create a TestPak. Creation-only requests stop after run creation and return the execution link, not a test-suite link.
 
+An explicit "skip AUT configuration" choice takes precedence over AUT matching/defaults. Omit both `aut_environment_id` and `default_aut_environment_url` when creating the run, even if discovery returns one matching environment. Reading the AUT catalog does not authorize selecting it. Do not configure an AUT later during START just because the run uses hosted AI.
+
 Read [references/execution-workflow.md](references/execution-workflow.md) for selectors, recording, evidence, and uncertain responses. Read [references/capability-boundaries.md](references/capability-boundaries.md) if availability is unclear.
 
 ## Choose who executes
@@ -36,6 +38,8 @@ For a chat-only agent such as Kai, "run this TestPak" requests hosted execution;
 3. Save/capture actual evidence and measure the saved file's byte size before `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`; never guess `content_length` or send 0. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
 4. After the case result is recorded, call MANUAL START again for the next unfinished case. Repeat for the run's required environments. Do not rewrite completed outcomes to force a pass.
 5. When all case/environment results are terminal, call `update_test_run` with `update={"action":"END"}`. FAILED, BLOCKED, and SKIPPED are also terminal; End does not imply PASSED.
+
+When the user requests closure, including "end only if all cases are finished", call `update_test_run` with `update={"action":"END"}` and the default unfinished-case policy. The tool checks every pinned case/environment and returns `blocked` without an END write if work remains. Report that blocker and leave the run open; never switch to SKIP without explicit authorization. A coarse `read_execution` status or an empty `find_test_results` page does not replace this lifecycle check. For status-only requests without closure intent, keep using read tools.
 
 ## Hosted Katalon Run With AI
 

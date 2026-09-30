@@ -49,6 +49,7 @@ Default assumptions:
 
 - If exactly one Katalon project or repository matches the user's wording or current context, use it.
 - If exactly one repository exists, use it.
+- Explicitly skipping AUT configuration overrides the following AUT defaults: omit `aut_environment_id` and `default_aut_environment_url` throughout creation and launch, even if one environment matches.
 - If no AUT environments exist and the user supplied or requirement contains a URL, use that URL as `default_aut_environment_url` for AI execution.
 - If AUT environments exist, choose the environment whose URL/name best matches the target AUT. Ask only if no match is clear.
 - Creating a run does not authorize hosted AI. Use the chosen execution path: human or local browser/computer harness with MANUAL, or explicit Katalon Run With AI with KATALON_AI. Ask only when that choice is genuinely ambiguous; creation-only requests stop after creation.
@@ -195,6 +196,7 @@ Route to `execute-test` for human testing, local agent execution, and hosted Kat
 - Human or local harness: `update_test_run` START MANUAL → follow returned `current_case` steps → upload actual evidence if available → `update_test_results` → START the next unfinished case → END when all case/environment results are terminal.
 - No browser/computer tools: present steps and wait for the user's observations. No uploader: save valid text observations and guide a TestPak UI upload. Do not fabricate execution, artifacts, or a FAILED/BLOCKED outcome from missing client capabilities.
 - Hosted Katalon AI: only when explicitly selected, START KATALON_AI using the user's SHARED/SEPARATE browser-profile choice and a compatible existing run. Poll the returned manual/session IDs. Reuse a known session; never launch twice or reset existing results.
+- For a requested closure, including "end only if finished", use `update_test_run` END with its default unfinished-case policy. Let its pinned-case/environment check return `blocked` instead of inferring completeness from execution summaries or an empty result page. Status-only requests still use read tools.
 - END applies to the whole run, including hosted AI. Default END rejects unfinished cases. Use `unfinished_cases="SKIP"` only for an explicit stop/skip-remaining request. Preserve FAILED/BLOCKED/SKIPPED results; closure does not imply passing.
 - Respect handoff, start-only, and single-progress-check requests. For full execution, continue within the requested scope until completion or an actionable external blocker. On `outcome="unknown"`, inspect state before retrying a write.
 

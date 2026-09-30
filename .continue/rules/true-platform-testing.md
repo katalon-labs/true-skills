@@ -52,6 +52,7 @@ Default assumptions:
 
 - If exactly one Katalon project or repository matches the user's wording or current context, use it.
 - If exactly one repository exists, use it.
+- Explicitly skipping AUT configuration overrides the following AUT defaults: omit `aut_environment_id` and `default_aut_environment_url` throughout creation and launch, even if one environment matches.
 - If no AUT environments exist and the user supplied or requirement contains a URL, use that URL as `default_aut_environment_url` for AI execution.
 - If AUT environments exist, choose the environment whose URL/name best matches the target AUT. Ask only if no match is clear.
 - Creating a run does not authorize hosted AI. Use the chosen execution path: human or local browser/computer harness with MANUAL, or explicit Katalon Run With AI with KATALON_AI. Ask only when that choice is genuinely ambiguous; creation-only requests stop after creation.
@@ -198,6 +199,7 @@ Route to `execute-test` for human testing, local agent execution, and hosted Kat
 - Human or local harness: `update_test_run` START MANUAL → follow returned `current_case` steps → upload actual evidence if available → `update_test_results` → START the next unfinished case → END when all case/environment results are terminal.
 - No browser/computer tools: present steps and wait for the user's observations. No uploader: save valid text observations and guide a TestPak UI upload. Do not fabricate execution, artifacts, or a FAILED/BLOCKED outcome from missing client capabilities.
 - Hosted Katalon AI: only when explicitly selected, START KATALON_AI using the user's SHARED/SEPARATE browser-profile choice and a compatible existing run. Poll the returned manual/session IDs. Reuse a known session; never launch twice or reset existing results.
+- For a requested closure, including "end only if finished", use `update_test_run` END with its default unfinished-case policy. Let its pinned-case/environment check return `blocked` instead of inferring completeness from execution summaries or an empty result page. Status-only requests still use read tools.
 - END applies to the whole run, including hosted AI. Default END rejects unfinished cases. Use `unfinished_cases="SKIP"` only for an explicit stop/skip-remaining request. Preserve FAILED/BLOCKED/SKIPPED results; closure does not imply passing.
 - Respect handoff, start-only, and single-progress-check requests. For full execution, continue within the requested scope until completion or an actionable external blocker. On `outcome="unknown"`, inspect state before retrying a write.
 
@@ -306,6 +308,8 @@ For an existing run, use its Platform execution ID directly. `execution_id`, G5 
 
 For a new manual run, resolve the requested cases/suites and read `read_auts` immediately before creation. Resolve the AUT matching the target URL/name and honor the creation tool's selection requirements; reuse an explicit choice already supplied for this flow. If none exists and a URL is known, use the creation tool's supported default AUT field. Ask only for genuinely missing or ambiguous settings. A missing manual execution or unmaterialized snapshot is a reason to retry discovery later, not to create duplicate runs or guess IDs.
 
+An explicit "skip AUT configuration" choice takes precedence over AUT matching/defaults. Omit both `aut_environment_id` and `default_aut_environment_url` when creating the run, even if discovery returns one matching environment. Reading the AUT catalog does not authorize selecting it. Do not configure an AUT later during START just because the run uses hosted AI.
+
 Use the live tool schema: modern creation is `create_test_run(mode="manual")`; older servers may expose `create_manual_test_run`. Creating a run alone is never execution evidence. Do not automatically launch hosted AI after creating it.
 
 ## Start and carry the pinned context
@@ -339,6 +343,8 @@ After a case is recorded, call START for the next unfinished case and continue w
 ## End, retry, and hosted AI
 
 `update={"action":"END"}` closes the whole run only when every case/environment has a terminal PASSED, FAILED, BLOCKED, or SKIPPED result. Preserve these verdicts. If unfinished cases remain, leave the run open unless the user explicitly asks to stop early and skip them; then use `unfinished_cases="SKIP"`. This also stops hosted AI. Already-ended runs cannot be reopened by START; repeated END reads their state without repeating the write.
+
+When the user requests closure, including "end only if all cases are finished", call `update_test_run` with `update={"action":"END"}` and the default unfinished-case policy. The tool checks every pinned case/environment and returns `blocked` without an END write if work remains. Report that blocker and leave the run open; never switch to SKIP without explicit authorization. A coarse `read_execution` status or an empty `find_test_results` page does not replace this lifecycle check. For status-only requests without closure intent, keep using read tools.
 
 For hosted AI, START uses `execution_mode="KATALON_AI"` with the user's `browser_profile_mode` choice. The run needs one Windows/Linux Chrome environment. It returns `manual_execution_id`, `session_id`, and optionally `conversation_id`; poll `read_manual_ai_session` with the first two. A known session is reused. Do not invoke the legacy session-creation tool as a retry or start a new session over existing results. AI-only runs may auto-end, but closure and synchronization still need observed state before reporting them as complete.
 

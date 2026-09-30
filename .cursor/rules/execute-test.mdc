@@ -15,6 +15,8 @@ Use the connected MCP tool catalog and schemas as the authority. Discover `updat
 
 Reuse an existing Platform execution ID when the user supplies one. Do not create another run, reselect its AUT, or replace its pinned cases. Resolve project and repository through `list_projects` / `list_repositories` when context is missing or ambiguous. For a new manual run, resolve the selected cases/suite, read the matching AUT with `read_auts`, honor the creation tool's AUT-choice requirements, and use `create_test_run(mode="manual")` (or the older `create_manual_test_run` if that is what the connected server exposes). Creating a test suite alone does not create a TestPak. Creation-only requests stop after run creation and return the execution link, not a test-suite link.
 
+An explicit "skip AUT configuration" choice takes precedence over AUT matching/defaults. Omit both `aut_environment_id` and `default_aut_environment_url` when creating the run, even if discovery returns one matching environment. Reading the AUT catalog does not authorize selecting it. Do not configure an AUT later during START just because the run uses hosted AI.
+
 Read [references/execution-workflow.md](references/execution-workflow.md) for selectors, recording, evidence, and uncertain responses. Read [references/capability-boundaries.md](references/capability-boundaries.md) if availability is unclear.
 
 ## Choose who executes
@@ -38,6 +40,8 @@ For a chat-only agent such as Kai, "run this TestPak" requests hosted execution;
 3. Save/capture actual evidence and measure the saved file's byte size before `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`; never guess `content_length` or send 0. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
 4. After the case result is recorded, call MANUAL START again for the next unfinished case. Repeat for the run's required environments. Do not rewrite completed outcomes to force a pass.
 5. When all case/environment results are terminal, call `update_test_run` with `update={"action":"END"}`. FAILED, BLOCKED, and SKIPPED are also terminal; End does not imply PASSED.
+
+When the user requests closure, including "end only if all cases are finished", call `update_test_run` with `update={"action":"END"}` and the default unfinished-case policy. The tool checks every pinned case/environment and returns `blocked` without an END write if work remains. Report that blocker and leave the run open; never switch to SKIP without explicit authorization. A coarse `read_execution` status or an empty `find_test_results` page does not replace this lifecycle check. For status-only requests without closure intent, keep using read tools.
 
 ## Hosted Katalon Run With AI
 
@@ -113,6 +117,8 @@ For an existing run, use its Platform execution ID directly. `execution_id`, G5 
 
 For a new manual run, resolve the requested cases/suites and read `read_auts` immediately before creation. Resolve the AUT matching the target URL/name and honor the creation tool's selection requirements; reuse an explicit choice already supplied for this flow. If none exists and a URL is known, use the creation tool's supported default AUT field. Ask only for genuinely missing or ambiguous settings. A missing manual execution or unmaterialized snapshot is a reason to retry discovery later, not to create duplicate runs or guess IDs.
 
+An explicit "skip AUT configuration" choice takes precedence over AUT matching/defaults. Omit both `aut_environment_id` and `default_aut_environment_url` when creating the run, even if discovery returns one matching environment. Reading the AUT catalog does not authorize selecting it. Do not configure an AUT later during START just because the run uses hosted AI.
+
 Use the live tool schema: modern creation is `create_test_run(mode="manual")`; older servers may expose `create_manual_test_run`. Creating a run alone is never execution evidence. Do not automatically launch hosted AI after creating it.
 
 For local execution, inspect the client runtime and pass its actual OS/browser when creating the run; a remote server cannot detect them. Omit unknown versions instead of using `latest`. Omit `executor` to use the authenticated user, even when the agent operates the browser; an agent name or email is not a user UUID. Correct only the rejected field and preserve the selected cases, AUT, and known environment.
@@ -150,6 +156,8 @@ After a case is recorded, call START for the next unfinished case and continue w
 ## End, retry, and hosted AI
 
 `update={"action":"END"}` closes the whole run only when every case/environment has a terminal PASSED, FAILED, BLOCKED, or SKIPPED result. Preserve these verdicts. If unfinished cases remain, leave the run open unless the user explicitly asks to stop early and skip them; then use `unfinished_cases="SKIP"`. This also stops hosted AI. Already-ended runs cannot be reopened by START; repeated END reads their state without repeating the write.
+
+When the user requests closure, including "end only if all cases are finished", call `update_test_run` with `update={"action":"END"}` and the default unfinished-case policy. The tool checks every pinned case/environment and returns `blocked` without an END write if work remains. Report that blocker and leave the run open; never switch to SKIP without explicit authorization. A coarse `read_execution` status or an empty `find_test_results` page does not replace this lifecycle check. For status-only requests without closure intent, keep using read tools.
 
 For hosted AI, START uses `execution_mode="KATALON_AI"` with the user's `browser_profile_mode` choice. The run needs one Windows/Linux Chrome environment. It returns `manual_execution_id`, `session_id`, and optionally `conversation_id`; poll `read_manual_ai_session` with the first two. A known session is reused. Do not invoke the legacy session-creation tool as a retry or start a new session over existing results. AI-only runs may auto-end, but closure and synchronization still need observed state before reporting them as complete.
 
