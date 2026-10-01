@@ -59,6 +59,63 @@ POINTER_LINE = (
     "changes run through Katalon cards that the user confirms."
 )
 
+# Lines the canonical skills give agents that hold write tools, rewritten in the
+# ChatGPT copy only. In ChatGPT the model has no write tool: every write is a
+# card the user clicks, so an instruction to write or start a run "without
+# asking" reads as steering the model past the user (AC-65 metadata-steering).
+# The build fails when a listed line is no longer in its source, so a rewording
+# upstream cannot silently drop the rewrite.
+CHATGPT_REWRITES: Dict[str, List[Tuple[str, str]]] = {
+    "true-platform-testing/SKILL.md": [
+        (
+            "- After creating any manual test execution, start Run with AI automatically and wait for completion unless the user explicitly says not to run AI.",
+            "- Once a manual run is ready, offer the `plan_ai_run` card unless the user said not to run AI. The run starts only when the user clicks Run, and the card follows it to completion.",
+        ),
+        (
+            "- For full-flow requests, perform non-destructive writes without asking again once project/repository/requirement scope is resolved.",
+            "- For full-flow requests in ChatGPT, every write is a Katalon card the user confirms: once project, repository and requirement scope is resolved, show the next card.",
+        ),
+        (
+            "- After any manual test execution is created, start Run with AI automatically unless the user explicitly says not to. Do not ask whether to continue with AI.",
+            "- Once the test cases are ready, offer the `plan_ai_run` card unless the user said not to run with AI. The run starts only when the user clicks Run in the card.",
+        ),
+    ],
+    "true-platform-testing/references/execution-workflow.md": [
+        (
+            "7. Continue to AI automatically after creating any manual execution unless the user explicitly says not to run AI.",
+            "7. In ChatGPT, offer the `plan_ai_run` card for the run unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
+        ),
+        (
+            "- Start Run with AI without asking again after any manual run is created.",
+            "- In ChatGPT, Run with AI starts only when the user clicks Run in the `plan_ai_run` card.",
+        ),
+        (
+            "- Do not ask whether to continue with AI unless the user explicitly requests a manual run without AI.",
+            "- Offer the `plan_ai_run` card for the run unless the user asked for a manual run without AI.",
+        ),
+    ],
+    "execute-test/SKILL.md": [
+        (
+            "6. Start Run with AI automatically with `create_manual_ai_session` unless the user explicitly says not to run AI.",
+            "6. Offer the `plan_ai_run` card unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
+        ),
+    ],
+    "execute-test/references/execution-workflow.md": [
+        (
+            "7. Continue to AI automatically after creating any manual execution unless the user explicitly says not to run AI.",
+            "7. In ChatGPT, offer the `plan_ai_run` card for the run unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
+        ),
+        (
+            "- Start Run with AI without asking again after any manual run is created.",
+            "- In ChatGPT, Run with AI starts only when the user clicks Run in the `plan_ai_run` card.",
+        ),
+        (
+            "- Do not ask whether to continue with AI unless the user explicitly requests a manual run without AI.",
+            "- Offer the `plan_ai_run` card for the run unless the user asked for a manual run without AI.",
+        ),
+    ],
+}
+
 # Limits from the OpenAI plugin submission rules (research/apps-sdk-reference.md,
 # "Final submission limits", captured 2026-10-01).
 MAX_NAME = 64
@@ -875,6 +932,18 @@ def stage_package(stage: Path) -> List[str]:
         if skill_md.is_file():
             body = skill_md.read_text(encoding="utf-8").rstrip("\n")
             skill_md.write_text(f"{body}\n\n{POINTER_LINE}\n", encoding="utf-8")
+    for relative, rewrites in CHATGPT_REWRITES.items():
+        path = stage / "skills" / relative
+        if not path.is_file():
+            problems.append(f"skills/{relative} is listed in CHATGPT_REWRITES but missing")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for source, replacement in rewrites:
+            if text.count(source) != 1:
+                problems.append(f"skills/{relative}: rewrite source line not found once: {source[:60]}")
+                continue
+            text = text.replace(source, replacement)
+        path.write_text(text, encoding="utf-8")
     if overlay.is_dir():
         for extra in sorted(set(p.name for p in overlay.iterdir() if p.is_dir()) - set(names)):
             problems.append(f"chatgpt/overlay/skills/{extra} has no matching skills/{extra}")

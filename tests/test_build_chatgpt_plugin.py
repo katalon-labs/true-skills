@@ -299,6 +299,18 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         code, output = run_script("--validate", str(zips[0]), "--submitted-versions", str(self.no_versions))
         self.assertEqual(code, 0, output)
 
+    def test_chatgpt_copy_never_tells_the_model_to_write_without_asking(self) -> None:
+        # AC-65 metadata-steering: writes are cards in ChatGPT.
+        pattern = re.compile(r"without asking again|Run with AI automatically|Continue to AI automatically|Do not ask whether to continue with AI")
+        for path in sorted((self.base / "skills").rglob("*.md")):
+            self.assertIsNone(pattern.search(path.read_text(encoding="utf-8")), path.relative_to(self.base))
+        for relative, rewrites in build.CHATGPT_REWRITES.items():
+            staged = (self.base / "skills" / relative).read_text(encoding="utf-8")
+            source = (ROOT / "skills" / relative).read_text(encoding="utf-8")
+            for old, new in rewrites:
+                self.assertIn(new, staged, relative)
+                self.assertIn(old, source, f"{relative}: the canonical skill keeps its line")
+
     def test_root_manifests_for_other_agents_are_untouched(self) -> None:
         root_mcp = json.loads((ROOT / "mcp.json").read_text(encoding="utf-8"))
         self.assertEqual(root_mcp["mcpServers"], {"katalon-prod-mcp": {"type": "streamable-http", "url": "https://platform.katalon.io/mcp"}})

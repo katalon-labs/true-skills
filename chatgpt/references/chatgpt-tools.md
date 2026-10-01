@@ -5,6 +5,7 @@ In ChatGPT the Katalon connection has read tools and card tools, and no tool the
 ## Rules
 
 - Take `project_id` from `settings_read`, else from `list_projects`, and reuse it for the rest of the conversation.
+- A `show_*`, `plan_*` or `review_*` tool called without `project_id` opens the user's only project. When the user has several, it returns their names and IDs instead of a card: ask which one, then call the tool again with that `project_id`.
 - `show_*`, `plan_*` and `review_*` tools draw a card. Call at most one per answer, as the last call, with IDs you already read.
 - Cards poll running sessions themselves. Do not poll `read_manual_ai_session` after a card has started a run.
 - If a card tool is not listed in this session, answer in text from the read tools and give the True Platform link for the change.
