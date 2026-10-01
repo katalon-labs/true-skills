@@ -121,9 +121,15 @@ Maintain and evolve a Katalon True Platform/TestOps regression suite as the appl
 
 File: `skills/test-maintenance/SKILL.md`
 
+### get-started
+
+First-run onboarding for Katalon True Platform right after the Katalon connection is installed. Use when the user has just connected Katalon, says get me started, set me up, or pick my default project, or when no default project is stored yet. Confirms who is signed in, asks at most two questions to choose the default project and, only when there is a choice, the default repository and Run with AI target, saves them as settings when the client supports it, and ends on the Katalon home view or three starter prompts. Not for installing or configuring an MCP client in a local agent, which belongs to platform-setup, and not for designing or running tests.
+
+File: `skills/get-started/SKILL.md`
+
 ### true-platform-testing
 
-End-to-end Katalon True Platform testing workflow and lifecycle router. Use when one request spans several stages and no single skill owns all of it, for example analyze a requirement, design and import the cases, build a suite, run it with AI, and report the outcome. Also use to route any testing request across the full 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and for deciding what is and is not available through the Katalon MCP tools. Start here when a request names a job rather than one task, such as drive the whole chain from requirement to ship call. Also start here when the asker wants orienting before acting, for example where do I start, which skill do I need, or I own quality here and do not know where to begin. Routes the asker to the skill that owns their next step, whether they say manual tester, QA analyst, test analyst, automation tester, SDET, automation engineer, QA engineer, test lead, QA lead, test manager, or QA manager.
+End-to-end Katalon True Platform testing workflow and lifecycle router. Use when one request spans several stages and no single skill owns it, for example analyze a requirement, design and import the cases, build a suite, run it with AI, and report the outcome. Also use to route any testing request across the 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and to decide what the Katalon MCP tools can and cannot do. Start here when a request names a job rather than one task, such as the whole chain from requirement to ship call, or when the asker wants orienting first, for example where do I start or which skill do I need. Routes the asker to the skill that owns their next step, whether they say manual tester, QA analyst, automation tester, SDET, QA engineer, test lead, QA lead, test manager, or QA manager.
 
 File: `skills/true-platform-testing/SKILL.md`
 

@@ -1,0 +1,15 @@
+interface:
+  display_name: "Release readiness"
+  short_description: "Make the release call"
+  brand_color: "#6059E4"
+  default_prompt: "Is my next release ready to ship?"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

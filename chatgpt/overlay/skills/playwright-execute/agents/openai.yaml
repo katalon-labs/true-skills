@@ -1,0 +1,15 @@
+interface:
+  display_name: "Playwright execute"
+  short_description: "Run Playwright and upload"
+  brand_color: "#6059E4"
+  default_prompt: "Run my Playwright suite and upload the report to Katalon"
+policy:
+  products: [CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

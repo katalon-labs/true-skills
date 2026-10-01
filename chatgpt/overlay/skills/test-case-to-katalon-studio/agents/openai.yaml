@@ -1,0 +1,15 @@
+interface:
+  display_name: "Test case to Studio"
+  short_description: "Generate Katalon Studio tests"
+  brand_color: "#6059E4"
+  default_prompt: "Turn test case TC-1042 into a Katalon Studio test"
+policy:
+  products: [CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

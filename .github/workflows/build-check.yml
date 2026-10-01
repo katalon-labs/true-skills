@@ -27,3 +27,15 @@ jobs:
             echo "::error::Generated files are out of sync. Run 'node scripts/build-adapters.mjs' and commit the result."
             exit 1
           fi
+
+  chatgpt-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fixture tests for the ChatGPT package build
+        run: python3 -m unittest discover -s tests
+      - name: Build and validate the ChatGPT plugin package
+        run: python3 scripts/build-chatgpt-plugin.py

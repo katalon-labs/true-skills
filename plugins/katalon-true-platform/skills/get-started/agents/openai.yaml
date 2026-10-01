@@ -1,0 +1,4 @@
+interface:
+  display_name: "Katalon Get Started"
+  short_description: "Connect and pick a default project"
+  default_prompt: "Use $get-started to get me started with Katalon True Platform and pick my default project."

@@ -1,0 +1,15 @@
+interface:
+  display_name: "Get started"
+  short_description: "Pick your default project"
+  brand_color: "#6059E4"
+  default_prompt: "Get me started with Katalon True Platform"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

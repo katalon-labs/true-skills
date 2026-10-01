@@ -1,0 +1,38 @@
+---
+name: get-started
+description: First-run onboarding for Katalon True Platform right after the Katalon connection is installed. Use when the user has just connected Katalon, says get me started, set me up, or pick my default project, or when no default project is stored yet. Confirms who is signed in, asks at most two questions to choose the default project and, only when there is a choice, the default repository and Run with AI target, saves them as settings when the client supports it, and ends on the Katalon home view or three starter prompts. Not for installing or configuring an MCP client in a local agent, which belongs to platform-setup, and not for designing or running tests.
+---
+
+# Katalon Get Started
+
+Run this once after the Katalon connection is installed. The goal is a stored default project and a first useful view in under a minute, with **at most two questions**.
+
+## Boundary
+
+- Reads only, plus one settings save. Nothing in the user's workspace changes.
+- Never ask for a password, API key or token. Sign-in happens in the client's own Katalon sign-in screen.
+- Never repeat the user's email address back to them.
+- Some tools below exist only on clients that render Katalon cards and store settings (`katalon_profile`, `settings_update`, `katalon_home`). When a tool is not listed in this session, skip that step as described and carry on.
+
+## Steps
+
+1. **Who is signed in.** Call `katalon_profile`. Greet in one line with the organization and account name from `nickname`, for example "You are connected to Katalon as Katalon Demo / Demo Shop." If `katalon_profile` is not listed, skip the greeting. If the call says the user is not signed in, tell them to sign in to Katalon from the connection prompt and stop.
+2. **Default project (question 1).** Call `list_projects`. If there is exactly one project, use it and do not ask. Otherwise ask one question offering the three most recently used projects by name, plus "another project". If the user names another project, match it by name from the same list.
+3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` and `read_auts` for the chosen project.
+   - One repository and at most one AUT environment: use them and do not ask.
+   - More than one of either: ask one combined question, for example "Which repository and which environment should Run with AI use by default?", listing at most three options for each.
+   - No AUT environment: leave the Run with AI target unset and say Run with AI asks for it on first use.
+4. **Save.** Call `settings_update` with `{"set": {"default_project_id": ..., "default_repository_id": ..., "default_aut_environment_id": ...}}`, leaving out any value that was not chosen. If `settings_update` is not listed, say which project and repository this conversation will use and skip saving.
+5. **First view.** Call `katalon_home` so the user lands on their runs, uncovered requirements and release status. Where cards do not render, or `katalon_home` is not listed, end with these three starter prompts instead:
+   - "Which requirements in my next release have no tests?"
+   - "Why did my latest test run fail?"
+   - "Is my next release ready to ship?"
+
+## Stop conditions
+
+- Stop after step 5. Do not start a run, design cases or file anything during onboarding.
+- If any read fails with a permission or gate error, report the error line as given, say who can lift it if the error names that, and continue with the steps that still work.
+
+## Output
+
+One greeting line, at most two questions, one confirmation line naming the saved defaults, then the home view or the three starter prompts.

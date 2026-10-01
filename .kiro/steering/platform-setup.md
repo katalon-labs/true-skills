@@ -8,7 +8,7 @@ inclusion: manual
 
 Use this skill for Katalon MCP installation, connection, and readiness checks. Do not use it for designing or running tests unless the setup check leads directly into `create-test-cases`, `execute-test`, or the larger `true-platform-testing` skill.
 
-This skill is agent-neutral. The Katalon MCP server is the same for every agent (Claude Code, Codex, Copilot, Cursor, Kiro, Windsurf, and others); only the config file location and format differ per agent. For the exact per-agent config path and snippet, read the repository `README.md` install section.
+This skill is agent-neutral. The Katalon MCP server is the same for every agent (terminal coding agents, Codex, Copilot, Cursor, Kiro, Windsurf, and others); only the config file location and format differ per agent. For the exact per-agent config path and snippet, read the repository `README.md` install section.
 
 ## Setup Boundary
 
@@ -66,7 +66,7 @@ When MCP tools are missing:
 
 1. Inspect local agent/plugin context for an existing Katalon MCP install path or configuration.
 2. If the config still contains a `<your.sub.domain>` placeholder, replace it with `https://platform.katalon.io/mcp`. Never leave a placeholder in an active user config.
-3. Prefer a native remote MCP entry. Agents that speak remote MCP directly (Claude Code, Copilot/VS Code, Copilot CLI, Cursor) need only the endpoint and run the browser OAuth flow themselves:
+3. Prefer a native remote MCP entry. Agents that speak remote MCP directly (most terminal coding agents, Copilot/VS Code, Copilot CLI, Cursor) need only the endpoint and run the browser OAuth flow themselves:
 
    ```json
    { "mcpServers": { "katalon-prod-mcp": { "type": "http", "url": "https://platform.katalon.io/mcp" } } }

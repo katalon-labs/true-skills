@@ -2,13 +2,13 @@
 
 # Katalon Testing Skills - Kiro Crew app
 
-A [Kiro Crew](https://kirocrew.com) app that packages the 18 Katalon True Platform testing skills from this repo and wires the Katalon MCP, so a Kiro Crew agent can plan, design, manage, review, execute, analyze, and maintain tests against your real Katalon workspace.
+A [Kiro Crew](https://kirocrew.com) app that packages the 19 Katalon True Platform testing skills from this repo and wires the Katalon MCP, so a Kiro Crew agent can plan, design, manage, review, execute, analyze, and maintain tests against your real Katalon workspace.
 
 This directory is **generated** by `scripts/build-adapters.mjs` from the canonical `skills/` at the repo root - do not edit the skills here by hand.
 
 ## Install (local / developer)
 
-Kiro Crew installs an app from a local path. From the dashboard's Apps page use the install-from-path control, or POST the app directory to `/api/apps/install` from the authenticated dashboard. Enabling registers the 18 skills and the `katalon-prod-mcp` server; first MCP connect opens a browser OAuth flow and a workspace picker.
+Kiro Crew installs an app from a local path. From the dashboard's Apps page use the install-from-path control, or POST the app directory to `/api/apps/install` from the authenticated dashboard. Enabling registers the 19 skills and the `katalon-prod-mcp` server; first MCP connect opens a browser OAuth flow and a workspace picker.
 
 > Enabling any Kiro Crew app runs its code with full gateway privileges. This app ships only markdown skills + a remote MCP declaration + a verify-only install hook.
 

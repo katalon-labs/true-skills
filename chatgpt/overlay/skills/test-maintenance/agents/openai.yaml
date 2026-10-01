@@ -1,0 +1,15 @@
+interface:
+  display_name: "Test maintenance"
+  short_description: "Repair flaky and broken tests"
+  brand_color: "#6059E4"
+  default_prompt: "Which test cases went flaky this month?"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"
