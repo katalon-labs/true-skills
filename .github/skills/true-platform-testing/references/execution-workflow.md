@@ -30,7 +30,7 @@ An agent with browser/computer tools can perform the steps and capture evidence.
 For each actual screenshot/file:
 
 1. Call `prepare_artifact_upload` with its real metadata.
-2. Upload the actual bytes to the returned URL using the returned method/headers. Do not forward Platform credentials to the upload host.
+2. Upload the actual bytes to the returned URL using the returned method/headers. Do not forward Platform credentials to the upload host. Disable automatic redirects on the byte upload. If a redirect is required, validate that its scheme, host and port match the prepared URL before following it; never forward upload credentials to a different origin.
 3. Call `confirm_artifact_upload` and use the confirmed `artifact_id` in `evidence` for the relevant step or case. Do not invent an ID or treat a local path as an uploaded artifact.
 4. Inspect the recording response, including partial/conflict/unknown outcomes; do not assume everything was saved.
 
