@@ -1,0 +1,15 @@
+interface:
+  display_name: "Platform setup"
+  short_description: "Connect an agent to Katalon"
+  brand_color: "#6059E4"
+  default_prompt: "Connect this agent to my Katalon True Platform account"
+policy:
+  products: [CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

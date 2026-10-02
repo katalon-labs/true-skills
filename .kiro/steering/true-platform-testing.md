@@ -685,7 +685,7 @@ Create requirements · create Release/Build/Test-Plan entity · author release g
 
 # Prompt recipes + cross-model / cross-agent execution notes
 
-These skills are agent-neutral and must run on any coding agent (Claude, ChatGPT/Codex, Gemini, Copilot, Cursor, Kiro, Windsurf, Cline, Continue) and any model tier (Opus down to Haiku/small). Smaller models reason less, so the skills are written to be **followed, not interpreted**.
+These skills are agent-neutral and must run on any coding agent (ChatGPT/Codex, Gemini, Copilot, Cursor, Kiro, Windsurf, Cline, Continue, and others) and any model tier (the largest models down to small, fast ones). Smaller models reason less, so the skills are written to be **followed, not interpreted**.
 
 ## Cross-model design principles (why the skills read the way they do)
 
@@ -696,7 +696,7 @@ These skills are agent-neutral and must run on any coding agent (Claude, ChatGPT
 5. **Report template supplied.** Each workflow ends with an exact output shape so weaker models produce a structured answer instead of rambling.
 6. **Platform tool names only.** Reference MCP tools by their platform name (`create_manual_test_run`), never an agent-specific wrapper, so the same instruction works in Copilot/Cursor/Kiro/Windsurf.
 
-## Small-model guardrails (Haiku / small Copilot / Gemini Flash)
+## Small-model guardrails (small and fast model tiers)
 
 - Do one recipe at a time; do not chain R1..R6 in a single prompt.
 - Confirm scope (project + repository) before any write.
@@ -717,10 +717,10 @@ Maintain: `Which cases went flaky this month, and repair vs regenerate?`
 Cross-verify: `Run this critical suite with AI and with Playwright, then reconcile any disagreement.`
 Full chain: `Analyze CEL-6, design and import cases, build a suite, run with AI, and tell me if we can ship.`
 
-## Non-Claude agent notes
+## Per-agent notes
 
 - **Copilot / Cursor / Kiro / Windsurf / Cline / Continue:** invoke the skill by its name or `/skill-name`; the MCP tool calls are identical. The generated adapter for each agent carries the same skill body.
-- **Codex / ChatGPT:** the plugin declares the MCP in `.mcp.json`; follow the numbered steps exactly, they are model-agnostic.
+- **Codex / ChatGPT:** the plugin declares the MCP in `mcp.json` (`.mcp.json` in the agent plugin folder); follow the numbered steps exactly, they are model-agnostic.
 - **Any agent via AGENTS.md:** read `AGENTS.md`, match the request to a skill description, open that `SKILL.md`, follow it.
 
 ### references/requirement-analysis.md

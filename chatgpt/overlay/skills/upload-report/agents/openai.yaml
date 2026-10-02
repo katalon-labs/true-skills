@@ -1,0 +1,15 @@
+interface:
+  display_name: "Upload report"
+  short_description: "Upload a test report"
+  brand_color: "#6059E4"
+  default_prompt: "Upload this JUnit report to Katalon True Platform"
+policy:
+  products: [CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

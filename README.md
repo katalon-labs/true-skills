@@ -5,7 +5,7 @@
   <img src="docs/images/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
 </picture>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![18 skills](https://img.shields.io/badge/skills-18-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![19 skills](https://img.shields.io/badge/skills-19-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
 
 [Start here](#start-where-you-are) · [Quickstart](#quickstart) · [Skills](#the-skills) · [Lifecycle](#the-lifecycle) · [Install](#install) · [MCP](#connect-the-katalon-mcp) · [Contributing](CONTRIBUTING.md)
 
@@ -71,11 +71,12 @@ Not sure which one you are, or the request spans several? Ask [`true-platform-te
 
 ## The skills
 
-Eighteen skills, one folder each under [`skills/`](skills/). The agent picks the right one from its description, so you rarely name a skill yourself.
+Nineteen skills, one folder each under [`skills/`](skills/). The agent picks the right one from its description, so you rarely name a skill yourself.
 
 | Skill | Stage | What it does |
 | --- | --- | --- |
 | [platform-setup](skills/platform-setup/SKILL.md) | setup | Installs and verifies the Katalon MCP, and diagnoses auth or access failures. Start here. |
+| [get-started](skills/get-started/SKILL.md) | setup | First-run onboarding after the connection is installed. Confirms the signed-in account, picks the default project in at most two questions, and opens the Katalon home view. The ChatGPT plugin runs it on install. |
 | [test-plan](skills/test-plan/SKILL.md) | 1 plan | Turns quality goals into scope, ranks the work by requirement coverage and risk, and builds the folder and suite structure that acts as the executable plan. |
 | [test-estimation](skills/test-estimation/SKILL.md) | 1 plan | Sizes a test cycle from scope, risk, and historical execution data, resources it across the manual and automated lanes, and states the uncertainty instead of inventing precision. |
 | [create-test-cases](skills/create-test-cases/SKILL.md) | 2 design | Reads a requirement or free text, designs atomic manual cases with ISTQB techniques as reference, skips duplicates, imports only what is missing, and links each case back to the requirement. |
@@ -207,7 +208,7 @@ Steering docs use manual inclusion, so reference one in chat with `#true-platfor
 <details>
 <summary><b>Kiro Crew</b> app</summary>
 
-[Kiro Crew](https://kirocrew.com) installs this as an **app** — `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 18 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
+[Kiro Crew](https://kirocrew.com) installs this as an **app** — `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 19 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
 
 ```bash
 # local/developer install: point Kiro Crew at the app directory
@@ -299,7 +300,7 @@ The skill bodies live once. Everything each agent needs is generated from them, 
 ```
 
 ```text
-skills/                              source of truth, 18 skills
+skills/                              source of truth, 19 skills
 scripts/build-adapters.mjs           generates every agent config
 plugins/katalon-true-platform/       Claude Code and Codex plugin      (generated)
 .claude-plugin/  .agents/            plugin marketplaces               (generated)
@@ -320,6 +321,15 @@ node scripts/build-adapters.mjs     # regenerate every agent config
 ```
 
 The build is deterministic. Re-running it with no skill changes produces no diff, and CI rejects out-of-sync adapters. Details in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+The ChatGPT plugin package has its own sources under `chatgpt/` (the ChatGPT `plugin.json`, per-skill `agents/openai.yaml` overlays, the card tool map and the listing assets) and its own build, which stages an allowlisted copy in `dist/chatgpt/` and refuses anything the OpenAI plugin directory rejects:
+
+```bash
+python3 scripts/build-chatgpt-plugin.py      # dist/chatgpt/katalon-true-platform/ and the ZIP
+python3 -m unittest discover -s tests        # one bad fixture per forbidden item
+```
+
+Listing copy, review cases and the submission checklist are in [`docs/chatgpt/`](docs/chatgpt/).
 
 ## Support
 

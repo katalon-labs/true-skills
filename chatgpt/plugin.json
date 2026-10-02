@@ -1,0 +1,113 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "katalon-true-platform",
+  "version": "1.0.0",
+  "description": "Plan, design, run and analyze software tests on Katalon True Platform, from requirement to release verdict.",
+  "author": {
+    "name": "Katalon",
+    "email": "support@katalon.com",
+    "url": "https://katalon.com"
+  },
+  "homepage": "https://katalon.com/true-platform",
+  "repository": "https://github.com/katalon-labs/true-skills",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "qa",
+    "test-management",
+    "requirement-traceability",
+    "release-readiness"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Katalon True Platform",
+        "shortDescription": "Plan, run and triage tests",
+        "longDescription": "Connect ChatGPT to your Katalon True Platform workspace and work through the testing loop in one conversation. Find requirements in a release that have no test coverage. Design manual test cases for a requirement, then save them and link them after you review them. Run test cases with AI in a real browser against your application and follow each case as it runs; Run with AI uses your TestCloud minutes and can change data in the application under test. Group a failed run's failures by signature, with ChatGPT's classification shown beside the step evidence and screenshots. Draft a defect for Jira or Azure DevOps, with any open defect on the same test case flagged. Get a release readiness verdict that shows labelled default criteria next to ChatGPT's recommendation. Open Katalon from the sidebar for your runs, uncovered requirements and release status. Requirement coverage is calculated from linked-case publication. Onboarding chooses a project for the conversation; persistent settings and the Test loop tab are planned. Changes to your workspace happen only when you confirm them in a Katalon card. Open any item in True Platform for full editing.",
+        "developerName": "Katalon",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Interactive",
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://katalon.com/true-platform",
+        "supportURL": "https://support.katalon.com",
+        "privacyPolicyURL": "https://katalon.com/privacy",
+        "termsOfServiceURL": "https://katalon.com/terms",
+        "defaultPrompt": [
+          "Which requirements in my next release have no tests?",
+          "Why did my latest test run fail?",
+          "Is my next release ready to ship?"
+        ],
+        "brandColor": "#6059E4",
+        "brandColorDark": "#8C86F0",
+        "composerIcon": "./assets/composer-icon.svg",
+        "composerIconDark": "./assets/composer-icon-dark.svg",
+        "logo": "./assets/logo.svg",
+        "logoDark": "./assets/logo-dark.svg",
+        "screenshots": [
+          "./assets/screenshot-coverage.png",
+          "./assets/screenshot-triage.png",
+          "./assets/screenshot-release.png"
+        ]
+      },
+      "onboardingSkill": "./skills/get-started/SKILL.md",
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Finds requirements in a release that have no test coverage",
+              "prompt": "Which requirements in release 2.4 of Katalon Demo Shop have no test cases?",
+              "tools_triggered": "find_iterations, show_requirement_coverage",
+              "expected_behavior": "Shows a coverage card for release 2.4 listing DS-11 and DS-12 as Not covered with 0 linked cases, and the covered count for the rest. Nothing is changed."
+            },
+            {
+              "description": "Designs test cases for a requirement and saves them only after review",
+              "prompt": "Write test cases for requirement DS-12 in Katalon Demo Shop and link them to it",
+              "tools_triggered": "read_requirement, find_test_cases_by_requirement, review_test_case_drafts, app_commit_test_cases (after the user clicks Save)",
+              "expected_behavior": "Shows a review card with 4 to 8 draft manual cases and their steps, target folder /Checkout, and flags TC-218 as a possible duplicate. No test case is created until the user clicks Save; afterwards the rows link to the new cases and DS-12 shows them as linked."
+            },
+            {
+              "description": "Runs a suite with AI after the user confirms the configuration",
+              "prompt": "Run the Login suite in Katalon Demo Shop with AI on Demo Shop staging",
+              "tools_triggered": "find_test_suites, plan_ai_run, app_commit_ai_run and app_session_poll (from the card)",
+              "expected_behavior": "Shows a Run with AI card with 3 cases, the Demo Shop staging URL, the browser profile choice and a note that a real browser runs and uses TestCloud minutes. Nothing starts until the user clicks Run; then the card shows each case moving to passed or failed within about 5 minutes, including the AI verdict for the failing case."
+            },
+            {
+              "description": "Triages a failed run by grouping failures and classifying each group",
+              "prompt": "Why did the latest Nightly regression run in Katalon Demo Shop fail?",
+              "tools_triggered": "list_executions, cluster_failures, show_failure_triage",
+              "expected_behavior": "Opens a triage board with 14 failures in 3 signatures (9, 4 and 1), each labelled product, automation or environment with a confidence level and a one-line reason, and shows expected and actual results for the selected failure. Nothing is changed."
+            },
+            {
+              "description": "Gives a release readiness verdict with criteria, blockers and a recommendation",
+              "prompt": "Is release 2.4 of Katalon Demo Shop ready to ship?",
+              "tools_triggered": "find_iterations, get_release_readiness, show_release_verdict",
+              "expected_behavior": "Shows a release card marked AT RISK with 3 of 4 criteria met, names coverage as the missed criterion, lists the uncovered requirements and open Major defects, and shows a separate recommendation of Ready with risk or Not ready with a reason. Nothing is changed."
+            }
+          ],
+          "negative": [
+            {
+              "description": "General coding help with no Katalon data or action",
+              "prompt": "Write a Jest unit test for this function: function add(a, b) { return a + b }"
+            },
+            {
+              "description": "Conceptual testing question answered from general knowledge",
+              "prompt": "What is the difference between smoke testing and regression testing?"
+            },
+            {
+              "description": "Another vendor's product is named",
+              "prompt": "Check my BrowserStack build for flaky tests"
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "First release: Katalon sidebar home, cards for runs, requirement coverage, failure triage, release readiness, test case drafts, Run with AI and defect drafts. Every write is confirmed in a card."
+      }
+    }
+  }
+}

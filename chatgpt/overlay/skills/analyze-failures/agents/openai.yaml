@@ -1,0 +1,15 @@
+interface:
+  display_name: "Analyze failures"
+  short_description: "Triage a red run"
+  brand_color: "#6059E4"
+  default_prompt: "Why did last night's regression fail?"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

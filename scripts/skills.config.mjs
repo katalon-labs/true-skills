@@ -29,6 +29,12 @@ export const INTERFACE = {
     prompt: "Install the Katalon MCP server and connect it to my platform account.",
     roles: [],
   },
+  "get-started": {
+    title: "Katalon Get Started",
+    short: "Connect and pick a default project",
+    prompt: "Get me started with Katalon True Platform and pick my default project.",
+    roles: [],
+  },
   "test-plan": {
     title: "Katalon Test Plan",
     short: "Plan and prioritize Katalon testing",
@@ -152,5 +158,8 @@ export const ORDER = [
   "release-analyze",
   "test-reporting",
   "test-maintenance",
+  // Onboarding after install. Kept out of the first five so the Codex and Cursor
+  // starter prompts stay on lifecycle work; the ChatGPT package runs it on install.
+  "get-started",
   "true-platform-testing",
 ];

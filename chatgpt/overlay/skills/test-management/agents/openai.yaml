@@ -1,0 +1,15 @@
+interface:
+  display_name: "Test management"
+  short_description: "Organize and trace test assets"
+  brand_color: "#6059E4"
+  default_prompt: "Which requirements in my project have no linked test cases?"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

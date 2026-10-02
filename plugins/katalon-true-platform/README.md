@@ -23,6 +23,7 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 - `release-analyze` - Assess release testing readiness.
 - `test-reporting` - Metrics and stakeholder reporting.
 - `test-maintenance` - Repair and evolve the regression suite.
+- `get-started` - Connect and pick a default project.
 - `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
 
 ## Bundled MCP server
