@@ -9,7 +9,7 @@ These skills are agent-neutral and must run on any coding agent (Claude, ChatGPT
 3. **One decision at a time.** Resolve project -> repository -> requirement in that fixed order. Ask only when a value cannot be resolved safely.
 4. **Boundary stated up front.** Each skill names what the MCP cannot do first, so a weaker model does not hallucinate create-requirement / create-release / self-heal.
 5. **Report template supplied.** Each workflow ends with an exact output shape so weaker models produce a structured answer instead of rambling.
-6. **Platform tool names only.** Reference MCP tools by their platform name (`create_manual_test_run`), never an agent-specific wrapper, so the same instruction works in Copilot/Cursor/Kiro/Windsurf.
+6. **Platform tool names only.** Reference MCP tools by their platform name (`update_test_run`), never an agent-specific wrapper, so the same instruction works in Copilot/Cursor/Kiro/Windsurf.
 
 ## Small-model guardrails (Haiku / small Copilot / Gemini Flash)
 

@@ -1,90 +1,62 @@
 ---
 name: execute-test
-description: Execute Katalon True Platform/TestOps tests when the input is an existing test case, manual test case list, test suite, suite collection, execution request, or "run with AI" instruction. Use when you need to create a manual test run, start Run with AI, poll AI session results, schedule automated suites, read execution/test results, or summarize pass/fail/blocked outcomes. For full requirement-to-test-design-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has cases and needs a result, by hand or through Run with AI. A coded suite driven from a framework starts at playwright-execute or upload-report.
+description: Create TestPak runs for later or execute existing Katalon True Platform/TestOps test cases, suites, or TestPak runs. Use to start or end a TestPak, guide human testing, run pinned steps with the agent's own browser/computer tools, upload evidence and record results, or explicitly launch and monitor Katalon Run With AI. Also covers scheduling automated suites and reading execution outcomes. Written for the manual tester. A TestPak is a manual test run, not a test suite. A coded Playwright suite starts at playwright-execute; a completed framework report starts at upload-report.
 ---
 
 # Katalon Execute Test
 
-Use this skill for running already-selected Katalon test cases or suites and reporting execution outcomes. Keep the larger `true-platform-testing` skill as the end-to-end orchestrator; this skill is the focused execution workflow.
+A **TestPak** is the workspace for a manual test run's pinned cases, environments, timers, results, and evidence. Hosted Run With AI executes cases inside that workspace; "AI versus TestPak" is not an execution choice. Creating a run does not execute its tests or give the calling agent browser/computer tools. Lifecycle stage and test verdict are different; an ended run may be FAILED, BLOCKED, or incomplete.
 
-## Availability Boundary
+## Discover and preserve scope
 
-State the execution boundary before running:
+Use the connected MCP tool catalog and schemas as the authority. Discover `update_test_run` and `update_test_results` before promising a TestPak lifecycle. Some deployments still expose older creation names. If lifecycle tools are absent, explain the gap and guide the user through TestPak UI; do not invent a status setter or use AI session creation to start a human timer.
 
-- Available: read AUT environments, create manual test runs, start Run with AI, poll AI sessions, schedule automated suite runs, and read execution/test results.
-- Not directly available: guarantee AI completion, inspect the live AUT UI through Katalon MCP, or run manual test cases through the automated scheduler.
-- Use Browser/Playwright only when AUT exploration or visual verification outside Katalon MCP is needed.
+Reuse an existing Platform execution ID when the user supplies one. Do not create another run, reselect its AUT, or replace its pinned cases. Resolve project and repository through `list_projects` / `list_repositories` when context is missing or ambiguous. For a new manual run, resolve the selected cases/suite, read the matching AUT with `read_auts`, honor the creation tool's AUT-choice requirements, and use `create_test_run(mode="manual")` (or the older `create_manual_test_run` if that is what the connected server exposes). Creating a test suite alone does not create a TestPak. Creation-only requests stop after run creation and return the execution link, not a test-suite link.
 
-Read `references/capability-boundaries.md` when capability scope is unclear.
+An explicit "skip AUT configuration" choice takes precedence over AUT matching/defaults. Omit both `aut_environment_id` and `default_aut_environment_url` when creating the run, even if discovery returns one matching environment. Reading the AUT catalog does not authorize selecting it. Do not configure an AUT later during START just because the run uses hosted AI.
 
-## Resolve Context First
+Read [references/execution-workflow.md](references/execution-workflow.md) for selectors, recording, evidence, and uncertain responses. Read [references/capability-boundaries.md](references/capability-boundaries.md) if availability is unclear.
 
-Before creating or scheduling any run:
+## Choose who executes
 
-1. Call `list_projects`.
-2. Call `list_repositories`.
-3. Resolve the repository/Test Project from the user's wording or unique available repository.
+| User intent and actual client capabilities | Execution path |
+| --- | --- |
+| User wants to test manually | MANUAL; show pinned steps and wait for the user's actual observations |
+| User asks a chat-only agent such as Kai to execute tests, without specifying local/human execution | KATALON_AI if the connected server supports it; explain that Katalon's hosted browser executes the TestPak |
+| User asks the agent to execute locally and its harness has suitable browser/computer tools | MANUAL; the agent executes and captures real evidence with those tools |
+| User explicitly chooses Katalon's hosted Run With AI | KATALON_AI; the server launches a hosted session |
+| User provides a coded/automated suite | Automated execution, below |
 
-Ask only when multiple equally valid repositories remain, required credentials are missing, or the next action is destructive.
+Being an AI agent does not select KATALON_AI. Preserve the user's chosen execution path. If "run with AI" could mean either a local harness or the hosted runner, resolve that ambiguity before launching; do not ask again when the choice is already clear. A missing browser or uploader does not establish a FAILED/BLOCKED test outcome.
 
-## Choose Execution Type
+For a chat-only agent such as Kai, "run this TestPak" requests hosted execution; do not introduce an AI-versus-TestPak or AI-versus-human question. Collect only missing profile, AUT/private-access and environment choices before launching. If the user explicitly requests their own/local browser and those tools are absent, explain the limitation and resolve an alternative before switching to hosted execution. Do not promise local browser control or ask the user to supply screenshots for hosted execution.
 
-Use manual execution when:
+## Human or local-agent TestPak loop
 
-- The user provides manual test cases.
-- The user asks for Run with AI.
-- The test cases were just created in Katalon.
-- The input is a manual suite.
+1. Call `update_test_run` with the Platform `execution_id` and `update={"action":"START","execution_mode":"MANUAL"}`. This starts/resumes a case timer and returns `current_case` with pinned instructions, expected results, preconditions, test data, and selectors.
+2. Execute those steps with available client tools, or present them to the human and wait for observations. If the request is only to start or hand off, return this context and stop there.
+3. Save/capture actual evidence and measure the saved file's byte size before `prepare_artifact_upload` → upload file bytes → `confirm_artifact_upload`; never guess `content_length` or send 0. Record only observed or user-reported case/step outcomes with `update_test_results`. If upload is unavailable, keep valid text observations and guide the user to attach evidence in TestPak.
+4. After the case result is recorded, call MANUAL START again for the next unfinished case. Repeat for the run's required environments. Do not rewrite completed outcomes to force a pass.
+5. When all case/environment results are terminal, call `update_test_run` with `update={"action":"END"}`. FAILED, BLOCKED, and SKIPPED are also terminal; End does not imply PASSED.
 
-Use automated execution only when the input is an automated suite or suite collection.
+When the user requests closure, including "end only if all cases are finished", call `update_test_run` with `update={"action":"END"}` and the default unfinished-case policy. The tool checks every pinned case/environment and returns `blocked` without an END write if work remains. Report that blocker and leave the run open; never switch to SKIP without explicit authorization. A coarse `read_execution` status or an empty `find_test_results` page does not replace this lifecycle check. For status-only requests without closure intent, keep using read tools.
 
-If the user only says "run tests" and the type cannot be inferred, ask whether they want manual or automated execution.
+## Hosted Katalon Run With AI
 
-## Manual Run With AI
+Use `update_test_run` with `update={"action":"START","execution_mode":"KATALON_AI","browser_profile_mode":"SEPARATE"}` or SHARED, according to the user's choice. SEPARATE isolates browser state by case; SHARED carries it between cases. Reuse an already supplied choice. The existing run must have one Linux/Windows Chrome environment. START preserves its AUT settings. An AUT record is optional: if the user skips AUT configuration, preserve that choice and use the pinned test instructions to identify the target. If those instructions and the user request do not identify the target application, clarify it before launching; do not select an AUT or switch to MANUAL without the user's choice.
 
-Always follow this order:
+START launches the full pinned run, or returns its existing AI session without resetting results. Use the returned `manual_execution_id` and `session_id` with `read_manual_ai_session`. Session creation or a running status does not prove tests passed. Observe the requested monitoring scope: one progress check or a handoff request can return while running; a full-execution request continues monitoring until terminal results or an actionable external limit/error. Do not loop indefinitely without progress.
 
-1. Call `read_auts` immediately before `create_manual_test_run`.
-2. Resolve the manual cases or suites.
-3. If a suite is provided, call `read_test_suite` before creating the run.
-4. If individual cases are provided, call `read_test_case` for unclear or risky inputs.
-5. Create the manual run with `create_manual_test_run`.
-6. Start Run with AI automatically with `create_manual_ai_session` unless the user explicitly says not to run AI.
-7. Poll `read_manual_ai_session` until all items leave TODO/IN_TESTING, or the platform returns an external timeout/error.
-8. Read available execution/test result details before responding.
+PENDING provisioning, empty results and TODO are unfinished. Use the runtime's wait capability if available; if the turn cannot remain active or progress stalls, report the last observed state and how to check the same run again. Do not promise background monitoring without a scheduler. The hosted runner owns result/evidence capture; read what it produced rather than fabricating uploads or overwriting AI-owned results.
 
-AUT rules:
+AI-only runs can auto-end after all results become terminal. Read the state before reporting completion; use END if closure is still needed and authorized. For an explicit stop-now/skip-remaining request, use `update={"action":"END","unfinished_cases":"SKIP"}`. It closes the entire run and stops hosted AI, preserving existing terminal results. Default END rejects unfinished work; do not silently escalate it to SKIP.
 
-- Never reuse AUT environment selection from an earlier turn or earlier run.
-- Choose the AUT/environment whose URL or name clearly matches the target AUT.
-- If no AUT exists and a URL is known from the user, requirement, or test data, use it as `default_aut_environment_url`.
-- Ask only when multiple AUTs are equally plausible or no target URL can be resolved.
+Do not start a second session or switch an existing manual run to hosted AI when that would reset results. Use `update_test_run` as the primary full-TestPak lifecycle tool. The older `create_manual_ai_session` remains only for legacy workflows or an explicitly selected subset on a fresh run; it rejects existing sessions/results before configuration writes. Never call both launch paths on the same run, including retries. Neither launch tool is a progress query; use `read_manual_ai_session`.
 
-Read `references/execution-workflow.md` before creating manual executions.
+## Automated execution
 
-## Automated Execution
+Use the connected automated run/configuration tools only for automated suites or suite collections. Resolve profiles and TestCloud environments, build the configuration/schedule, then use `create_test_run(mode="automated")` or the connected server's older `schedule_test_run`. Read the returned execution and results. `update_test_run` covers manual TestPaks, including hosted AI; it is not a Studio/TestCloud automated-run status editor.
 
-Use automated execution only for automated suites:
+## Report observed results
 
-1. Find automated suites or suite collections with `find_test_suites`.
-2. Find execution profiles with `find_execution_profiles`.
-3. Find TestCloud environments with `list_test_cloud_environments`.
-4. Build the run configuration with `build_run_configuration`.
-5. Optionally build a schedule with `build_schedule`.
-6. Run with `schedule_test_run`.
-7. Read execution and test results with `read_execution`, `read_execution_test_results`, and `read_test_result` as needed.
-
-Do not call `create_manual_test_run` for automated suites, and do not call `schedule_test_run` for individual manual test cases.
-
-## Report Results
-
-After execution, report:
-
-- Run name and link when returned.
-- Final status.
-- Passed, failed, blocked/incomplete, and not-run counts.
-- Failed cases with concise failure reasons.
-- Defects created or recommended.
-- Gaps, skipped cases, and manual follow-up required.
-
-Ask before creating ALM-linked defects unless the user explicitly requested defect creation for failures.
+Return the run link, observed lifecycle stage and verdict, available counts, concise failure reasons, and any unfinished work. Distinguish launch, test execution, closure, and report synchronization. For a human handoff, show the current steps and what observation to send back. For an agent harness, preserve the returned IDs and next recording/upload actions. Do not create defects unless the user requested them or separately authorizes them.

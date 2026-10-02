@@ -24,7 +24,7 @@ Single source for the README diagram and the orchestrator's routing. The Katalon
                  find_test_cases_by_requirement, read_auts
 
 5 EXECUTE ...... execute-test  (+ upload-report, playwright-execute)
-                 read_auts, create_manual_test_run, create_manual_ai_session,
+                 read_auts, create_test_run, update_test_run, update_test_results,
                  read_manual_ai_session, find_execution_profiles,
                  list_test_cloud_environments, build_run_configuration,
                  build_schedule, schedule_test_run, read_execution,
@@ -50,7 +50,7 @@ CROSS-CUTTING .. platform-setup (connect) · true-platform-testing (router)
 - Object/action capture, data design, resilience design (stage 2): Studio desktop.
 - Custom fields/tags, Git config, governance (stage 3): TestOps UI.
 - Code/object review, local debug (stage 4): Studio desktop.
-- Rerun / terminate / Live Monitor (stage 5): TestOps UI (MCP reads results only).
+- Manual TestPak START/END, results, and evidence (stage 5): `execute-test`. Generic automated termination / Live Monitor: TestOps UI; do not infer those capabilities from manual END.
 - AI root-cause, self-healing, Time Capsule, TrueTest regeneration (stages 6-7): product surfaces, not MCP.
 
 Use Browser/Playwright for AUT exploration; use Studio for object/script work; use the MCP for everything in the tool lists above.

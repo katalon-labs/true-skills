@@ -35,9 +35,12 @@ Stages: 1 plan · 2 design · 3 manage · 4 review · 5 execute · 6 analyze · 
 
 ## Manual execution
 - `read_auts` — read applications-under-test / environments (call right before a manual run). [4,5]
-- `create_manual_test_run` — start a manual run. [5]
-- `create_manual_ai_session` — start Run with AI. [5]
-- `read_manual_ai_session` — poll AI session until no item is TODO/IN_TESTING. [5]
+- `create_test_run(mode="manual")` — create a TestPak record; does not execute tests. Older servers may call this `create_manual_test_run`. [5]
+- `update_test_run` — START MANUAL for human/local harness or KATALON_AI for explicit hosted execution; END the whole TestPak, with explicit SKIP for unfinished work only when requested. [5]
+- `create_manual_ai_session` — legacy hosted AI launch; discover availability, never use as a manual timer or duplicate lifecycle START. [5]
+- `read_manual_ai_session` — read hosted progress using returned manual execution/session IDs; pending is not completion. [5]
+- `update_test_results` — record actual manual case/step results and confirmed evidence. [5]
+- `prepare_artifact_upload` / `confirm_artifact_upload` — prepare and confirm an actual client-side file-byte upload. [5]
 
 ## Automated execution
 - `find_execution_profiles` — execution profiles. [5]
@@ -63,4 +66,4 @@ Stages: 1 plan · 2 design · 3 manage · 4 review · 5 execute · 6 analyze · 
 - `create_defect` — create an ALM-linked defect (requires a failed result ID). [6]
 
 ## Not available via MCP (state as boundary)
-Create requirements · create Release/Build/Test-Plan entity · author release gates · guarantee Run-with-AI completion · inspect AUT UI · self-healing / Time Capsule / Tracer / object refactor · TrueTest regeneration · rerun/terminate/Live-Monitor · custom fields & tags · Git repo config · project governance. Use Jira/Azure, Studio, TestOps UI, or Browser/Playwright for these.
+Create requirements · create Release/Build/Test-Plan entity · author release gates · guarantee Run-with-AI completion · inspect AUT UI · self-healing / Time Capsule / Tracer / object refactor · TrueTest regeneration · generic automated-run termination/Live-Monitor (manual TestPak END is supported) · custom fields & tags · Git repo config · project governance. Use Jira/Azure, Studio, TestOps UI, or Browser/Playwright for these.
