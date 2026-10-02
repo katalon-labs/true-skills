@@ -43,7 +43,7 @@ When the user requests closure, including "end only if all cases are finished", 
 
 ## Hosted Katalon Run With AI
 
-Use `update_test_run` with `update={"action":"START","execution_mode":"KATALON_AI","browser_profile_mode":"SEPARATE"}` or SHARED, according to the user's choice. SEPARATE isolates browser state by case; SHARED carries it between cases. Reuse an already supplied choice. The existing run must have one Linux/Windows Chrome environment and the required AUT settings. This command does not reconfigure them.
+Use `update_test_run` with `update={"action":"START","execution_mode":"KATALON_AI","browser_profile_mode":"SEPARATE"}` or SHARED, according to the user's choice. SEPARATE isolates browser state by case; SHARED carries it between cases. Reuse an already supplied choice. The existing run must have one Linux/Windows Chrome environment. START preserves its AUT settings. An AUT record is optional: if the user skips AUT configuration, preserve that choice and use the pinned test instructions to identify the target. If those instructions and the user request do not identify the target application, clarify it before launching; do not select an AUT or switch to MANUAL without the user's choice.
 
 START launches the full pinned run, or returns its existing AI session without resetting results. Use the returned `manual_execution_id` and `session_id` with `read_manual_ai_session`. Session creation or a running status does not prove tests passed. Observe the requested monitoring scope: one progress check or a handoff request can return while running; a full-execution request continues monitoring until terminal results or an actionable external limit/error. Do not loop indefinitely without progress.
 
