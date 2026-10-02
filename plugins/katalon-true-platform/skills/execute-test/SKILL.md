@@ -40,7 +40,9 @@ Use automated execution only when the input is an automated suite or suite colle
 
 If the user only says "run tests" and the type cannot be inferred, ask whether they want manual or automated execution.
 
-## Manual Run With AI
+## Manual Run And Optional AI Execution
+
+Create only the run when that is all the user requests. Call `create_manual_ai_session` only when the user explicitly requests AI execution, such as "run with AI" or "execute using AI". A request to create a run or a generic "execute now" does not select Run with AI; if the execution method remains unclear, ask which method to use before starting execution. An explicit request not to use AI takes precedence.
 
 Always follow this order:
 
@@ -49,9 +51,9 @@ Always follow this order:
 3. If a suite is provided, call `read_test_suite` before creating the run.
 4. If individual cases are provided, call `read_test_case` for unclear or risky inputs.
 5. Create the manual run with `create_manual_test_run`.
-6. Start Run with AI automatically with `create_manual_ai_session` unless the user explicitly says not to run AI.
-7. Poll `read_manual_ai_session` until all items leave TODO/IN_TESTING, or the platform returns an external timeout/error.
-8. Read available execution/test result details before responding.
+6. If AI execution was requested, start Run with AI with `create_manual_ai_session` without asking for confirmation again. Otherwise, stop after creating the requested run and return its link and current status.
+7. For a started AI session, poll `read_manual_ai_session` until all items leave TODO/IN_TESTING, or the platform returns an external timeout/error.
+8. Read available execution/test result details before reporting an execution outcome. Run creation alone is not evidence that any test executed.
 
 AUT rules:
 
