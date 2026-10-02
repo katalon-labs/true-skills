@@ -317,6 +317,35 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         root_plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
         self.assertNotIn("extensions", root_plugin)
 
+    def test_onboarding_requires_manifest_event_or_explicit_request(self) -> None:
+        # AC-65: missing defaults discovered during another task do not permit
+        # onboarding. The install/connect hook remains an authorized entry.
+        skill = self.base / "skills" / "get-started"
+        text = (skill / "SKILL.md").read_text(encoding="utf-8")
+        description = re.search(r"(?m)^description: (.*)$", text).group(1)
+        policy = build.parse_yaml((skill / "agents" / "openai.yaml").read_text(encoding="utf-8"))["policy"]
+        plugin = json.loads((self.base / "plugin.json").read_text(encoding="utf-8"))
+        self.assertFalse(policy["allow_implicit_invocation"])
+        self.assertEqual(plugin["extensions"]["com.openai"]["onboardingSkill"], "./skills/get-started/SKILL.md")
+        self.assertIn("manifest onboarding event immediately after the user installs or connects Katalon", description)
+        self.assertIn("an explicit user request to get started, set up Katalon, or pick/change their default project", description)
+        self.assertIn("A missing default project alone does not authorize invocation or tool calls.", description)
+        self.assertNotIn("or when no default project is stored yet", description)
+        self.assertIn("If neither applies, stop without calling tools, including when a read tool reveals that no default project is stored.", text)
+        self.assertLess(text.index("Before calling any tool"), text.index("Call `katalon_profile`"))
+        canonical = (ROOT / "skills" / "get-started" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("or when no default project is stored yet", canonical)
+
+    def test_onboarding_stops_before_workspace_actions(self) -> None:
+        # Inspect the packaged procedure, rather than only the source rewrite,
+        # so overlays or future source changes cannot add workspace actions.
+        text = (self.base / "skills" / "get-started" / "SKILL.md").read_text(encoding="utf-8")
+        procedure = text.split("## Steps\n", 1)[1].split("## Stop conditions\n", 1)[0]
+        tools = set(re.findall(r"`([a-z]+(?:_[a-z]+)+)`", procedure))
+        self.assertEqual(tools, {"katalon_profile", "list_projects", "list_repositories", "read_auts", "settings_update", "katalon_home"})
+        self.assertIn("Reads only, plus one settings save. Nothing in the user's workspace changes.", text)
+        self.assertIn("Stop after step 5. Do not start a run, design cases or file anything during onboarding.", text)
+
     def test_skill_products_follow_the_design(self) -> None:
         codex_only = {"platform-setup", "test-case-to-playwright", "test-case-to-katalon-studio", "playwright-execute", "upload-report"}
         for skill in sorted((self.base / "skills").iterdir()):

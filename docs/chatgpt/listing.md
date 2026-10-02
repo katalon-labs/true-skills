@@ -1,6 +1,6 @@
 # ChatGPT listing copy
 
-Source of truth: [`chatgpt/plugin.json`](../../chatgpt/plugin.json) and [`chatgpt/overlay/skills/*/agents/openai.yaml`](../../chatgpt/overlay/skills/). This page restates them for review on 2026-10-01; if the two disagree, the JSON and YAML win. Limits are the OpenAI submission limits, checked by `scripts/build-chatgpt-plugin.py`.
+Source of truth: [`chatgpt/plugin.json`](../../chatgpt/plugin.json) and [`chatgpt/overlay/skills/*/agents/openai.yaml`](../../chatgpt/overlay/skills/). This page restates them for review on 2026-10-02; if the two disagree, the JSON and YAML win. Limits are the OpenAI submission limits, checked by `scripts/build-chatgpt-plugin.py`.
 
 ## Directory listing
 
@@ -25,9 +25,9 @@ The build computes the WCAG contrast ratio from the hex values and fails under 2
 
 ## Long description
 
-1195 of 4,000 characters. No comparative, pricing or upgrade copy. The Run with AI cost and side effect are stated in the copy.
+1160 of 4,000 characters. Run with AI cost and application side effects are stated in the copy.
 
-> Connect ChatGPT to your Katalon True Platform workspace and work through the testing loop in one conversation. Find requirements in a release that have no test coverage. Design manual test cases for a requirement, then save them and link them after you review them. Run test cases with AI in a real browser against your application and follow each case as it runs; Run with AI uses your TestCloud minutes and can change data in the application under test. Group a failed run's failures by signature, with ChatGPT's classification shown beside the step evidence and screenshots. Draft a defect for Jira or Azure DevOps, with any open defect on the same test case flagged. Get a release readiness verdict that shows True Platform's criteria next to ChatGPT's recommendation. Open Katalon from the sidebar for your runs, uncovered requirements and release status, and use the Test loop tab beside each chat to see where this conversation's requirement, cases, run, failures, defects and release stand. Set your default project and Run with AI target in ChatGPT settings. Changes to your workspace happen only when you confirm them in a Katalon card. Open any item in True Platform for full editing.
+> Connect ChatGPT to your Katalon True Platform workspace and work through the testing loop in one conversation. Find requirements in a release that have no test coverage. Design manual test cases for a requirement, then save them and link them after you review them. Run test cases with AI in a real browser against your application and follow each case as it runs; Run with AI uses your TestCloud minutes and can change data in the application under test. Group a failed run's failures by signature, with ChatGPT's classification shown beside the step evidence and screenshots. Draft a defect for Jira or Azure DevOps, with any open defect on the same test case flagged. Get a release readiness verdict that shows labelled default criteria next to ChatGPT's recommendation. Open Katalon from the sidebar for your runs, uncovered requirements and release status. Requirement coverage is calculated from linked-case publication. Onboarding chooses a project for the conversation; persistent settings and the Test loop tab are planned. Changes to your workspace happen only when you confirm them in a Katalon card. Open any item in True Platform for full editing.
 
 ## Starter prompts
 
@@ -55,11 +55,11 @@ The three screenshots in `chatgpt/assets/` are placeholders marked with a `katal
 
 ## Release notes
 
-> First release: Katalon sidebar home, Test loop tab, cards for runs, requirement coverage, failure triage, release readiness, test case drafts, Run with AI and defect drafts. Every write is confirmed in a card.
+> First release: Katalon sidebar home, cards for runs, requirement coverage, failure triage, release readiness, test case drafts, Run with AI and defect drafts. Every write is confirmed in a card.
 
 ## Skills
 
-Nineteen skills ship in the ZIP. Five are marked for Codex only because they drive a local CLI or configure a local agent, which a ChatGPT user cannot act on.
+The ZIP contains nineteen skills. Five are marked for Codex only because they drive a local CLI or configure a local agent, which a ChatGPT user cannot act on.
 
 | Skill | Display name | Short description | Default prompt | Products |
 | --- | --- | --- | --- | --- |
@@ -67,7 +67,7 @@ Nineteen skills ship in the ZIP. Five are marked for Codex only because they dri
 | `create-test-cases` | Create test cases | Design cases for a requirement | Write test cases for requirement DS-12 and link them to it | CHAT, CODEX |
 | `execute-test` | Execute tests | Run cases or suites | Run the Login suite with AI | CHAT, CODEX |
 | `exploratory-charter` | Exploratory charter | Charter an exploratory session | Write a charter to explore the checkout flow | CHAT, CODEX |
-| `get-started` | Get started | Pick your default project | Get me started with Katalon True Platform | CHAT, CODEX |
+| `get-started` | Get started | Choose a project | Get me started with Katalon True Platform | CHAT, CODEX |
 | `platform-setup` | Platform setup | Connect an agent to Katalon | Connect this agent to my Katalon True Platform account | CODEX |
 | `playwright-execute` | Playwright execute | Run Playwright and upload | Run my Playwright suite and upload the report to Katalon | CODEX |
 | `release-analyze` | Release readiness | Make the release call | Is my next release ready to ship? | CHAT, CODEX |

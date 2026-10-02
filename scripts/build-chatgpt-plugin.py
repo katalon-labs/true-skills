@@ -59,13 +59,23 @@ POINTER_LINE = (
     "changes run through Katalon cards that the user confirms."
 )
 
-# Lines the canonical skills give agents that hold write tools, rewritten in the
-# ChatGPT copy only. In ChatGPT the model has no write tool: every write is a
-# card the user clicks, so an instruction to write or start a run "without
-# asking" reads as steering the model past the user (AC-65 metadata-steering).
+# Canonical instructions rewritten in the ChatGPT copy only. Workspace writes
+# are cards the user clicks; onboarding requires the install/connect event or
+# an explicit user request. Instructions that bypass either condition conflict
+# with AC-65 metadata-steering.
 # The build fails when a listed line is no longer in its source, so a rewording
 # upstream cannot silently drop the rewrite.
 CHATGPT_REWRITES: Dict[str, List[Tuple[str, str]]] = {
+    "get-started/SKILL.md": [
+        (
+            "Use when the user has just connected Katalon, says get me started, set me up, or pick my default project, or when no default project is stored yet.",
+            "Use only for the manifest onboarding event immediately after the user installs or connects Katalon, or an explicit user request to get started, set up Katalon, or pick/change their default project. A missing default project alone does not authorize invocation or tool calls.",
+        ),
+        (
+            "Run this once after the Katalon connection is installed. The goal is a stored default project and a first useful view in under a minute, with **at most two questions**.",
+            "Before calling any tool, confirm this invocation came from `plugin.json`'s `extensions.com.openai.onboardingSkill` event immediately after the user installs or connects Katalon, or from an explicit user request to get started, set up Katalon, or pick/change their default project. If neither applies, stop without calling tools, including when a read tool reveals that no default project is stored.\n\nDuring an authorized invocation, choose a default project and show the first view with **at most two questions**.",
+        ),
+    ],
     "true-platform-testing/SKILL.md": [
         (
             "- After creating any manual test execution, start Run with AI automatically and wait for completion unless the user explicitly says not to run AI.",

@@ -5,7 +5,7 @@ interface:
   default_prompt: "Get me started with Katalon True Platform"
 policy:
   products: [CHAT, CODEX]
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 dependencies:
   tools:
     - type: "mcp"

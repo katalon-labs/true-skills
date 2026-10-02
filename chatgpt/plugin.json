@@ -23,7 +23,7 @@
       "interface": {
         "displayName": "Katalon True Platform",
         "shortDescription": "Plan, run and triage tests",
-        "longDescription": "Connect ChatGPT to your Katalon True Platform workspace and work through the testing loop in one conversation. Find requirements in a release that have no test coverage. Design manual test cases for a requirement, then save them and link them after you review them. Run test cases with AI in a real browser against your application and follow each case as it runs; Run with AI uses your TestCloud minutes and can change data in the application under test. Group a failed run's failures by signature, with ChatGPT's classification shown beside the step evidence and screenshots. Draft a defect for Jira or Azure DevOps, with any open defect on the same test case flagged. Get a release readiness verdict that shows True Platform's criteria next to ChatGPT's recommendation. Open Katalon from the sidebar for your runs, uncovered requirements and release status, and use the Test loop tab beside each chat to see where this conversation's requirement, cases, run, failures, defects and release stand. Set your default project and Run with AI target in ChatGPT settings. Changes to your workspace happen only when you confirm them in a Katalon card. Open any item in True Platform for full editing.",
+        "longDescription": "Connect ChatGPT to your Katalon True Platform workspace and work through the testing loop in one conversation. Find requirements in a release that have no test coverage. Design manual test cases for a requirement, then save them and link them after you review them. Run test cases with AI in a real browser against your application and follow each case as it runs; Run with AI uses your TestCloud minutes and can change data in the application under test. Group a failed run's failures by signature, with ChatGPT's classification shown beside the step evidence and screenshots. Draft a defect for Jira or Azure DevOps, with any open defect on the same test case flagged. Get a release readiness verdict that shows labelled default criteria next to ChatGPT's recommendation. Open Katalon from the sidebar for your runs, uncovered requirements and release status. Requirement coverage is calculated from linked-case publication. Onboarding chooses a project for the conversation; persistent settings and the Test loop tab are planned. Changes to your workspace happen only when you confirm them in a Katalon card. Open any item in True Platform for full editing.",
         "developerName": "Katalon",
         "category": "Developer Tools",
         "capabilities": [
@@ -106,7 +106,7 @@
         "commerce_description": "This plugin does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "First release: Katalon sidebar home, Test loop tab, cards for runs, requirement coverage, failure triage, release readiness, test case drafts, Run with AI and defect drafts. Every write is confirmed in a card."
+        "release_notes": "First release: Katalon sidebar home, cards for runs, requirement coverage, failure triage, release readiness, test case drafts, Run with AI and defect drafts. Every write is confirmed in a card."
       }
     }
   }
