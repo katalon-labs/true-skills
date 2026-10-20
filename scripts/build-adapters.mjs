@@ -12,6 +12,11 @@
  *   plugin.json + mcp.json           Agent Plugins standard manifest (agent-plugins.org, spec 1.0.0),
  *                                    with the Codex interface under extensions["com.openai"]
  *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces)
+ *   gemini-extension.json            Gemini CLI extension: remote MCP (httpUrl) + AGENTS.md context.
+ *                                    Docs: https://geminicli.com/docs/extensions/reference/ (mcpServers accepts every
+ *                                    settings.json option except trust) and https://geminicli.com/docs/tools/mcp-server/
+ *                                    (httpUrl = streamable HTTP). Gemini CLI reads .agents/skills natively:
+ *                                    https://geminicli.com/docs/cli/skills/ (workspace alias of .gemini/skills).
  *   .agents/skills/                  Skills for Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed,
  *                                    Junie, Factory, Augment, Roo, Windsurf/Devin and others
  *   .kiro/skills/                    Kiro skills (Kiro does not read .agents/skills)
@@ -80,7 +85,7 @@ const GENERATED_DIRS = [
   ".claude-plugin", ".agents", ".kiro", ".cline", ".codex", ".continue", ".cursor", ".cursor-plugin",
   ".vscode", "plugins", "apps", "app-assets",
 ];
-const GENERATED_FILES = ["plugin.json", "mcp.json", ".mcp.json", "AGENTS.md", "docs/connect.md", ".github/mcp.json", ".github/copilot-instructions.md"];
+const GENERATED_FILES = ["gemini-extension.json", "plugin.json", "mcp.json", ".mcp.json", "AGENTS.md", "docs/connect.md", ".github/mcp.json", ".github/copilot-instructions.md"];
 
 // ---- helpers ---------------------------------------------------------------
 /** Read one top-level scalar from a frontmatter block: plain, quoted, or a folded/literal block. */
@@ -210,7 +215,9 @@ const CLIENTS = [
     id: "codex", name: "Codex", format: "toml",
     config:
       `[mcp_servers.${MCP_SERVER}]\n` +
-      `url = "${MCP_ENDPOINT}"\n`,
+      `url = "${MCP_ENDPOINT}"\n` +
+      // auth is documented at https://learn.chatgpt.com/docs/extend/mcp?surface=cli ("oauth" is the default).
+      `auth = "oauth"\n`,
     files: [".codex/config.toml"],
     where: "`~/.codex/config.toml`, or `.codex/config.toml` in a trusted project",
     steps: `Or run \`codex mcp add ${MCP_SERVER} --url ${MCP_ENDPOINT}\`. Then run \`codex mcp login ${MCP_SERVER}\`. OAuth is the default, so set no token.`,
@@ -291,7 +298,7 @@ const CLIENTS = [
     config: { mcpServers: { [MCP_SERVER]: { httpUrl: MCP_ENDPOINT } } },
     files: [],
     where: "`settings.json` (project `.gemini/settings.json` or user level)",
-    steps: `Or run \`gemini mcp add --transport http ${MCP_SERVER} ${MCP_ENDPOINT}\`.`,
+    steps: `Or run \`gemini mcp add --transport http ${MCP_SERVER} ${MCP_ENDPOINT}\`. The repo root also carries \`gemini-extension.json\` for \`gemini extensions install\`.`,
     source: "https://geminicli.com/docs/tools/mcp-server/",
     note: "`httpUrl` means Streamable HTTP. The key `url` means SSE.",
   },
@@ -351,6 +358,22 @@ for (const c of CLIENTS) {
   const text = c.format === "json" ? j(c.config) : c.config;
   for (const f of c.files) track(writeFile(f, text));
 }
+
+// Gemini CLI extension manifest. Format: https://geminicli.com/docs/extensions/reference/
+// (name, version, mcpServers, contextFileName). httpUrl is the streamable-HTTP key:
+// https://geminicli.com/docs/tools/mcp-server/
+track(
+  writeFile(
+    "gemini-extension.json",
+    j({
+      name: PLUGIN_NAME,
+      version: PLUGIN_VERSION,
+      description: "Katalon True Platform (formerly TestOps) MCP server for Gemini CLI.",
+      mcpServers: CLIENTS.find((c) => c.id === "gemini-cli").config.mcpServers,
+      contextFileName: "AGENTS.md",
+    }),
+  ),
+);
 
 const author = { name: ORG, url: `https://github.com/${ORG}` };
 const keywords = ["katalon", "testops", "truetest", "true-platform", "testing", "ai-testing", "agentic-testing", "qa", "test-automation", "test-management", "requirement-traceability", "release-readiness", "test-maintenance", "playwright", "mcp"];

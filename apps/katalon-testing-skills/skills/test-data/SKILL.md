@@ -53,7 +53,7 @@ Read `references/write-policy.md` before you change cases.
 4. **Place the data.** Apply the placement rule below.
 5. **Plan seed and teardown together.** Use the seeding ladder in `references/seed-and-teardown.md`: application API first, CLI or SQL second, UI last. Record the seed command in the case Pre-condition.
 6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_case` once per case with every edit in one call. Follow `references/write-policy.md`.
-7. **Verify, then run twice.** Call `read_test_case` for each updated case and confirm the data landed. Then run the real check: the suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
+7. **Verify, then run twice.** Call `read_test_case` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
 
 ## The placement rule
 

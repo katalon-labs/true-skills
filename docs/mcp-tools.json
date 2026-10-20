@@ -2,9 +2,9 @@
   "$comment": "Contract for the Katalon True Platform MCP server. Source: docs.katalon.com/katalon-platform/testops-mcp-server (last updated October 2026), captured 2026-10-20 in the P0 mcp-inventory. The live tools/list needs OAuth and was not available, so this file is the contract. A human diffs a live dump with: node scripts/check-mcp-live.mjs <tools-list.json>. Edit this file only through a reviewed change; scripts/validate-skills.mjs reads it.",
   "contract": "katalon-docs-2026-10",
   "docsUrl": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
-  "docsStatedToolCount": 72,
+  "docsStatedToolCount": 71,
   "namedToolCount": 71,
-  "countNote": "The docs page states 72 unique tools. The capture names 71. One name is unresolved; add it here when a live tools/list shows it.",
+  "countNote": "The docs page table has 72 rows. create_test_run appears in both the Automated and Manual sections, so there are 71 unique names, and this file lists all 71 (re-diffed 2026-10-20).",
   "prefixNote": "Skills name tools by bare name. MCP clients add a prefix: Claude Code uses mcp__<server>__<tool>, and mcp__plugin_<plugin>_<server>__<tool> for plugin servers.",
   "classes": {
     "read": "No side effect. Never needs confirmation.",

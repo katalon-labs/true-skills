@@ -55,6 +55,7 @@ File: `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project.
 ```toml
 [mcp_servers.katalon-prod-mcp]
 url = "https://platform.katalon.io/mcp"
+auth = "oauth"
 ```
 
 Or run `codex mcp add katalon-prod-mcp --url https://platform.katalon.io/mcp`. Then run `codex mcp login katalon-prod-mcp`. OAuth is the default, so set no token. Codex reads the project file only when you trust the project.
@@ -190,7 +191,7 @@ File: `settings.json` (project `.gemini/settings.json` or user level).
 }
 ```
 
-Or run `gemini mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. `httpUrl` means Streamable HTTP. The key `url` means SSE.
+Or run `gemini mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. The repo root also carries `gemini-extension.json` for `gemini extensions install`. `httpUrl` means Streamable HTTP. The key `url` means SSE.
 
 ### OpenCode
 

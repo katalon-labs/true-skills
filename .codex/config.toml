@@ -1,2 +1,3 @@
 [mcp_servers.katalon-prod-mcp]
 url = "https://platform.katalon.io/mcp"
+auth = "oauth"

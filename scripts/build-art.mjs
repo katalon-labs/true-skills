@@ -26,7 +26,7 @@ const PIECES = {
       "`true-skills`\n\n  [ agent ]    CEL-6 ?\n    (o_o)      guessing...",
       "`true-skills`\n\n  [ agent ] <-- skills/ (" + N + ")\n    (o_o)",
       "`true-skills`\n\n  [ agent ] <-- skills/ (" + N + ")\n    (o_o)   --> katalon mcp",
-      "`true-skills`\n\n  [ agent ] <-- skills/ (" + N + ")\n    (^_^)   --> katalon mcp --> [ CEL-6 ]\n                                12 cases, linked",
+      "`true-skills`\n\n  [ agent ] <-- skills/ (" + N + ")\n    (^_^)   --> katalon mcp --> [ CEL-6 ]\n                                12 cases, linked\n                                `(0 guessed)`",
     ],
   },
   install: {
@@ -87,9 +87,10 @@ const PIECES = {
       'skills/\n  platform-setup      [x]\n  test-plan           [ ]',
       'skills/\n  platform-setup      [x]\n  test-plan           [x]\n  create-test-cases   [ ]',
       'skills/   `' + N + ' folders, one SKILL.md each`\n  platform-setup      [x]\n  test-plan           [x]\n  create-test-cases   [x]\n  `... +' + (N - 3) + '`',
-      // The tree stays put; adapter targets accumulate to its right over two frames.
-      'skills/                   --> .cursor\n  platform-setup      [x] --> .kiro\n  test-plan           [x] --> .github\n  create-test-cases   [x]\n  `... +' + (N - 3) + '`',
-      'skills/                   --> .cursor     .windsurf\n  platform-setup      [x] --> .kiro       .clinerules\n  test-plan           [x] --> .github     .continue\n  create-test-cases   [x] --> AGENTS.md\n  `... +' + (N - 3) + '`' + ' '.repeat(Math.max(1, 28 - ('... +' + (N - 3)).length)) + '`' + N + ' skills, 1 source`',
+      // The tree stays put; the 0.5.0 adapter targets (scripts/build-adapters.mjs) accumulate
+      // to its right over two frames. The last line notes the six retired rule folders.
+      'skills/                   --> .agents/skills\n  platform-setup      [x] --> claude plugin\n  test-plan           [x] --> .kiro/skills\n  create-test-cases   [x]\n  `... +' + (N - 3) + '`',
+      'skills/                   --> .agents/skills   .continue\n  platform-setup      [x] --> claude plugin    AGENTS.md\n  test-plan           [x] --> .kiro/skills     .codex\n  create-test-cases   [x] --> .cline/skills    kiro crew app\n  `... +' + (N - 3) + '`' + ' '.repeat(Math.max(1, 45 - ('... +' + (N - 3)).length)) + 'chatgpt/\n\n  `' + N + ' skills, 1 source  (6 old rule folders retired, -1.6 MB)`',
     ],
   },
 };

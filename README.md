@@ -2,30 +2,42 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/hero-dark.svg">
-  <img src="docs/images/art/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
+  <img src="docs/images/art/hero-light.svg" alt="An agent guesses at requirement CEL-6, gets the skills folder, connects to the Katalon MCP, and returns linked cases" width="100%">
 </picture>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![19 skills](https://img.shields.io/badge/skills-19-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![19 skills](https://img.shields.io/badge/skills-19-0f8461?style=flat-square) [![Version 0.5.0](https://img.shields.io/badge/version-0.5.0-0f8461?style=flat-square)](CHANGELOG.md) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
 
-[Start here](#start-where-you-are) · [Quickstart](#quickstart) · [Skills](#the-skills) · [Lifecycle](#the-lifecycle) · [Install](#install) · [MCP](#connect-the-katalon-mcp) · [Contributing](CONTRIBUTING.md)
+[Quickstart](#quickstart) · [Roles](#start-where-you-are) · [Skills](#skills) · [Lifecycle](#lifecycle) · [Install](#install) · [MCP limits](#mcp-capabilities) · [Build](#build-and-adapters) · [0.5.0](#changes-in-050)
 
 </div>
 
-Ask your coding agent to read a requirement, design the test cases, run them with AI, upload the reports, and tell you whether the release is safe to ship. The skills do the platform work through the Katalon MCP, so the agent operates your real project instead of guessing at it.
+A coding agent cannot see your test project. It guesses requirement keys and makes up suite names. These 19 skills give it the [Katalon MCP](https://docs.katalon.com/katalon-platform/testops-mcp-server) tools and the order to call them in, so it reads and changes the real project in [Katalon True Platform](https://katalon.com) (formerly TestOps).
 
-<img src="docs/images/demo.svg" alt="Example agent session: install the skills, analyze requirement CEL-6, design and import cases, run with AI, upload the report, and get a ship decision" width="100%">
-
-<sub>An example session. Your requirement keys, suites, and verdicts come from your own workspace.</sub>
+- **What it is:** 19 testing skills, one folder each under [`skills/`](skills/). They cover plan, design, manage, review, execute, analyze, and maintain.
+- **Where it runs:** in the agent you already use. Claude Code, Codex, Cursor, Copilot, Kiro, Cline, Continue, Gemini CLI, and any agent that reads [`AGENTS.md`](AGENTS.md).
+- **How it connects:** one MCP endpoint, `https://platform.katalon.io/mcp`, with browser OAuth and a workspace picker. You paste no token.
+- **What it will not do:** promise work the MCP cannot do. Each skill states its limits, and every write gets a preview and one confirmation first.
+- **Install:** `npx skills add katalon-labs/true-skills`, then add the MCP server.
 
 ## Quickstart
 
-**1. Install the skills.** The [`skills` CLI](https://github.com/vercel-labs/skills) detects the agent you already run (70+ supported) and drops the skills into its native directory.
+**1. Install the skills.** The [`skills` CLI](https://github.com/vercel-labs/skills) finds the agents on your machine (70+ supported) and puts the skills in each agent's skills folder.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/install-dark.svg">
+  <img src="docs/images/art/install-light.svg" alt="A terminal types npx skills add katalon-labs/true-skills and installs the skills" width="100%">
+</picture>
 
 ```bash
 npx skills add katalon-labs/true-skills
 ```
 
-**2. Point it at your Katalon workspace.** Add the MCP server to your agent's config file (the [install section](#install) says which file yours is):
+**2. Connect the Katalon MCP.** Add the server to your agent's MCP config. This is the Claude Code shape. [`docs/connect.md`](docs/connect.md) has the file and snippet for 13 clients.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/connect-dark.svg">
+  <img src="docs/images/art/connect-light.svg" alt="The agent calls the Katalon MCP, signs in through the browser, picks a workspace, and gets the tools" width="100%">
+</picture>
 
 ```json
 {
@@ -38,7 +50,7 @@ npx skills add katalon-labs/true-skills
 }
 ```
 
-First connect opens a browser OAuth flow and lets you pick your workspace. Nothing to fill in, no tokens to paste, no keys to store.
+The first call opens a browser sign-in. You pick your workspace, and the tools appear. Reload the agent if they do not. On a dedicated Katalon domain, use `https://<your-sub-domain>.katalon.io/mcp`.
 
 **3. Ask for something real.**
 
@@ -52,234 +64,160 @@ Upload my Playwright report to Katalon and verify the run.
 Is release 3.2 safe to ship?
 ```
 
-Or hand over the whole chain: *"Analyze CEL-6, design and import the cases, build a suite, run it with AI, and tell me if we can ship."*
+You can also give it the whole chain: *"Analyze CEL-6, design and import the cases, build a suite, run it with AI, and tell me if we can ship."* The agent asks before it starts a Run with AI session, because that run uses Test Execution - Cloud minutes and can change data in the app under test.
 
 ## Start where you are
 
-Four jobs. Say the situation in your own words and the agent picks the skill.
+Say the situation in your own words. The agent picks the skill from its description, so you rarely name one.
 
-| You are a | You say | It starts at |
+| Role | Example prompt | Starts at |
 | --- | --- | --- |
-| **Manual tester** <br><sub>QA analyst, test analyst</sub> | *I just got requirement CEL-6 and need cases* · *Run this suite with AI and tell me what broke* · *Is this failure the app or my test* | [`create-test-cases`](skills/create-test-cases/SKILL.md) → [`test-data`](skills/test-data/SKILL.md) → [`execute-test`](skills/execute-test/SKILL.md) → [`analyze-failures`](skills/analyze-failures/SKILL.md) <br><sub>Unscripted session? [`exploratory-charter`](skills/exploratory-charter/SKILL.md).</sub> |
-| **Automation tester** <br><sub>SDET, automation engineer</sub> | *Turn TC-1042 into a Playwright spec* · *Get my run into the platform* · *Our suite went flaky this month* | [`test-case-to-playwright`](skills/test-case-to-playwright/SKILL.md) → [`playwright-execute`](skills/playwright-execute/SKILL.md) → [`test-maintenance`](skills/test-maintenance/SKILL.md) |
-| **Test lead** <br><sub>QA lead, QE lead</sub> | *What should we test first this sprint* · *Is this suite ready for the pipeline* · *Which requirements have no coverage* | [`test-plan`](skills/test-plan/SKILL.md) → [`test-estimation`](skills/test-estimation/SKILL.md) → [`test-review`](skills/test-review/SKILL.md) → [`test-management`](skills/test-management/SKILL.md) |
-| **Test manager** <br><sub>QA manager, head of quality</sub> | *Can we ship 3.2* · *How long will this take and with how many people* · *Build the summary I present upward* | [`release-analyze`](skills/release-analyze/SKILL.md) → [`test-estimation`](skills/test-estimation/SKILL.md) → [`test-reporting`](skills/test-reporting/SKILL.md) |
+| **Manual tester** <br><sub>QA analyst, test analyst</sub> | *Design and import manual test cases from requirement CEL-6.* <br> *Run this Katalon test suite with AI and report the result.* <br> *Write me a charter to explore this feature and capture what I find.* | [`create-test-cases`](skills/create-test-cases/SKILL.md), [`test-data`](skills/test-data/SKILL.md), [`exploratory-charter`](skills/exploratory-charter/SKILL.md), [`execute-test`](skills/execute-test/SKILL.md), [`analyze-failures`](skills/analyze-failures/SKILL.md) |
+| **Automation tester** <br><sub>SDET, automation engineer</sub> | *Turn test case TC-1042 into a Katalon Studio test case and script.* <br> *Run a Playwright suite, upload the report to Katalon Platform, and verify the uploaded result.* <br> *Which cases went flaky this month, and which should we repair vs regenerate?* | [`test-case-to-playwright`](skills/test-case-to-playwright/SKILL.md), [`test-case-to-katalon-studio`](skills/test-case-to-katalon-studio/SKILL.md), [`playwright-execute`](skills/playwright-execute/SKILL.md), [`upload-report`](skills/upload-report/SKILL.md), [`test-maintenance`](skills/test-maintenance/SKILL.md) |
+| **Test lead** <br><sub>QA lead, QE lead</sub> | *Plan testing for this sprint: show coverage gaps and build the executable suite.* <br> *Review this suite for the pipeline and give a verdict with weak cases.* <br> *Audit requirement-to-test traceability and list orphan requirements.* | [`test-plan`](skills/test-plan/SKILL.md), [`test-estimation`](skills/test-estimation/SKILL.md), [`test-review`](skills/test-review/SKILL.md), [`test-management`](skills/test-management/SKILL.md) |
+| **Test manager** <br><sub>QA manager, head of quality</sub> | *Assess whether this Katalon release is ready based on testing quality metrics.* <br> *How long will testing this release take, and with how many people?* <br> *Build the quality summary I can present to stakeholders for this release.* | [`release-analyze`](skills/release-analyze/SKILL.md), [`test-estimation`](skills/test-estimation/SKILL.md), [`test-reporting`](skills/test-reporting/SKILL.md) |
 
-Not connected yet? Start at [`platform-setup`](skills/platform-setup/SKILL.md), which everyone runs once.
+Not connected yet? Run [`platform-setup`](skills/platform-setup/SKILL.md), then [`get-started`](skills/get-started/SKILL.md). A request that spans several stages goes to [`true-platform-testing`](skills/true-platform-testing/SKILL.md), which routes by task, role, or stage. The full map from request to skill is in [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md).
 
-Not sure which one you are, or the request spans several? Ask [`true-platform-testing`](skills/true-platform-testing/SKILL.md) and it routes by role and by stage. The full map from intent to skill, including what to fall back to for the parts not built yet, is in [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md).
+## Skills
 
-## The skills
-
-Nineteen skills, one folder each under [`skills/`](skills/). The agent picks the right one from its description, so you rarely name a skill yourself.
-
-| Skill | Stage | What it does |
+| Skill | What it does | Role |
 | --- | --- | --- |
-| [platform-setup](skills/platform-setup/SKILL.md) | setup | Installs and verifies the Katalon MCP, and diagnoses auth or access failures. Start here. |
-| [get-started](skills/get-started/SKILL.md) | setup | First-run onboarding after the connection is installed. Confirms the signed-in account, picks the default project in at most two questions, and opens the Katalon home view. The ChatGPT plugin runs it on install. |
-| [test-plan](skills/test-plan/SKILL.md) | 1 plan | Turns quality goals into scope, ranks the work by requirement coverage and risk, and builds the folder and suite structure that acts as the executable plan. |
-| [test-estimation](skills/test-estimation/SKILL.md) | 1 plan | Sizes a test cycle from scope, risk, and historical execution data, resources it across the manual and automated lanes, and states the uncertainty instead of inventing precision. |
-| [create-test-cases](skills/create-test-cases/SKILL.md) | 2 design | Reads a requirement or free text, designs atomic manual cases with ISTQB techniques as reference, skips duplicates, imports only what is missing, and links each case back to the requirement. |
-| [test-data](skills/test-data/SKILL.md) | 2 design | Designs the data a case runs on, decides what must exist before a run, keeps literals out of the step text, and resets state afterwards so the next run starts clean. |
-| [exploratory-charter](skills/exploratory-charter/SKILL.md) | 2 design | Writes a charter with a mission, areas, oracles, and a timebox, runs the session, and turns what was found into defects and scripted cases. |
-| [test-management](skills/test-management/SKILL.md) | 3 manage | Organizes folders and suites, finds assets at scale, and produces a requirement to case to suite traceability report with coverage percentage and orphans. |
-| [test-review](skills/test-review/SKILL.md) | 4 review | Reviews coverage, case quality, and flakiness before anything enters the pipeline, and returns Approve, Approve with fixes, or Reject plus the specific weak cases. |
-| [execute-test](skills/execute-test/SKILL.md) | 5 execute | Runs a case, a list, or a suite as a manual run, a Run with AI session, or scheduled automation, then reports pass, fail, and blocked. |
-| [upload-report](skills/upload-report/SKILL.md) | 5 execute | Runs automation and uploads or verifies Katalon Studio/KRE, JUnit XML, and Playwright reports on the platform. |
-| [test-case-to-playwright](skills/test-case-to-playwright/SKILL.md) | 5 execute | Converts manual cases into Playwright TypeScript with Page Object Model and fixtures. |
-| [test-case-to-katalon-studio](skills/test-case-to-katalon-studio/SKILL.md) | 5 execute | Converts manual cases into Katalon Studio test cases and Groovy scripts, keeping the .tc and .ts pair GUID-consistent. |
-| [playwright-execute](skills/playwright-execute/SKILL.md) | 5 execute | Runs Playwright specs, ships the report with `@katalon/playwright-reporter`, and verifies the run landed. |
-| [analyze-failures](skills/analyze-failures/SKILL.md) | 6 analyze | Sorts failures into product defect, automation defect, and environment noise, clusters them by signature, and files ALM defects for the real bugs. |
-| [release-analyze](skills/release-analyze/SKILL.md) | 6 analyze | Reads coverage, stability, and defect data to return Ready, Ready with risk, or Not ready, with the reasons attached. |
-| [test-reporting](skills/test-reporting/SKILL.md) | 6 analyze | Turns platform quality data into the few metrics that answer a stakeholder question, trended across releases, as a summary a manager can present upward. |
-| [test-maintenance](skills/test-maintenance/SKILL.md) | 7 maintain | Finds flaky and broken cases from stability history, repairs or regenerates them, and hands the refreshed gap list back to planning. |
-| [true-platform-testing](skills/true-platform-testing/SKILL.md) | all | The router and end to end runner. Routes any request to the right stage, or drives the full chain from requirement to ship decision. |
+| [platform-setup](skills/platform-setup/SKILL.md) | Installs and verifies the Katalon MCP, and diagnoses sign-in or access failures. | everyone, once |
+| [test-plan](skills/test-plan/SKILL.md) | Ranks the work by coverage and risk, and builds the folder and suite that hold the execution scope. | test lead |
+| [test-estimation](skills/test-estimation/SKILL.md) | Sizes a test cycle as best, likely, and worst cases, and splits people across the manual and automated lanes. | test lead, test manager |
+| [create-test-cases](skills/create-test-cases/SKILL.md) | Designs atomic manual cases from a requirement, skips duplicates, imports what is missing, and links each case back. | manual tester |
+| [test-data](skills/test-data/SKILL.md) | Designs the data a case runs on, seeds what must exist before a run, and resets state afterwards. | manual tester, automation tester |
+| [exploratory-charter](skills/exploratory-charter/SKILL.md) | Writes a charter with a mission, oracles, and a timebox, runs the session, and turns findings into defects and cases. | manual tester |
+| [test-management](skills/test-management/SKILL.md) | Organizes folders and suites, and reports requirement-to-case traceability with coverage and orphans. | test lead |
+| [test-review](skills/test-review/SKILL.md) | Reviews coverage, case quality, and flakiness before the pipeline, and returns Approve, Approve with fixes, or Reject. | test lead |
+| [execute-test](skills/execute-test/SKILL.md) | Runs a case or suite as a manual run, a Run with AI session, or automation, and reports pass, fail, and blocked. | manual tester |
+| [upload-report](skills/upload-report/SKILL.md) | Uploads Katalon Studio, JUnit XML, or Playwright reports, and checks the counts against the local run. | automation tester |
+| [test-case-to-playwright](skills/test-case-to-playwright/SKILL.md) | Converts manual cases into Playwright TypeScript with Page Object Model and fixtures. | automation tester |
+| [test-case-to-katalon-studio](skills/test-case-to-katalon-studio/SKILL.md) | Converts manual cases into Katalon Studio test cases and Groovy scripts. | automation tester |
+| [playwright-execute](skills/playwright-execute/SKILL.md) | Runs Playwright specs, sends the report with `@katalon/playwright-reporter`, and verifies the run landed. | automation tester |
+| [analyze-failures](skills/analyze-failures/SKILL.md) | Sorts failures into product defect, automation defect, and environment, and files ALM defects for real bugs. | manual tester, automation tester |
+| [release-analyze](skills/release-analyze/SKILL.md) | Reads coverage, stability, and defect data, and returns Ready, Ready with risk, or Not ready with reasons. | test manager, test lead |
+| [test-reporting](skills/test-reporting/SKILL.md) | Picks the few metrics that answer a stakeholder question and trends them across releases. | test lead, test manager |
+| [test-maintenance](skills/test-maintenance/SKILL.md) | Finds flaky and broken cases from stability history, repairs or regenerates them, and sends the gap list to planning. | automation tester, test lead |
+| [get-started](skills/get-started/SKILL.md) | Confirms the signed-in account and picks a default project after the connection works. | everyone, once |
+| [true-platform-testing](skills/true-platform-testing/SKILL.md) | Routes a request to the right skill, or runs the chain from requirement to release decision. | all four |
 
-Multi-skill playbooks live in [`combination-recipes.md`](skills/true-platform-testing/references/combination-recipes.md). Copy-paste prompts and cross-model notes are in [`prompt-recipes.md`](skills/true-platform-testing/references/prompt-recipes.md).
+Multi-skill playbooks are in [`combination-recipes.md`](skills/true-platform-testing/references/combination-recipes.md). Copy-paste prompts are in [`prompt-recipes.md`](skills/true-platform-testing/references/prompt-recipes.md).
 
-## The lifecycle
-
-Seven stages, each owned by a skill. The loop closes when maintenance feeds its gap list back into the plan.
+## Lifecycle
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/lifecycle-dark.svg">
-  <img src="docs/images/art/lifecycle-light.svg" alt="The seven-stage testing lifecycle and the skill that owns each stage, with the maintenance gap list feeding back into planning" width="100%">
+  <img src="docs/images/art/lifecycle-light.svg" alt="A marker walks the seven lifecycle stages, then maintenance sends a gap list back to planning" width="100%">
 </picture>
 
-`platform-setup` sits before all seven, connecting the MCP. Every skill states which Katalon MCP tools it uses and where the platform stops. Full stage map: [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md). Every tool in one line each: [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md). A self-contained visual for humans: [`docs/lifecycle.html`](docs/lifecycle.html).
-
-## Where the boundary is
-
-Each skill names its limits up front so the agent does not promise work the platform cannot do.
-
-**Through the MCP:** list projects and repositories, read requirements, create and update and link test cases, manage suites and folders, create manual and automated runs, start Run with AI, poll AI sessions, rerun a completed execution, read and edit schedules, record manual results, upload evidence, read results and quality insights, and file ALM-linked defects.
-
-**Not through the MCP:** creating requirements, creating a formal Test Plan entity, cancelling Run with AI, stopping a running execution, guaranteeing an AI run finishes, or inspecting the live app UI without a browser tool. A named suite plus a release or sprint association stands in for the Test Plan entity.
-
-Some work is a product surface rather than an API call: object capture and resilience design in Studio, custom fields and Git config and governance in the TestOps UI, self-healing and Time Capsule, and terminate and Live Monitor. The full list is in [`capability-boundaries.md`](skills/true-platform-testing/references/capability-boundaries.md).
+Seven stages, each owned by a skill: plan, design, manage, review, execute, analyze, and maintain. `platform-setup` runs once before all of them. Maintenance closes the loop: the cases it cannot repair become a gap list, and that list goes back into the next plan. Each skill names the MCP tools it calls, and [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md) lists every tool on one line. [`docs/lifecycle.html`](docs/lifecycle.html) shows the same map as a page.
 
 ## Install
 
-Every path needs the [Katalon MCP](#connect-the-katalon-mcp) configured.
+Every path needs the Katalon MCP server. The `skills` CLI and the copy-a-folder paths install skill files only. The Claude Code and Codex plugins bundle the MCP config.
 
-<details open>
-<summary><b>Any agent</b> via the <code>skills</code> CLI</summary>
+**Any agent, with the `skills` CLI.** This is the main path.
 
 ```bash
 npx skills add katalon-labs/true-skills                          # all skills, this project
-npx skills add katalon-labs/true-skills --skill platform-setup   # just one
+npx skills add katalon-labs/true-skills --skill platform-setup   # one skill
 npx skills add katalon-labs/true-skills -g                       # user-global, every agent
 npx skills update                                                # pull the latest
 ```
 
-The CLI installs skill files only. Configure the MCP yourself with the snippet below, or use the Claude Code and Codex plugin paths, which bundle it.
-</details>
-
-<details>
-<summary><b>Any agent</b> via the <a href="https://agent-plugins.org">Agent Plugins</a> standard</summary>
-
-This repository conforms to the [Agent Plugins specification 1.0.0](https://agent-plugins.org/specification): `plugin.json` + `skills/` + `mcp.json` at the repo root form a portable plugin any conformant client can load directly, and `plugins/katalon-true-platform/` ships the same contract as a standalone plugin directory. Skills follow the [Agent Skills](https://agentskills.io) format. Point your standard-aware client at either directory; `mcp.json` already declares the canonical endpoint as a `streamable-http` server, so there is nothing to fill in.
-</details>
-
-<details>
-<summary><b>Claude Code</b> plugin marketplace</summary>
+**Claude Code, from the plugin marketplace.**
 
 ```bash
 claude plugin marketplace add katalon-labs/true-skills
 claude plugin install katalon-true-platform@katalon-true-platform-marketplace
 ```
 
-Developing against a checkout:
+The plugin bundles the skills and an `.mcp.json` that points at `https://platform.katalon.io/mcp`. To work from a checkout, run `claude --plugin-dir plugins/katalon-true-platform`.
 
-```bash
-claude --plugin-dir plugins/katalon-true-platform
-```
+**Other agents.** Each row names where the skills come from. The MCP config for each client is in [`docs/connect.md`](docs/connect.md).
 
-The plugin ships the skills and an `.mcp.json`. If your setup does not auto-load the bundled MCP, add it manually.
-</details>
+| Agent | Skills | MCP config |
+| --- | --- | --- |
+| Codex | `codex plugin marketplace add katalon-labs/true-skills`, then install **Katalon True Platform** from **Plugins** | bundled; [`.codex/config.toml`](docs/connect.md#codex) for a project |
+| Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Windsurf | copy `.agents/skills/` into your project | [connect.md](docs/connect.md) |
+| Kiro | copy `.kiro/` (`.kiro/skills/` and `.kiro/settings/mcp.json`) | [connect.md](docs/connect.md#kiro) |
+| Cline | copy `.cline/skills/` | [connect.md](docs/connect.md#cline) |
+| Continue | copy `.continue/` (rules and `.continue/mcpServers/katalon.yaml`) | [connect.md](docs/connect.md#continue) |
+| Kiro Crew | install the app in [`apps/katalon-testing-skills/`](apps/katalon-testing-skills/README.md), which registers all 19 skills and the MCP server | bundled |
+| Agent Plugins clients | load the repo root or `plugins/katalon-true-platform/` as an [Agent Plugins 1.0.0](https://agent-plugins.org/specification) plugin | bundled `mcp.json` |
+| Anything else | point the agent at [`AGENTS.md`](AGENTS.md) | root [`.mcp.json`](.mcp.json) |
 
-<details>
-<summary><b>Codex</b> plugin marketplace</summary>
-
-```bash
-codex plugin marketplace add katalon-labs/true-skills
-```
-
-Open **Plugins** in Codex and install **Katalon True Platform**. Set your subdomain in the plugin's `.mcp.json`.
-</details>
-
-<details>
-<summary><b>Copilot, Cursor, Kiro, Cline, Continue, Gemini CLI and others</b> skills folder + MCP</summary>
-
-Copy the skills folder your client reads into your project:
-
-```bash
-cp -R <checkout>/.agents .agents     # Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Windsurf
-cp -R <checkout>/.kiro .kiro         # Kiro (.kiro/skills/ plus .kiro/settings/mcp.json)
-cp -R <checkout>/.cline .cline       # Cline (.cline/skills/)
-cp -R <checkout>/.continue .continue # Continue (rules plus .continue/mcpServers/katalon.yaml)
-```
-
-The MCP config file and snippet for each client are in [`docs/connect.md`](docs/connect.md).
-</details>
-
-<details>
-<summary><b>Kiro Crew</b> app</summary>
-
-[Kiro Crew](https://kirocrew.com) installs this as an **app**. `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 19 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
-
-```bash
-# local/developer install: point Kiro Crew at the app directory
-apps/katalon-testing-skills/
-```
-
-Details in [`apps/katalon-testing-skills/README.md`](apps/katalon-testing-skills/README.md).
-</details>
-
-<details>
-<summary><b>Anything else</b> via AGENTS.md</summary>
-
-Point your agent at [`AGENTS.md`](AGENTS.md). It indexes every skill and tells the agent to open `skills/<name>/SKILL.md`. Use the root [`.mcp.json`](.mcp.json) for the server config.
-</details>
-
-## Connect the Katalon MCP
-
-One endpoint serves every workspace: `https://platform.katalon.io/mcp`. Sign-in presents a workspace picker, so there is no subdomain to look up. The canonical shape lives in [`.mcp.json`](.mcp.json):
-
-```json
-{
-  "mcpServers": {
-    "katalon-prod-mcp": {
-      "type": "http",
-      "url": "https://platform.katalon.io/mcp"
-    }
-  }
-}
-```
-
-Most clients connect to the remote server natively. [`docs/connect.md`](docs/connect.md) has the file and snippet for each client. Use the `mcp-remote` wrapper only when a client has no native remote support or its native sign-in fails:
+A client with no remote MCP support can use the wrapper as a fallback:
 
 ```sh
 npx -y mcp-remote@0.14.3 https://platform.katalon.io/mcp --transport http-first
 ```
 
-1. Complete the browser OAuth flow that opens on first connect.
-2. Pick your workspace.
-3. Reload the agent if the tools do not show up.
+> **Sign-in is browser OAuth only.** Never paste passwords, API tokens, cookies, JWTs, MFA codes, or OAuth callback URLs into chat, and never commit them. The skills enforce this.
 
-On a dedicated Katalon domain, substitute `https://<your-sub-domain>.katalon.io/mcp`.
+## MCP capabilities
 
-> **Auth is browser OAuth only.** Never paste passwords, API tokens, cookies, JWTs, MFA codes, or OAuth callback URLs into chat, and never commit them. The skills enforce this.
+Each skill names its limits up front, so the agent does not promise work the platform cannot do.
 
-## How it is built
+**Through the MCP:** list projects and repositories, read requirements, create, update, and link test cases, manage suites and folders, create manual and automated runs, start Run with AI, poll AI sessions, rerun a completed execution, read and edit schedules, record manual results, upload evidence, read results and quality insights, use Test Execution - Cloud apps and tunnels, read TrueTest sessions, and file ALM-linked defects.
 
-The skill bodies live once. Everything each agent needs is generated from them, so no adapter can drift.
+**Not through the MCP:** create requirements, create a formal Test Plan entity, cancel Run with AI, stop a running execution, look up assignees, edit suite collections, or inspect the live app UI without a browser tool. A named suite holds the execution scope in place of the Test Plan entity.
 
-```text
-  skills/                      19 SKILL.md files plus references/
-     |
-     |  node scripts/build-adapters.mjs      deterministic, checked in CI
-     v
-  Claude Code · Codex · Copilot · Cursor · Kiro · Cline · Continue · .agents/skills · AGENTS.md
-     |
-     |  every adapter points at the same server
-     v
-  Katalon MCP  ->  requirements, test cases, suites, Run with AI, results, defects
-```
+Some work lives in the product UI: object capture in Studio, custom fields, Git config and governance in the TestOps UI, self-healing, Time Capsule, and Live Monitor. The full list is in [`capability-boundaries.md`](skills/true-platform-testing/references/capability-boundaries.md).
+
+## Build and adapters
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/library-dark.svg">
+  <img src="docs/images/art/library-light.svg" alt="The skills folder fills row by row, then fans out to every agent adapter from one source" width="100%">
+</picture>
+
+The skill text lives once, in `skills/`. `node scripts/build-adapters.mjs` writes every agent folder, manifest, and MCP config from it, and CI fails when a generated file is stale.
 
 ```text
-skills/                              source of truth, 19 skills
-scripts/build-adapters.mjs           generates every agent config
-plugins/katalon-true-platform/       Claude Code and Codex plugin      (generated)
-.claude-plugin/  .agents/            plugin marketplaces               (generated)
-.agents/skills/                      shared skills folder for most agents (generated)
-.kiro/  .cline/  .continue/          Kiro, Cline, Continue             (generated)
-.cursor/  .github/  .codex/          Cursor, Copilot, Codex MCP config (generated)
-shared/references/                   canonical shared references (synced into skills/)
-apps/katalon-testing-skills/         Kiro Crew app                     (generated)
-.mcp.json  .vscode/mcp.json          MCP config                        (generated)
-AGENTS.md  llms.txt                  agent-readable index              (generated)
+skills/                              source, 19 skills
+shared/references/                   one copy of each shared reference, synced into skills/
+scripts/build-adapters.mjs           writes every adapter below
+plugins/katalon-true-platform/       Claude Code, Codex, and Cursor plugin   (generated)
+.claude-plugin/  .agents/plugins/    plugin marketplaces                     (generated)
+.agents/skills/                      skills folder for most agents           (generated)
+.kiro/  .cline/  .continue/          Kiro, Cline, Continue                   (generated)
+.codex/  .cursor/  .vscode/          MCP config per client                   (generated)
+apps/katalon-testing-skills/         Kiro Crew app                           (generated)
+.mcp.json  mcp.json  plugin.json     MCP config and Agent Plugins manifest   (generated)
+AGENTS.md  docs/connect.md           agent index and per-client MCP page     (generated)
 ```
+
+## Changes in 0.5.0
+
+- Skills use the October 2026 Katalon MCP tool names. `create_test_run` with a `mode` replaces the manual and scheduled run tools, and the insights tools replace `fetch_*_data`.
+- Run with AI no longer starts on its own. The agent shows the suite, environment, mode, and schedule, and waits for a yes.
+- The build stops writing six old rule folders. Each agent reads a native skills folder, which removes about 1.6 MB of duplicate text.
+- New [`docs/connect.md`](docs/connect.md) gives the MCP snippet for 13 clients, and [`docs/mcp-tools.json`](docs/mcp-tools.json) holds the 71-tool contract that the validator checks.
+
+The full list is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
-Edit `skills/` only. Everything else is generated. Then:
+Edit `skills/` only. Everything else is generated. Then run:
 
 ```bash
 node scripts/validate-skills.mjs    # skills/ matches scripts/skills.config.mjs
 node scripts/build-adapters.mjs     # regenerate every agent config
 ```
 
-The build is deterministic. Re-running it with no skill changes produces no diff, and CI rejects out-of-sync adapters. Details in [CONTRIBUTING.md](CONTRIBUTING.md).
+The build is deterministic. A second run with no skill changes produces no diff, and CI rejects adapters that are out of sync. Details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The ChatGPT plugin package has its own sources under `chatgpt/` (the ChatGPT `plugin.json`, per-skill `agents/openai.yaml` overlays, the card tool map and the listing assets) and its own build, which stages an allowlisted copy in `dist/chatgpt/` and refuses anything the OpenAI plugin directory rejects:
+The ChatGPT plugin package has its own sources under `chatgpt/` and its own build. The build copies an allowlist into `dist/chatgpt/` and refuses anything the OpenAI plugin directory rejects:
 
 ```bash
 python3 scripts/build-chatgpt-plugin.py      # dist/chatgpt/katalon-true-platform/ and the ZIP
 python3 -m unittest discover -s tests        # one bad fixture per forbidden item
 ```
 
-Listing copy, review cases and the submission checklist are in [`docs/chatgpt/`](docs/chatgpt/).
+Listing copy, review cases, and the submission checklist are in [`docs/chatgpt/`](docs/chatgpt/).
 
 ## Support
 
@@ -289,7 +227,7 @@ Listing copy, review cases and the submission checklist are in [`docs/chatgpt/`]
 
 ## Privacy
 
-The skills are plain markdown that runs inside the agent you already use. This repository collects nothing. Platform operations go to your own Katalon workspace over OAuth, and what Katalon does with that data is covered by the [Katalon Privacy Policy](https://katalon.com/terms#privacy-policy).
+The skills are markdown files that run inside the agent you already use. This repository collects nothing. Platform operations go to your own Katalon workspace over OAuth. The [Katalon Privacy Policy](https://katalon.com/terms#privacy-policy) covers what Katalon does with that data.
 
 ## License
 
