@@ -1,6 +1,6 @@
 ---
 name: Katalon Upload Report
-description: "Run automation and upload or verify Katalon Platform reports for Katalon Studio/KRE, JUnit XML, and Playwright reports. Use when you need to combine Katalon MCP project/result discovery with Katalon CLI execution, Katalon Report Uploader, or @katalon/playwright-reporter; configure report folders, report types, Platform/TestOps IDs, verify uploaded runs, handle failed auto-upload, or summarize execution results after automation completes. Written for the automation tester whose framework has already run and whose report is sitting on disk. If the Playwright run has not happened yet, start at playwright-execute."
+description: "Uploads finished Katalon Studio, JUnit XML, or Playwright reports to Katalon True Platform (formerly TestOps) and verifies that the run landed with matching counts. Use when a report folder or XML file already sits on disk, an auto-upload failed, or Katalon Test Execution - Local (formerly KRE) must run first. Not for a Playwright suite that has not run yet (use playwright-execute) or Run with AI (use execute-test). For the automation tester."
 alwaysApply: false
 ---
 
@@ -8,70 +8,60 @@ alwaysApply: false
 
 # Katalon Upload Report
 
-Use this skill after or during an automated execution when the user wants Katalon, JUnit, or Playwright reports collected, uploaded to Katalon Platform, and summarized. Use Katalon MCP for platform discovery and post-upload verification; use the report-specific CLI/uploader for local execution and upload.
+This skill gets a local test report into Katalon True Platform and proves it arrived. The MCP discovers projects and reads the result. A local tool does the upload: the Katalon CLI, Report Uploader, or the Playwright reporter.
 
-## Capability Boundary
+MCP clients can add a prefix to tool names (Claude Code uses `mcp__<server>__<tool>`). This skill uses bare names.
 
-State the boundary before running or uploading:
+## Boundary
 
-- Katalon CLI/KRE can run local automation and generate Katalon Studio reports. With Platform/TestOps arguments configured, current Katalon Studio/Runtime Engine executions are expected to upload results automatically to Katalon True Platform.
-- Katalon Report Uploader can upload Katalon Studio and JUnit reports to Katalon True Platform with report `type` values such as `katalon` and `junit`.
-- `@katalon/playwright-reporter` can generate and upload Playwright report data to Katalon True Platform during `npx playwright test` or through a separate `playwright-reporter upload` command.
-- Katalon MCP can discover projects/repositories, read executions/results, find test results, and fetch quality data when those tools are exposed.
-- Katalon MCP does not inspect the live AUT UI, create requirements, guarantee report import completion, or replace Katalon CLI execution.
+- The MCP can list projects and repositories, list and read executions, and read results. It cannot upload a report file.
+- It cannot inspect the live AUT UI, create requirements, or run Katalon CLI for you.
+- Katalon Test Execution - Local (formerly KRE) runs Studio suites. With an API key, organization ID, and project ID set, it uploads results by itself.
+- Report Uploader sends Studio and JUnit reports. Its `type` values are `katalon`, `junit`, and `katalon_recorder`.
+- `@katalon/playwright-reporter` uploads Playwright data during `npx playwright test`, or later with `playwright-reporter upload`.
 
-Read `references/capability-boundaries.md` when tool availability is unclear. Read `references/cli-report-upload.md` before composing CLI commands or choosing the Katalon, JUnit, or Playwright upload flow.
+Read `references/capability-boundaries.md` when tool availability is unclear. Read `references/cli-report-upload.md` before you write any command. Read `references/write-policy.md` before an install, a download, or an upload.
 
-## Required Inputs
+## Inputs
 
-Resolve or ask for only the missing required values:
+Resolve each value from the repo or the environment first. Ask only for what is still missing.
 
 - Report type: `katalon`, `junit`, or `playwright`.
-- Execution mode: run tests now, upload an existing report, or verify a report that should already be uploaded.
-- Report path: Katalon report folder, JUnit XML file/folder, or Playwright reporter output directory.
-- Test target when running tests: Katalon test suite/collection path, Playwright project/test command, or explicit command provided by the user.
-- Katalon API key through a secure mechanism or existing environment variable.
-- Katalon Platform/TestOps project ID.
-- Organization ID for Katalon Studio/KRE execution when required.
-- Target Platform/TestOps server only when not default or when using a non-production environment.
-- Browser/device/execution profile when required by the project.
+- Mode: run now, upload an existing report, or verify a report that should already be there.
+- Report path: Studio report folder, JUnit file or folder, or Playwright reporter output directory.
+- Test target, only when you run tests.
+- Katalon API key, from an environment variable or secret store.
+- Platform project ID. Organization ID for Studio runs. A server URL only for a non-default environment.
 
-Never ask the user to paste secrets into normal chat when a secure secret mechanism exists.
+Never ask the user to paste a secret into chat.
 
-## MCP Context First
-
-When Katalon MCP tools are available:
+## Platform context
 
 1. Call `list_projects`.
 2. Call `list_repositories`.
-3. Resolve the repository/Test Project.
-4. If execution IDs, suite IDs, or project IDs are provided, read them before running.
+3. Match the project to the project ID in use.
 
-If Katalon MCP tools are missing, continue with CLI-only execution only when all CLI inputs are available, and clearly state that platform verification cannot be completed through MCP in this session.
+If the MCP is not connected, continue only when every CLI input is present. Say that platform verification is not possible in this session.
 
-## Choose Report Flow
+## Choose the flow
 
-Use this decision order:
+1. The repo has `@playwright/test`, or the user says Playwright: Playwright flow.
+2. The user has JUnit XML, or says JUnit: JUnit flow.
+3. The user has a Studio report folder or a `.prj` target: Katalon flow.
+4. If unclear, look for `.prj`, `playwright.config.*`, or XML files before you ask.
 
-1. If the user says Playwright or the repo has `@playwright/test`, use the Playwright flow.
-2. If the user provides `.xml` JUnit files or says JUnit, use the JUnit flow.
-3. If the user provides a Katalon Studio/KRE report folder or `.prj` run target, use the Katalon flow.
-4. If unclear, inspect local files for `.prj`, `playwright.config.*`, or JUnit XML before asking.
-
-Do not convert Playwright to JUnit unless the user already has only JUnit XML output or explicitly requests JUnit upload.
+Do not turn Playwright output into JUnit unless JUnit is all the user has. JUnit loses some Playwright attachments and metadata.
 
 ## Preflight
 
-Before running:
+1. Check the tool exists: Katalon CLI, Java, or Node and the package manager.
+2. Check the source paths exist.
+3. Use a report folder that belongs to this run. Do not delete `Reports/`, `test-results/`, or `playwright-report/`.
+4. Show every command with secrets hidden.
 
-1. Verify the required CLI exists: Katalon CLI/KRE, Java/Docker for Report Uploader, or Node/npm/pnpm for Playwright.
-2. Verify source paths exist: `.prj`, report folder, JUnit XML, Playwright config, or Playwright output directory.
-3. Create or clean only a run-specific report folder. Do not delete broad `Reports/`, `test-results/`, or `playwright-report/` folders.
-4. Build the command with redacted secrets for display.
+## Katalon flow
 
-## Katalon Report Flow
-
-When running Katalon Studio/KRE automation, prefer this command shape for current True Platform uploads:
+Studio runs from the command line need Katalon Test Execution - Local (formerly KRE), a separately licensed runtime. Command shape:
 
 ```text
 katalonc -noSplash -runMode=console \
@@ -84,106 +74,65 @@ katalonc -noSplash -runMode=console \
   -testOpsProjectId="<project_id>" \
   --config \
   -webui.autoUpdateDrivers=true \
-  -reportFolder="<run_report_folder>"
+  -report.folderPath="<run_report_folder>"
 ```
 
-Adapt for `katalon.exe`, suite collections, mobile, API-only suites, proxy settings, retries, and repository-specific conventions.
+`-report.folderPath` is the current flag from Katalon Studio 11.1.2. `-reportFolder` is deprecated from that version. Use `-report.folderPath` unless the project is pinned below 11.1.2, and say which one you used.
 
-When uploading an existing Katalon Studio report folder, use Report Uploader with `--type=katalon` if auto-upload did not happen or the user explicitly asks for uploader-based upload.
+For an existing report folder where auto-upload did not run, use Report Uploader with `--type=katalon`. See `references/cli-report-upload.md`.
 
-## JUnit Report Flow
+## JUnit flow
 
-Use this flow when the input is JUnit XML from any automation framework:
+1. Check the files are JUnit XML, not Playwright HTML or traces.
+2. Resolve the Report Uploader jar. Do not guess a version. Follow "Resolve the Report Uploader jar" in `references/cli-report-upload.md`.
+3. Run the uploader with `--type=junit`. Use the API key as the password value.
+4. Verify the run (see below).
 
-1. Verify the XML file or report folder exists.
-2. Verify the files are JUnit-style XML, not Playwright HTML or trace artifacts.
-3. Use Katalon Report Uploader with `--type=junit`.
-4. Prefer API key as the uploader password value, sourced from a secure variable.
-5. After upload, use MCP result tools to find/read the new run when available.
+## Playwright flow
 
-Command shape:
+1. Check Node, `@playwright/test`, and the Playwright config.
+2. Check `@katalon/playwright-reporter` is installed. Install it only when the user allows dependency changes.
+3. Use a fixed `outputDir`, usually `./reports`.
+4. Upload during the run (`KATALON_API_KEY` and `KATALON_PROJECT_ID` set), or later with `playwright-reporter upload`.
+5. Keep screenshots, videos, and traces as attachments.
+6. Verify the run.
 
-```text
-java -jar katalon-report-uploader-<version>.jar \
-  --projectId="<project_id>" \
-  --path="<junit_report_path>" \
-  --password="$KATALON_API_KEY" \
-  --type=junit \
-  --server="<platform_url>"
-```
+If the Playwright run has not happened yet, use `playwright-execute`.
 
-Omit `--server` when the default target is correct.
+## Run and collect
 
-## Playwright Report Flow
+1. Run the command.
+2. Keep stdout and stderr. Hide secrets before you quote them.
+3. Find the report folder. Note logs, XML, HTML, screenshots, videos, and traces.
+4. Record local counts from the report files: total, passed, failed, errors, skipped.
 
-Use this flow when the input is Playwright:
+If the run fails before any report exists, report that and skip verification.
 
-1. Verify Node.js, `@playwright/test`, and Playwright config.
-2. Install or verify `@katalon/playwright-reporter`.
-3. Configure `playwright.config.ts` or `playwright.config.js` with the Katalon reporter and stable `outputDir`, typically `./reports`.
-4. Upload during execution by setting `KATALON_API_KEY` and `KATALON_PROJECT_ID`, or upload separately with `playwright-reporter upload`.
-5. Preserve Playwright screenshots, videos, and traces as attachments when configured.
-6. Verify uploaded runs through MCP when possible.
+## Verify the upload
 
-Upload during execution:
+Read `references/verify-upload.md`. In short:
 
-```text
-KATALON_API_KEY="$KATALON_API_KEY" \
-KATALON_PROJECT_ID="<project_id>" \
-KATALON_BASE_URL="<platform_url>" \
-npx playwright test
-```
+1. Wait for import, then find the new execution with `list_executions`.
+2. Read it with `read_execution` and `read_execution_test_results`.
+3. Compare the platform counts with the local counts.
 
-Separate upload:
+A count of zero, or a count that differs from the local report, is unverified. This holds even when the CLI printed success.
 
-```text
-playwright-reporter upload \
-  --output "<playwright_report_output_dir>" \
-  --api-key "$KATALON_API_KEY" \
-  --project-id "<project_id>" \
-  --base-url "<platform_url>"
-```
+If upload failed and local files exist, state the manual upload path. Do not say the upload worked.
 
-Omit `KATALON_BASE_URL` or `--base-url` when the default target is correct.
+## Report back
 
-## Run And Collect
+- Report type, command status (secrets hidden), and local report folder.
+- Upload status: verified, importing, failed, or not verifiable.
+- Platform run link, when returned.
+- Counts for passed, failed, skipped, blocked, and errors, local and platform side by side.
+- Failed tests with a short reason.
+- Artifacts made.
+- Follow-up: missing key, import failure, manual upload.
 
-1. Run the Katalon CLI command.
-2. For JUnit-only uploads, run the producing test command only if requested; otherwise upload the existing report.
-3. For Playwright, run `npx playwright test` or the user's package script when execution is requested.
-4. Preserve stdout/stderr logs, but redact secrets before summarizing.
-5. Locate the generated report folder.
-6. Check for common artifacts such as execution logs, JUnit XML, HTML reports, screenshots, videos, traces, and attachments.
-7. Record local pass/fail/error signals from CLI exit code and report files.
+Local automation finishing is not completion. The task ends with a verified upload or a clear reason it could not be verified.
 
-If the CLI run fails before report generation, report the failure and skip upload verification unless a partial report exists.
-
-## Upload Or Confirm Upload
-
-For current Katalon True Platform:
-
-1. Treat Katalon CLI execution with `-apiKey`, `-orgID`, and `-testOpsProjectId` as the Katalon Studio report upload path.
-2. Treat Report Uploader with `--type=katalon` or `--type=junit` as the Katalon/JUnit report upload path when uploading existing reports.
-3. Treat `@katalon/playwright-reporter` or `playwright-reporter upload` as the Playwright report upload path.
-4. Use MCP result tools after the run to find/read the new execution or test results.
-5. If the platform shows the run as importing, poll practical intervals when a read/poll tool exists.
-6. If auto-upload fails but local report files exist, state the available manual upload path and do not claim the upload succeeded.
-
-## Report Back
-
-Always report:
-
-- Report type: `katalon`, `junit`, or `playwright`.
-- CLI command status, with secrets redacted.
-- Local report folder path.
-- Upload status: verified uploaded, importing, failed, or not verifiable because MCP is unavailable.
-- Platform execution/run link when returned.
-- Passed, failed, skipped, blocked/incomplete, and error counts when available.
-- Failed tests and concise failure reasons.
-- Artifacts created: HTML/XML/screenshots/videos/logs.
-- Follow-up needed for missing credentials, import failure, or manual upload.
-
-Do not mark the task complete merely because local automation finished; completion requires either verified Platform upload or a clear explanation that upload verification is blocked.
+For failures, hand off to `analyze-failures`.
 
 ---
 
@@ -194,101 +143,257 @@ _The reference material the skill points to is inlined below so this file is sel
 
 ### references/capability-boundaries.md
 
+<!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
+
+Contract source: the Katalon docs page "Katalon True Platform MCP Server" (last updated October 2026). The live tool list needs sign-in, so this page is the contract. If a tool named here is missing in your session, say so and use the closest documented tool. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+
+Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
 ## Available
 
-- Project discovery: `list_projects`.
-- Repository/Test Project discovery: `list_repositories`.
-- Requirement discovery: `find_requirements`, `read_requirement`.
-- Requirement coverage: `fetch_requirement_data`.
-- Test case operations: `create_test_case`, `read_test_case`, `update_test_case`, `duplicate_test_case`, `delete_test_case`, `move_test_case`, `find_test_cases`.
-- Test folder operations: `find_test_folders`, `manage_test_folder`.
-- Test suite operations: `find_test_suites`, `read_test_suite`, `manage_test_suite`.
-- Requirement links: `link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `find_test_cases_by_requirement`.
-- Manual execution: `read_auts`, `create_manual_test_run`, `create_manual_ai_session`, `read_manual_ai_session`.
-- Automated execution: `find_execution_profiles`, `list_test_cloud_environments`, `build_run_configuration`, `build_schedule`, `schedule_test_run`.
-- Execution results: `read_execution`, `read_execution_test_results`, `read_test_result`, `find_test_results`.
-- Quality data: requirement, defect, test case, test stability, and configuration coverage fetch tools.
-- ALM defects: `find_alm_integration_projects`, `create_defect`.
+Workspace and discovery
+- `list_projects`, `list_repositories`, `find_iterations`, `find_execution_profiles`.
+- `get_user_context` returns the signed-in user. It does not look up other users.
 
-## Not Directly Available
+Requirements and ALM
+- `find_requirements`, `read_requirement`. Requirements are a read-only mirror of Jira or Azure DevOps.
+- `find_test_cases_by_requirement`, `link_requirements_to_test_case`, `unlink_requirements_from_test_case`.
+- `find_alm_integration_projects`, `create_defect`.
 
-- Create requirements in Katalon True Platform. Requirements are synced from Jira/Azure and can be found/read/linked.
-- Create a formal Test Plan entity. Use test suites/folders/executions as the executable planning structure.
-- Guarantee Run with AI completion. The platform may block, fail, or require AUT/account state.
-- Inspect AUT pages through Katalon MCP. Use Browser/Playwright for website exploration.
-- Create defects without a failed test result ID and ALM integration details.
+Test cases, folders, suites
+- `find_test_cases`, `read_test_case`, `create_test_case`, `update_test_case`, `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- `find_test_folders`, `manage_test_folder`.
+- `find_test_suites`, `read_test_suite`, `manage_test_suite`.
+- `find_test_suite_collections` reads collections. No tool creates or edits a collection.
 
-## Recommended Workarounds
+Execution
+- `read_auts`, `create_test_run` (manual and automated), `create_manual_ai_session`, `read_manual_ai_session`.
+- `read_manual_test_run_detail_by_order` finds a manual run by its order number.
+- `build_run_configuration`, `build_schedule`, `build_private_local_testing_config`.
+- `rerun_execution` reruns a completed execution.
+- `list_schedule`, `read_schedule_detail`, `update_schedule_configuration`.
 
-- Requirement creation: create in Jira/Azure first, then sync/find/link in Katalon.
-- Test plan: create a named folder and/or test suite, link to sprint/release, and create execution from that suite.
-- AUT exploration: use Browser/Playwright to understand the product, then import manual cases into Katalon.
-- AI execution blocked: report blocked state with required fixture, AUT, account, or environment action.
+Results and evidence
+- `find_test_results`, `read_test_result`, `read_execution`, `read_execution_test_results`.
+- `list_executions` (numeric TestOps IDs) and `list_execution_outputs` (TestCloud string IDs and artifact URLs).
+- `update_test_results` records a manual result or reviews an automated one.
+- `prepare_artifact_upload` and `confirm_artifact_upload` attach evidence up to 10 MiB.
+
+Quality insights
+- `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, `get_test_configuration_insights`.
+- `analyze_test_case_stability` (flaky, always failing, newly failing, slow) and `analyze_test_flakiness` (lookback window, minimum runs).
+
+Test Execution - Cloud assets and tunnels
+- `list_test_cloud_environments`, `list_test_cloud_agents`, `list_test_cloud_apps`.
+- `get_upload_test_cloud_app_url`, `create_test_cloud_app`, `manage_test_cloud_dynamic_app`, `delete_test_cloud_app`.
+- `list_test_cloud_tunnels`, `prepare_test_cloud_tunnel_start`, `stop_test_cloud_tunnel`.
+
+TrueTest
+- `list_truetest_auts`, `list_truetest_tracking_environments`, `search_truetest_sessions`, `get_truetest_session`.
+- `search_truetest_journey_maps`, `get_truetest_journey_map`, `create_truetest_journey_map`, `get_truetest_journey_map_request`.
+- `create_truetest_test_case_from_session` needs user approval and takes 1 to 25 sessions.
+
+## Not available through the MCP
+
+- Create requirements. Create them in Jira or Azure DevOps, then sync, find, and link.
+- Create a formal Test Plan entity. A named folder or suite gives an execution scope. It is no plan of record.
+- Guarantee that Run with AI finishes. The platform can block it or fail it.
+- Cancel Run with AI. You can only poll it.
+- Stop or terminate a running execution. `rerun_execution` works only on completed executions.
+- Inspect the live AUT. Use a browser tool or Playwright.
+- Look up another user to set an assignee.
+- Create or edit suite collections.
+- Author release gates, custom fields, tags, Git repository settings, or project governance. Use the True Platform UI.
+- Self-healing, Time Capsule, and TrueTest regeneration. These are product features outside the MCP.
+- Create a defect without a failed test result ID and ALM integration details.
+
+## Quirks every skill keeps
+
+- `delete_test_case` is unreliable. Prefer `update_test_case` or `move_test_case`.
+- A test case name accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A folder path can contain `/`.
+- `create_test_case` with type AUTOMATED creates nothing. It returns guidance only.
+- `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
+- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`.
+- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run assigned to you. An automated review needs a completed run.
+- Run with AI asks for `browser_profile_mode`. Ask the user. Never infer it.
+- `create_defect` needs the `alm_integration_id` from `find_alm_integration_projects`. It is not the Jira connection ID.
+- `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
+- Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
+
+## Terminology
+
+Katalon True Platform was TestOps. Katalon Test Execution - Local was Katalon Runtime Engine (KRE). Katalon Test Execution - Cloud was TestCloud. On first mention, give both names. After that, use the current name.
 
 ### references/cli-report-upload.md
 
-# Katalon CLI And Report Upload Reference
+# Katalon CLI and report upload
 
-Use this reference when a workflow needs to run automation locally, collect Katalon/JUnit/Playwright reports, upload or confirm upload to Katalon Platform, and summarize the result.
+Read this before you write a command to run tests, upload a report, or confirm an upload. Captured 2026-10-20 from the Katalon docs listed at the end.
 
-## Official Docs Checked
+## Katalon Studio reports
+
+- Katalon Test Execution - Local (formerly KRE) uploads results by itself when the API key, organization ID, and Platform project ID are set.
+- The arguments are `-apiKey`, `-orgID`, `-testOpsProjectId`, and `-report.folderPath`.
+- `-report.folderPath` is the current flag from Katalon Studio 11.1.2. `-reportFolder` is deprecated from that version and can lose folder names for suites and collections.
+- Keep the report folder fixed so you can find the output after the run.
+- Confirm the import with the steps in `references/verify-upload.md`.
+
+## JUnit reports
+
+Use Report Uploader for existing JUnit XML, or for a folder that holds it.
+
+| Parameter | Meaning |
+|---|---|
+| `projectId` | Platform project ID. |
+| `path` | Local report file or folder. |
+| `password` | An API key. Never a plain account password. |
+| `type` | `katalon`, `junit`, or `katalon_recorder`. |
+| `server` | Optional. Omit it to use the uploader's built-in default. Set it only for another environment. The default host is unverified here and differs from the MCP host `platform.katalon.io`, so read the uploader's `--help` or README for your version before you set or assume one. |
+| `email` | Not needed when `password` is an API key. |
+
+Use `katalon` and `junit`. Use `katalon_recorder` only when the user asks for it.
+
+```text
+java -jar katalon-report-uploader-<resolved_version>.jar \
+  --projectId="<project_id>" \
+  --path="<report_path>" \
+  --password="$KATALON_API_KEY" \
+  --type=junit
+```
+
+Add `--server="<platform_url>"` only for a non-default environment.
+
+## Resolve the Report Uploader jar
+
+The file name contains the version. Do not invent one. The docs page shows `0.0.8` only as an example.
+
+1. Look in the working directory and in the repo's tooling folders for an existing `katalon-report-uploader-*.jar`. If one exists, tell the user its path and version, and use it.
+2. If none exists, the source is the GitHub releases page of `katalon-studio/report-uploader` (https://github.com/katalon-studio/report-uploader/releases).
+3. Read the latest release tag and the asset name. If the `gh` CLI exists, `gh release list --repo katalon-studio/report-uploader` shows them. Otherwise read the releases page.
+4. Downloading a program file needs the user's yes. Ask once. Name the file, the source URL, and the size when the release shows it.
+5. Save the jar in a folder that belongs to this run. If the release publishes a checksum, compare it.
+6. Check that `java -version` works. The docs ask for a Java JRE and JDK.
+7. Say the resolved version in your answer.
+
+Never pipe a download into a shell. Never run a jar from any source other than that releases page.
+
+## Playwright reports
+
+Use `@katalon/playwright-reporter` when you can edit the Playwright config. Use the JUnit uploader only when JUnit is all the user has.
+
+- Package: `@katalon/playwright-reporter`. Registry check 2026-10-20: latest version 0.0.3, peer dependency `@playwright/test` `^1.0.0`.
+- Environment variables: `KATALON_API_KEY`, `KATALON_PROJECT_ID`, optional `KATALON_BASE_URL`, optional `KATALON_AUTH_URL`.
+- Upload during the run, or later with `playwright-reporter upload --output <dir> --api-key <key> --project-id <id>`.
+
+Playwright 1.59 changed the `junit` reporter. It writes an `error` element for some failures that used to be a `failure` element. A JUnit upload can then classify those tests differently. Compare failed plus errored counts between the local file and the platform. See `references/verify-upload.md`.
+
+## Secret handling
+
+- Never print API keys, passwords, cookies, or auth callback URLs.
+- Use an existing environment variable or a secret store.
+- Hide secret values in any output you quote.
+- Never write a secret into a skill file, repo file, report, or log.
+
+## Sources
 
 - Katalon Runtime Engine command-line syntax: https://docs.katalon.com/katalon-studio/execute-tests/katalon-runtime-engine/command-line-syntax-in-katalon-runtime-engine
-- Upload test results from Katalon Studio to Katalon True Platform manually: https://docs.katalon.com/katalon-studio/test-reports/upload-test-results-from-katalon-studio-to-katalon-testops-manually
+- Upload Studio results manually: https://docs.katalon.com/katalon-studio/test-reports/upload-test-results-from-katalon-studio-to-katalon-testops-manually
 - View test reports in Katalon True Platform: https://docs.katalon.com/katalon-platform/analyze/view-test-results
-- Katalon True Platform Report Uploader: https://docs.katalon.com/katalon-platform/integrations/ci-cd/report-uploader-integration
+- Report Uploader: https://docs.katalon.com/katalon-platform/integrations/ci-cd/report-uploader-integration
 - Playwright integration: https://docs.katalon.com/katalon-platform/integrations/testing-framework/playwright-integration
-- Katalon Report Uploader Legacy: https://docs.katalon.com/katalon-platform/analyze/reports/upload-test-reports/use-katalon-report-uploader
 
-## Katalon Reports
+### references/verify-upload.md
 
-- After Katalon Studio/Runtime Engine execution, test results are expected to upload automatically to Katalon True Platform when TestOps/Platform arguments are configured.
-- Use CLI arguments such as `-apiKey`, `-orgID`, `-testOpsProjectId`, and `-reportFolder` with the normal execution command.
-- Keep `-reportFolder` deterministic so the agent can locate generated artifacts after the run.
-- Use Katalon MCP result tools after the run to confirm whether the platform imported the execution.
+# Verify an upload
 
-## JUnit Reports
+Read this after any upload. The upload command can print success while the platform holds no results. Check the platform itself. Source: Katalon docs "Katalon True Platform MCP Server" (October 2026). Parameters are mostly undocumented on that page, so check each tool schema.
 
-Use Katalon Report Uploader when the input is existing JUnit XML or a report folder containing JUnit XML.
+## Local counts first
 
-Common inputs:
+Before you upload, record from the local report files:
 
-- `PROJECT_ID`: Katalon Platform/TestOps project ID.
-- `REPORT_PATH`: Local report folder path.
-- `TYPE`: `junit`.
-- `PASSWORD`: Prefer an API key, never a plaintext password.
-- `SERVER`: Optional Platform/TestOps endpoint.
+- Total, passed, failed, errored, skipped.
+- The names of a few tests, including one failure if any.
+- The time just before you started the upload.
 
-## Report Uploader Types
+For JUnit, read `tests`, `failures`, `errors`, and `skipped` on each test suite element. For Playwright, read the reporter output or the JSON report. For a Studio report, read the folder's execution summary.
 
-Current Katalon True Platform Report Uploader supports:
+## Find the execution
 
-- `katalon`: Katalon Studio report folder.
-- `junit`: JUnit XML report file/folder.
-- `katalon_recorder`: Katalon Recorder reports.
+1. Call `list_executions` with a window that starts just before the upload. Narrow by `status` if needed. It returns numeric TestOps execution IDs.
+2. Match by project, upload time, and test names. If several match, show them to the user and ask.
+3. If nothing appears, the platform may still be importing. Wait and call again at practical intervals. After a few minutes, report the state as importing.
 
-Use `katalon` and `junit` for this skill unless the user explicitly asks for Katalon Recorder.
+Do not use `list_execution_outputs` here. It uses TestCloud string IDs, which uploaded reports do not have.
 
-## Playwright Reports
+## Read and compare
 
-Use `@katalon/playwright-reporter`, not the generic JUnit uploader, when the source project is Playwright and can be configured.
+1. Call `read_execution` with the numeric `execution_id`.
+2. Call `read_execution_test_results` for the same ID.
+3. Compare the platform counts with the local counts.
 
-Required inputs:
+| Result | Status to report |
+|---|---|
+| Counts match, names match | verified uploaded |
+| Execution found, still importing | importing |
+| Zero results, or counts differ | unverified (say which numbers differ) |
+| No execution after a few minutes | failed or not verifiable |
 
-- `KATALON_API_KEY`: API key for upload.
-- `KATALON_PROJECT_ID`: target Katalon project ID.
-- `KATALON_BASE_URL`: optional custom Platform URL.
-- `KATALON_AUTH_URL`: optional custom auth URL.
+For JUnit, compare failed plus errored together. A test can sit under a different failure class on the platform than in the XML.
 
-The reporter can upload during `npx playwright test` or upload a generated output directory later through `playwright-reporter upload --output <path> --api-key <key> --project-id <id>`.
+## Link
 
-If the user only has JUnit XML produced by Playwright and does not want to configure the Katalon reporter, use the JUnit flow and state that Playwright-specific attachments/metadata may be reduced.
+Use the link the upload tool returned. If none came back, take the link from the read tools. Their `resource_url` host can fail for `.katalon.io` tenants. If so, build the link from the tenant host the user uses, and say it is a built link.
 
-## Secret Handling
+## When verification is blocked
 
-- Never print API keys, passwords, cookies, or raw auth callback URLs.
-- Prefer existing environment variables or secure secret stores.
-- Redact command output before reporting it in chat.
-- Do not write secrets into skill files, repo files, test reports, or logs.
+If the MCP is not connected, say so. Report the CLI result and the local counts. Do not call the upload verified.
+
+### references/write-policy.md
+
+<!-- GENERATED from shared/references/write-policy.md - edit the source -->
+# Write Policy, Execution Consent, and Session Rules
+
+These rules apply to every agent and every skill that changes data on Katalon True Platform (formerly TestOps).
+
+## Write policy
+
+1. Resolve the project and repository first.
+2. Preview the full mutation set in chat. List each create, update, move, link, and delete with its target.
+3. Ask for one confirmation for the whole set.
+4. Run the writes.
+5. Read back each changed item with a read tool and report what the platform now holds.
+
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+
+A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
+
+Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+
+Two more rules for bulk work:
+- Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
+- If a write fails part way, stop. Report which items changed and which did not. Do not retry blindly. Do not create a duplicate to replace a failed create. Search first.
+
+## Execution consent
+
+Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+- the suite or cases,
+- the AUT environment,
+- the mode (manual, Run with AI, or automated),
+- the schedule if one exists,
+- and any private network setup.
+
+A confirmation covers one run. Ask again for the next run.
+
+## Stateless MCP
+
+The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
+- Never rely on a server prompt or on sampling. Ask the user in chat.
+- Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
+- Prefer structured fields in a tool result. If they are missing, parse the text block.
+- Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
+
+## Terminology
+
+Katalon True Platform (formerly TestOps). Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE). Katalon Test Execution - Cloud (formerly TestCloud). On first mention, give both names. Use one name for one thing after that.

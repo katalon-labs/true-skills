@@ -68,63 +68,37 @@ POINTER_LINE = (
 CHATGPT_REWRITES: Dict[str, List[Tuple[str, str]]] = {
     "get-started/SKILL.md": [
         (
-            "Use when the user has just connected Katalon, says get me started, set me up, or pick my default project, or when no default project is stored yet.",
+            'Use when the user has just connected Katalon, asks to get started or to pick a default project, or when no default project is stored yet.',
             "Use only for the manifest onboarding event immediately after the user installs or connects Katalon, or an explicit user request to get started, set up Katalon, or pick/change their default project. A missing default project alone does not authorize invocation or tool calls.",
         ),
         (
             "Run this once after the Katalon connection is installed. The goal is a stored default project and a first useful view in under a minute, with **at most two questions**.",
             "Before calling any tool, confirm this invocation came from `plugin.json`'s `extensions.com.openai.onboardingSkill` event immediately after the user installs or connects Katalon, or from an explicit user request to get started, set up Katalon, or pick/change their default project. If neither applies, stop without calling tools, including when a read tool reveals that no default project is stored.\n\nDuring an authorized invocation, choose a default project and show the first view with **at most two questions**.",
         ),
-    ],
-    "true-platform-testing/SKILL.md": [
         (
-            "- After creating any manual test execution, start Run with AI automatically and wait for completion unless the user explicitly says not to run AI.",
-            "- Once a manual run is ready, offer the `plan_ai_run` card unless the user said not to run AI. The run starts only when the user clicks Run, and the card follows it to completion.",
+            '1. **Who is signed in.** Call `get_user_context`. Greet in one line with the organization and account name from the result, for example "You are connected to Katalon as Demo Shop." If the call fails with a sign-in error, hand off to `platform-setup` and stop.',
+            "1. **Who is signed in.** Call `katalon_profile`. Greet in one line with the organization and account name from `nickname`, for example \"You are connected to Katalon as Demo Shop.\" If `katalon_profile` is not listed, skip the greeting. If the call says the user is not signed in, tell them to sign in to Katalon from the connection prompt and stop.",
         ),
         (
-            "- For full-flow requests, perform non-destructive writes without asking again once project/repository/requirement scope is resolved.",
-            "- For full-flow requests in ChatGPT, every write is a Katalon card the user confirms: once project, repository and requirement scope is resolved, show the next card.",
+            '3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` with `project_id`. Call `read_auts`.',
+            "3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` and `read_auts` for the chosen project.",
         ),
         (
-            "- After any manual test execution is created, start Run with AI automatically unless the user explicitly says not to. Do not ask whether to continue with AI.",
-            "- Once the test cases are ready, offer the `plan_ai_run` card unless the user said not to run with AI. The run starts only when the user clicks Run in the card.",
-        ),
-    ],
-    "true-platform-testing/references/execution-workflow.md": [
-        (
-            "7. Continue to AI automatically after creating any manual execution unless the user explicitly says not to run AI.",
-            "7. In ChatGPT, offer the `plan_ai_run` card for the run unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
-        ),
-        (
-            "- Start Run with AI without asking again after any manual run is created.",
-            "- In ChatGPT, Run with AI starts only when the user clicks Run in the `plan_ai_run` card.",
-        ),
-        (
-            "- Do not ask whether to continue with AI unless the user explicitly requests a manual run without AI.",
-            "- Offer the `plan_ai_run` card for the run unless the user asked for a manual run without AI.",
-        ),
-    ],
-    "execute-test/SKILL.md": [
-        (
-            "6. Start Run with AI automatically with `create_manual_ai_session` unless the user explicitly says not to run AI.",
-            "6. Offer the `plan_ai_run` card unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
-        ),
-    ],
-    "execute-test/references/execution-workflow.md": [
-        (
-            "7. Continue to AI automatically after creating any manual execution unless the user explicitly says not to run AI.",
-            "7. In ChatGPT, offer the `plan_ai_run` card for the run unless the user said not to run AI. Run with AI starts only when the user clicks Run in the card.",
-        ),
-        (
-            "- Start Run with AI without asking again after any manual run is created.",
-            "- In ChatGPT, Run with AI starts only when the user clicks Run in the `plan_ai_run` card.",
-        ),
-        (
-            "- Do not ask whether to continue with AI unless the user explicitly requests a manual run without AI.",
-            "- Offer the `plan_ai_run` card for the run unless the user asked for a manual run without AI.",
+            "4. **Keep the choice.** State the project, repository, and environment that this conversation will use. Repeat their IDs on later calls. If the client lists a settings tool (the ChatGPT app has `settings_update`), save `default_project_id`, `default_repository_id`, and `default_aut_environment_id` with it. Leave out any value the user did not choose. Without a settings tool, offer to note the names, never secrets, in the agent's own memory or project instructions.",
+            "4. **Save.** Call `settings_update` with `{\"set\": {\"default_project_id\": ..., \"default_repository_id\": ..., \"default_aut_environment_id\": ...}}`, leaving out any value that was not chosen. If `settings_update` is not listed, say which project and repository this conversation will use and skip saving.",
         ),
     ],
 }
+
+# Client-specific wording removed from every packaged Markdown file. The canonical
+# skills may name one client's tool prefix; the ChatGPT package must stay provider-neutral.
+NEUTRAL_REWRITES: List[Tuple["re.Pattern[str]", str]] = [
+    (re.compile(r" \(Claude Code(?: uses|:) `mcp__<server>__<tool>`\)"), ""),
+    (re.compile(r" Claude Code uses `mcp__<server>__<tool>`\."), ""),
+    (re.compile(r"For Claude Code:"), "For example:"),
+    (re.compile(r"Claude Code and VS Code use `http`\."), "VS Code uses `http`."),
+    (re.compile(r"vscode, claude, codex, and opencode"), "vscode, codex, and opencode"),
+]
 
 # Limits from the OpenAI plugin submission rules (research/apps-sdk-reference.md,
 # "Final submission limits", captured 2026-10-01).
@@ -954,6 +928,13 @@ def stage_package(stage: Path) -> List[str]:
                 continue
             text = text.replace(source, replacement)
         path.write_text(text, encoding="utf-8")
+    for path in sorted((stage / "skills").rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        neutral = text
+        for pattern, replacement in NEUTRAL_REWRITES:
+            neutral = pattern.sub(replacement, neutral)
+        if neutral != text:
+            path.write_text(neutral, encoding="utf-8")
     if overlay.is_dir():
         for extra in sorted(set(p.name for p in overlay.iterdir() if p.is_dir()) - set(names)):
             problems.append(f"chatgpt/overlay/skills/{extra} has no matching skills/{extra}")

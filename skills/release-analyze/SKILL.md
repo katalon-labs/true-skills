@@ -1,90 +1,105 @@
 ---
 name: release-analyze
-description: Analyze Katalon True Platform/TestOps release readiness from testing quality data. Use when you need to use Katalon MCP metrics and results to assess whether a release, sprint, iteration, version, test plan, suite, or repository is ready to ship; summarize requirement coverage, execution health, defect risk, test stability, configuration coverage, release blockers, quality gaps, and produce a Ready / Ready with risk / Not ready recommendation. Written for the test manager who owns the ship call and the test lead who has to defend it.
+description: Assesses whether a Katalon True Platform (formerly TestOps) release, sprint, iteration, or suite is ready, using requirement, test case, defect, stability, configuration, and execution data from the Katalon MCP. It returns Ready, Ready with risk, or Not ready with a confidence level, the blocking issues, and the evidence behind each. Use when someone must make or defend the ship call. Not for triaging single failures, which is analyze-failures, and not for multi-release trend reports, which is test-reporting. For the test manager and the test lead.
+license: MIT
+compatibility: Requires the Katalon True Platform MCP server and network access.
+metadata:
+  version: "0.5.0"
+  mcp-contract: "katalon-docs-2026-10"
 ---
 
-# Katalon Release Analyze
+# Release Analyze
 
-Use this skill to assess release readiness from Katalon MCP data. The output must be a testing-quality decision, not just a metric dump.
+This skill assesses release readiness from Katalon MCP data. The output is a testing-quality decision. A metric dump does not meet that bar. The skill only reads. It never changes the workspace.
 
-## Availability Boundary
+The reader is the test manager who owns the ship call and the test lead who has to defend it.
 
-State the MCP boundary before promising an assessment:
+Katalon True Platform (formerly TestOps) holds the data. Katalon Test Execution - Cloud (formerly TestCloud) runs the cloud executions. Clients add a prefix to tool names (Claude Code uses `mcp__<server>__<tool>`). This skill uses bare names.
 
-- Available through Katalon MCP: project/repository discovery, requirements, test cases, test suites, executions/results, quality summaries, defect data, stability data, and configuration coverage when tools are exposed.
-- Not directly available: create formal Test Plan entities, inspect live AUT UI, guarantee AI execution completion, or decide product/business readiness beyond test evidence.
-- If MCP tools are unavailable, provide only a framework/template and mark release confidence as Low until data is verified.
+## Availability boundary
+
+State the MCP boundary before you promise an assessment.
+
+- Available through the Katalon MCP: project and repository discovery, iterations, requirements, test cases, suites, executions and results, insights on requirements, test cases, defects, and configurations, stability analysis, and defect context.
+- Not available: creating a formal Test Plan entity, inspecting the live AUT UI, guaranteeing that a Run with AI session completes, and judging product or business readiness beyond test evidence.
+- If MCP tools are unavailable, give only a framework and mark confidence Low until data is verified.
 
 Read `references/capability-boundaries.md` when capability scope is unclear.
 
-## Required Scope
+## Required scope
 
 Resolve or ask for the minimum missing scope:
 
-- Katalon project and repository/Test Project.
-- Release identifier, sprint, iteration, version, test suite, suite collection, execution ID, or date range.
-- Target environment/configuration matrix when readiness depends on browsers, devices, OS, or deployment environments.
-- Quality gate thresholds when the team has defined them.
+- The Katalon project and repository (Test Project).
+- A release identifier, sprint, iteration, version, suite, suite collection, execution ID, or date range.
+- The target environment and configuration matrix, when readiness depends on browsers, devices, OS, or deployments.
+- The quality gate thresholds, when the team has defined them.
 
-If the user gives only a release name or issue key, use MCP discovery first. Ask only when multiple equally plausible scopes remain.
+If the user gives only a release name or an issue key, use MCP discovery first. Ask only when several equally likely scopes remain. MCP is stateless: ask in chat and carry IDs from call to call.
 
-## MCP Data Collection
+## Data collection
 
-Always resolve context before analysis:
+Resolve context first:
 
 1. Call `list_projects`.
 2. Call `list_repositories`.
-3. Resolve the repository/Test Project.
-4. Find the release scope using available requirement, suite, execution, iteration, or result tools.
+3. Resolve the repository.
+4. Call `find_iterations` to pin the iteration, sprint, or release window.
 
-Collect evidence with the available Katalon MCP tools:
+Then collect evidence. Read each tool schema before the first call. This skill does not repeat parameters.
 
-- Requirement and traceability: `find_requirements`, `read_requirement`, `fetch_requirement_data`.
-- Test case quality: `find_test_cases`, `find_test_cases_by_requirement`, `fetch_test_case_data`.
-- Suites and executable scope: `find_test_suites`, `read_test_suite`.
-- Executions and results: `read_execution`, `read_execution_test_results`, `read_test_result`, `find_test_results`.
-- Defect risk: `fetch_defect_data`.
-- Stability: `fetch_test_stability_data`.
-- Configuration coverage: `fetch_test_configuration_data`.
+| Gate | Tool |
+|---|---|
+| Requirement coverage | `get_requirement_insights`, `find_requirements`, `find_test_cases_by_requirement` |
+| Test case quality | `get_test_case_insights`, `find_test_cases` |
+| Defect risk | `get_defect_insights` |
+| Stability | `analyze_test_case_stability`, `analyze_test_flakiness` |
+| Configuration coverage | `get_test_configuration_insights` |
+| Executions and results | `list_executions`, `read_execution`, `read_execution_test_results`, `read_test_result`, `find_test_results` |
+| Suites and executable scope | `find_test_suites`, `read_test_suite`, `find_test_suite_collections` |
 
-Use the freshest data available for the requested release. If comparing trend or stability, include the date range used.
+Use the freshest data for the release. When you report a trend or a stability figure, state the date range or lookback window.
 
-## Key Metrics
+Two checks protect against bad data:
+
+- `list_executions` and `read_execution` use the numeric True Platform execution ID. `list_execution_outputs` uses the cloud (string) ID. Never swap them.
+- A stability result with all zeros while results show failures was seen on one project in August 2026. Cross-check the counts against `find_test_results` before you call a suite stable.
+
+## Key metrics
 
 Report the metrics that are available and relevant:
 
-- Requirement coverage: total, covered, uncovered, linked test cases, requirements without passing evidence.
-- Test coverage: total tests, automated/manual split, unexecuted, blocked, stale, missing ownership or incomplete cases.
-- Execution health: latest executions, pass/fail/blocked/skipped/not-run counts, pass rate, failed P0/P1 tests.
-- Defect risk: open critical/high defects, release blockers, reopened defects, failed tests with linked defects, untriaged failures.
-- Stability: flaky tests, repeated failures, unstable suites/configurations, recent trend.
+- Requirement coverage: total, covered, uncovered, linked test cases, and requirements without passing evidence.
+- Test coverage: total tests, automated and manual split, unexecuted, blocked, stale, and incomplete cases.
+- Execution health: latest executions, pass, fail, blocked, skipped, and not-run counts, pass rate, and failed P0 and P1 tests.
+- Defect risk: open critical and high defects, release blockers, reopened defects, failed tests with linked defects, and untriaged failures.
+- Stability: flaky tests, repeated failures, unstable suites or configurations, and the recent trend.
 - Configuration coverage: environments, browsers, devices, OS, execution profiles, and missing target combinations.
-- Data confidence: missing MCP data, stale executions, ambiguous release scope, or incomplete links.
+- Data confidence: missing MCP data, stale executions, ambiguous scope, and incomplete links.
 
-Read `references/release-quality-gates.md` before making the final readiness decision.
+Read `references/release-quality-gates.md` before you make the final decision. It maps each gate to its tool and holds the decision rules.
 
-## Readiness Decision
+## Readiness decision
 
 Return one of:
 
-- `Ready`: no testing blocker remains; critical requirements have coverage and recent passing evidence; target configurations are sufficiently tested.
+- `Ready`: no testing blocker remains. Critical requirements have coverage and recent passing evidence. Target configurations have enough testing.
 - `Ready with risk`: no hard blocker remains, but moderate gaps or accepted risks exist.
-- `Not ready`: release-blocking defects, failed/blocked/unrun critical tests, missing critical coverage, stale evidence, or untested required configurations remain.
+- `Not ready`: release-blocking defects, failed, blocked, or unrun critical tests, missing critical coverage, stale evidence, or untested required configurations remain.
 
-If thresholds are provided, apply them. If not, use risk-based judgment and state assumptions.
+If the team gave thresholds, apply them. If not, use risk-based judgment and state the assumptions.
 
-Never mark `Ready` when:
+Never return `Ready` when any of these holds:
 
-- Critical/high release-blocking defects remain open.
-- P0/P1 tests are failed, blocked, or not run without accepted risk.
-- A failed P0/P1 test that matches a known environment or infrastructure signature (timeout, service outage, account/data issue) remains an untriaged evidence blocker until `analyze-failures` confirms an accepted environment cause.
+- Critical or high release-blocking defects remain open.
+- P0 or P1 tests are failed, blocked, or not run without accepted risk.
+- A failed P0 or P1 test matches a known environment signature (timeout, service outage, account or data issue) and `analyze-failures` has not confirmed an accepted environment cause. It stays an untriaged blocker.
+- A P0 or P1 test failed and then passed on an unmodified rerun. That is a stability risk under investigation.
 - Critical requirements have no tests or no passing evidence.
 - Required target configurations are untested.
 - MCP data is unavailable or too incomplete to support confidence.
 
-## Response Format
-
-Respond with:
+## Response format
 
 ```text
 Release Readiness: Ready | Ready with risk | Not ready
@@ -110,16 +125,15 @@ Evidence:
 - ...
 ```
 
-Evidence should include execution IDs, suite names, requirement keys, defect IDs, or links when returned by the platform.
+Evidence includes execution IDs, suite names, requirement keys, defect IDs, and links when the platform returns them.
 
-## Follow-Up Actions
+## Follow-up actions
 
 Recommend concrete next steps:
 
-- Create or link missing tests for uncovered critical requirements.
-- Re-run failed, flaky, or stale suites.
-- Resolve or accept specific defects.
-- Expand configuration coverage for missing release targets.
-- Use `execute-test` when execution is needed.
-- Use `create-test-cases` when coverage gaps require new manual cases.
-- Use `upload-report` when external automation results must be uploaded before assessment.
+- Create or link tests for uncovered critical requirements (`create-test-cases`).
+- Rerun failed, flaky, or stale suites. `rerun_execution` consumes Test Execution - Cloud minutes and can change AUT data, so the user must agree first. `execute-test` owns the run.
+- Resolve or accept named defects. Triage red results with `analyze-failures`.
+- Widen configuration coverage for missing release targets.
+- Upload external automation results with `upload-report` before the assessment.
+- For a multi-release trend, use `test-reporting`.

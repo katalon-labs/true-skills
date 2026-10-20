@@ -1,34 +1,36 @@
+<!-- GENERATED from shared/references/manual-test-case-format.md - edit the source -->
 # Manual Test Case Format
 
-Use this format when generating cases for Katalon True Platform.
+Use this format when you generate cases for Katalon True Platform.
 
 ## Fields
 
-- Name: short verb-led title.
-- Description: one or two sentences explaining the behavior under test.
-- Pre-condition: environment, account, seed data, cart state, login state, AUT URL, and any browser/device assumptions.
-- Test Steps: manual style actions. Start with navigation when page context matters.
-- Expected Results: observable outcome for each step.
-- Test Data: concrete values used by the step, or `N/A`.
-- Priority: P0 critical path, P1 important functional path, P2 secondary/edge path.
-- Requirement IDs: internal requirement IDs or source keys when linking is requested.
+- Name: short, verb-led title. Use letters, digits, spaces, and `( ) . , _ -` only. The platform rejects `@ : /` in a name.
+- Description: one or two sentences about the behavior under test.
+- Pre-condition: environment, account, seed data, cart state, login state, AUT URL, and browser or device assumptions.
+- Test Steps: manual-style actions. Start with navigation when page context matters.
+- Expected Results: the observable outcome for each step.
+- Test Data: the concrete values used by the step, or `N/A`.
+- Priority: P0 critical path, P1 important functional path, P2 secondary or edge path.
+- Requirement IDs: internal requirement IDs or source keys, when linking is requested.
 
 ## Step Quality Rules
 
 - Write one user action per step.
-- Use visible labels and URLs, not implementation selectors.
-- Put validations in Expected Results, not the action.
-- Avoid "verify everything looks correct"; specify what must be visible or changed.
-- Split long end-to-end flows when setup makes individual failures hard to diagnose.
+- Use visible labels and URLs. Do not use implementation selectors.
+- Put checks in Expected Results. Keep the action free of checks.
+- Avoid "verify everything looks correct". Say what must be visible or changed.
+- Split a long end-to-end flow when its setup makes a single failure hard to diagnose.
 
 ## Katalon Import Notes
 
-- Before creating test cases, search existing coverage with `find_test_cases_by_requirement` when requirement IDs are known and `find_test_cases` by title, requirement key, feature area, and folder.
-- Reuse or update matching existing cases instead of creating duplicates.
-- Create manual test cases with `create_test_case`.
+- Before you create cases, search existing coverage. Use `find_test_cases_by_requirement` when requirement IDs are known. Use `find_test_cases` by title, requirement key, feature area, and folder.
+- Reuse or update a matching case. Do not create a duplicate.
+- Create manual cases with `create_test_case`. A case of type AUTOMATED creates nothing.
 - Link requirements after creation with `link_requirements_to_test_case`.
-- Verify important created cases with `read_test_case`.
-- Revise existing cases with one `update_test_case` call containing all updates.
+- Read back each important case with `read_test_case`.
+- Revise an existing case with `update_test_case`. See the tool schema for how it batches changes. When you update the steps, send the full list of steps.
+- For many cases, plan the set, validate names and paths, get one confirmation, then write. Read back after the writes.
 
 ## Example Shape
 

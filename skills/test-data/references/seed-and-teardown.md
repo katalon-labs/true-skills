@@ -13,7 +13,7 @@ Take the highest rung that works.
 
 ## Rules that make a seed trustworthy
 
-- **Idempotent.** Running it twice leaves one record, not two, and does not error on the second run.
+- **Idempotent.** Running it twice leaves one record and does not error on the second run.
 - **Unique per run.** Stamp every key that must be unique: `qa+cel9-20260810-1432@example.com`, `ORDER-<stamp>`. The stamp is what teardown searches for.
 - **Self-describing.** A seeded record should be identifiable as test data by looking at it, so a human who finds one in a shared environment knows what it is.
 - **Scoped to what the case needs.** Seeding a hundred orders to test one discount makes the failure harder to read and the teardown slower.
@@ -67,7 +67,7 @@ export const test = base.extend<Fixtures>({
 });
 ```
 
-Use `globalSetup` only for state that is genuinely shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
+Use `globalSetup` only for state that is shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
 
 ## The acceptance test for any data design
 

@@ -1,0 +1,50 @@
+---
+name: get-started
+description: Onboards a person to Katalon True Platform (formerly TestOps) right after the connection works, confirming who is signed in and choosing the default project, repository, and Run with AI target with at most two questions. Use when the user has just connected Katalon, asks to get started or to pick a default project, or when no default project is stored yet. Not for installing or configuring an MCP client, which belongs to platform-setup, and not for designing or running tests.
+license: MIT
+compatibility: Requires the Katalon True Platform MCP server and network access.
+metadata:
+  version: "0.5.0"
+  mcp-contract: "katalon-docs-2026-10"
+---
+
+# Katalon Get Started
+
+Run this once after the Katalon connection is installed. The goal is a stored default project and a first useful view in under a minute, with **at most two questions**.
+
+Name tools by bare name. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
+
+## Boundary
+
+- Reads only, plus one settings save. Nothing in the user's workspace changes.
+- The settings save happens only when the client lists a settings tool.
+- Never ask for a password, API key, or token. Sign-in happens in the client.
+- Never repeat the user's email address.
+- Ask in chat. Do not rely on a server prompt.
+- If no Katalon tools exist in this session, hand off to `platform-setup` and stop.
+
+## Steps
+
+1. **Who is signed in.** Call `get_user_context`. Greet in one line with the organization and account name from the result, for example "You are connected to Katalon as Demo Shop." If the call fails with a sign-in error, hand off to `platform-setup` and stop.
+2. **Default project (question 1).** Call `list_projects`.
+   - No project: hand off to `platform-setup` to check membership, and stop.
+   - One project: use it and do not ask.
+   - Several: ask one question. Offer up to three project names from the list and "another project". Match a named project against the same list.
+3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` with `project_id`. Call `read_auts`.
+   - One repository and at most one AUT environment: use them and do not ask.
+   - More than one of either: ask one combined question, for example "Which repository and which environment should Run with AI use by default?" Offer at most three options for each.
+   - No AUT environment: leave the target unset. Say that Run with AI asks for it on first use.
+4. **Keep the choice.** State the project, repository, and environment that this conversation will use. Repeat their IDs on later calls. If the client lists a settings tool (the ChatGPT app has `settings_update`), save `default_project_id`, `default_repository_id`, and `default_aut_environment_id` with it. Leave out any value the user did not choose. Without a settings tool, offer to note the names, never secrets, in the agent's own memory or project instructions.
+5. **First step.** If the client lists a Katalon home view (the ChatGPT app has `katalon_home`), call it. Otherwise end with these starter prompts:
+   - "Which requirements in my next release have no tests?"
+   - "Why did my latest test run fail?"
+   - "Is my next release ready to ship?"
+
+## Stop conditions
+
+- Stop after step 5. Do not start a run, design cases or file anything during onboarding.
+- If a read fails with a permission error, report the error line as given. Say who can lift it when the error names that. Continue with the steps that still work.
+
+## Output
+
+One greeting line. At most two questions. One line that names the chosen defaults. Then the home view or the three starter prompts.

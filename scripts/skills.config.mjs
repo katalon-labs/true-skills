@@ -5,6 +5,9 @@
  *   - INTERFACE: display name / short blurb / starter prompt for generated wrappers
  *   - ORDER:     the order skills appear in generated indexes (setup first, orchestrator last)
  *   - ROLES:     the closed role vocabulary; each INTERFACE entry declares a subset in `roles`
+ *   - SHARED:    reference files with one canonical copy in shared/references/, copied into
+ *                each listed skill by scripts/sync-shared.mjs (the validator fails on drift)
+ *   - the version, MCP contract id and description limits every SKILL.md must meet
  *
  * Adding a skill means adding it here AND creating skills/<name>/. The validator
  * (scripts/validate-skills.mjs) fails the build if these ever drift apart.
@@ -16,6 +19,20 @@
 // in role terms, naming no skill, should land on it first. Secondary users arrive by
 // handoff or through the router, so the role token stays selective.
 export const ROLES = ["manual tester", "automation tester", "test lead", "test manager"];
+
+// Version stamped in every SKILL.md `metadata.version` and expected to equal the root
+// plugin.json version. Bump both together at release time.
+export const SKILL_VERSION = "0.5.0";
+
+// Id of the MCP tool contract in docs/mcp-tools.json. Every SKILL.md carries it in
+// `metadata.mcp-contract`, so a reader can tell which docs capture the text was checked against.
+export const MCP_CONTRACT = "katalon-docs-2026-10";
+
+// Description contract (AC-3). Lengths count characters of the parsed description.
+export const DESCRIPTION_LIMITS = { min: 250, max: 600, total: 10000 };
+
+// SKILL.md size limits. Lines are a hard cap; tokens are estimated as characters / 4.
+export const SKILL_LIMITS = { maxLines: 500, warnTokens: 4500, maxTokens: 6000 };
 
 // The one skill allowed to declare more than two roles, because it is the router.
 export const ROUTER = "true-platform-testing";
@@ -163,3 +180,36 @@ export const ORDER = [
   "get-started",
   "true-platform-testing",
 ];
+
+// Reference files with one canonical copy in shared/references/<file>. scripts/sync-shared.mjs
+// copies each into skills/<skill>/references/<file> under a GENERATED banner. Edit the
+// canonical file, then run: node scripts/sync-shared.mjs
+const WRITE_POLICY_SKILLS = [
+  "create-test-cases",
+  "execute-test",
+  "exploratory-charter",
+  "test-management",
+  "test-maintenance",
+  "test-plan",
+  "analyze-failures",
+  "upload-report",
+  "playwright-execute",
+  "test-data",
+  "true-platform-testing",
+];
+
+export const SHARED = {
+  "capability-boundaries.md": [
+    "create-test-cases",
+    "execute-test",
+    "platform-setup",
+    "release-analyze",
+    "upload-report",
+    "true-platform-testing",
+  ],
+  "istqb-coverage.md": ["create-test-cases"],
+  "manual-test-case-format.md": ["create-test-cases"],
+  "requirement-analysis.md": ["create-test-cases"],
+  "execution-workflow.md": ["execute-test"],
+  "write-policy.md": WRITE_POLICY_SKILLS,
+};

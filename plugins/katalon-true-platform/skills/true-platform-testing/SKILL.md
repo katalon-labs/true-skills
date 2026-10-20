@@ -1,262 +1,104 @@
 ---
 name: true-platform-testing
-description: End-to-end Katalon True Platform testing workflow and lifecycle router. Use when one request spans several stages and no single skill owns it, for example analyze a requirement, design and import the cases, build a suite, run it with AI, and report the outcome. Also use to route any testing request across the 7-stage lifecycle (plan, design, manage, review, execute, analyze, maintain) to the right focused skill, and to decide what the Katalon MCP tools can and cannot do. Start here when a request names a job rather than one task, such as the whole chain from requirement to ship call, or when the asker wants orienting first, for example where do I start or which skill do I need. Routes the asker to the skill that owns their next step, whether they say manual tester, QA analyst, automation tester, SDET, QA engineer, test lead, QA lead, test manager, or QA manager.
+description: Routes Katalon True Platform (formerly TestOps) testing requests to the focused skill that owns the next step, and chains several skills for a request such as requirement to cases to run to ship call. Use when one request spans several lifecycle stages, when no skill is named, or when the asker wants orienting first. Prefer the focused skill, such as create-test-cases or execute-test, when the request names one task. For the manual tester, automation tester, test lead, and test manager.
+license: MIT
+compatibility: Requires the Katalon True Platform MCP server and network access.
+metadata:
+  version: "0.5.0"
+  mcp-contract: "katalon-docs-2026-10"
 ---
 
 # Katalon True Platform Testing
 
-Use this skill for requirement-to-execution workflows in Katalon True Platform/TestOps, and as the **router across the full 7-stage testing lifecycle**. Prefer Katalon MCP tools for platform operations and Browser/Playwright only for external AUT exploration or visual verification.
+This skill routes. It resolves context, applies the consent rules, and hands work to the skill that owns it. It does not design cases, run suites, or analyze results itself. The focused skills do that.
 
-## Role Routing
+Name tools by bare name, as the tool index does. Clients add a prefix. The capability boundaries file explains it.
 
-Ask who is in front of you before asking which stage they are in. A skill is listed here when a request phrased in role terms, naming no skill, should land there first. Everything else is reached by handoff.
+## Pick the Entry Point
+
+1. If the request names one task, go straight to that skill. Do not start here.
+2. If the request names a role and no skill, use the role table.
+3. If the request spans stages, use the lifecycle table and run the stages in order. Stop when the user's goal is met.
+4. If the asker is unsure where to start, ask one question: what do you want to have at the end of this session?
+
+### Roles
+
+Ask who is in front of you before you ask which stage they are in.
 
 | Role | Comes here to | Starts at | Then |
 |---|---|---|---|
 | Manual tester | turn a written requirement into cases and run them | `create-test-cases` | `execute-test`, `analyze-failures` |
-| Automation tester | turn cases into code, run it, ship the results | `test-case-to-playwright` | `playwright-execute`, `upload-report`, `test-maintenance` |
+| Automation tester | turn cases into code, run it, and send the results to the platform | `test-case-to-playwright` | `playwright-execute`, `upload-report`, `test-maintenance` |
 | Test lead | scope the cycle, judge readiness, keep the suite healthy | `test-plan` | `test-review`, `test-management`, `release-analyze` |
-| Test manager | read coverage and risk, and call ship | `release-analyze` | `test-review`, `test-management` |
+| Test manager | read coverage and risk, and call ship | `release-analyze` | `test-review`, `test-management`, `test-reporting` |
 
-`platform-setup` is role-neutral and comes first for everyone who has not connected the MCP yet. Synonyms (SDET, automation engineer, QA engineer, QA analyst, test analyst, QA lead, QA manager), the full intent-to-skill map, and what to fall back to for the parts not built yet are in `references/lifecycle-map.md`.
+"QA engineer" fits two roles. Ask which one. `get-started` and `platform-setup` fit every role. Run them first when the MCP is not connected or no default project is chosen. The synonyms for each role and the full intent-to-skill map are in `references/lifecycle-map.md`.
 
-## Lifecycle Routing
+### Lifecycle
 
-The Katalon testing lifecycle has 7 stages. For a focused request, route to the matching skill; for a full-flow request, run the stages in order and stop when the user's goal is met. Full map + tool lists: `references/lifecycle-map.md`.
-
-| Stage | Route to skill | When |
+| Stage | Skill | Use when |
 |---|---|---|
-| 1 Plan | `test-plan` | scope, risk-prioritized plan, executable folder+suite for a sprint/release |
-| 2 Design | `create-test-cases` (+ `test-case-to-playwright`) | author/import cases from requirements |
-| 3 Manage | `test-management` | organize inventory, classify, requirement traceability audit |
-| 4 Review | `test-review` | pre-pipeline coverage/quality/flakiness verdict |
-| 5 Execute | `execute-test` (+ `upload-report`, `playwright-execute`) | manual, Run with AI, automated, cloud |
-| 6 Analyze | `analyze-failures` + `release-analyze` | failure triage/defects; ship/no-ship call |
-| 7 Maintain | `test-maintenance` | repair flaky/broken cases, regenerate, feed gaps back to plan |
-| pre / cross | `platform-setup` | connect and verify the MCP |
+| 1 Plan | `test-plan`, `test-estimation` | scope, risk order, executable folders and suites, effort |
+| 2 Design | `create-test-cases`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements |
+| 3 Manage | `test-management` | organize inventory, trace requirements |
+| 4 Review | `test-review` | verdict on coverage and quality before the pipeline |
+| 5 Execute | `execute-test`, `playwright-execute`, `upload-report` | manual, Run with AI, automated, Playwright, report upload |
+| 6 Analyze | `analyze-failures`, `release-analyze`, `test-reporting` | failure triage and defects, ship call, stakeholder summary |
+| 7 Maintain | `test-maintenance` | repair flaky or broken cases and feed gaps back to plan |
+| Setup | `get-started`, `platform-setup` | first run, connection, sign-in, tunnels |
 
-For multi-skill plays (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit) read `references/combination-recipes.md`. For copy-paste prompts and cross-model/cross-agent execution notes read `references/prompt-recipes.md`. For the full MCP tool list read `references/mcp-tool-index.md`.
+For multi-skill plays read `references/combination-recipes.md`. For copy-paste prompts read `references/prompt-recipes.md`. For every MCP tool by group read `references/mcp-tool-index.md`.
 
-This skill can run any stage inline itself (the workflows below cover requirement->execution->report); route to a focused skill when the user wants only that stage or a deeper treatment (traceability, review verdict, failure triage, maintenance).
+## Resolve Context Once
 
-## Autonomy Policy
+Resolve context in this order before any write:
 
-When the user asks for an end-to-end Katalon flow, try to complete the full available workflow without pausing for optional decisions:
+1. Call `list_projects`. If one project matches the request or exactly one exists, use it. Otherwise list the projects and ask.
+2. Call `list_repositories` with `project_id`. Treat repository and Test Project as one target. If the user says "Katalon Cloud", prefer a repository with that name. Do not scan all repositories to avoid a choice.
+3. Name the project and repository to the user in one line.
 
-```text
-+--------------+ --> +-------------+ --> +--------------+ --> +-------------+ --> +-------------+
-| Analyze reqs |     | Create/link |     | Create suite |     | Create run  |     | Run with AI |
-+--------------+     +-------------+     +--------------+     +-------------+     +-------------+
-                                                                                         |
-                                                                                         v
-                                                                                  +---------------+
-                                                                                  | Report result |
-                                                                                  +---------------+
-```
+Then pass the resolved values to the next skill. Do not resolve again. Repeat `project_id` and `repository_id` on every call that takes them, because the MCP keeps no session. Carry IDs between calls yourself: requirement keys, suite IDs, `manualExecutionId`, and execution IDs.
 
-Default assumptions:
+Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud uses a string. Never pass one where the other belongs.
 
-- If exactly one Katalon project or repository matches the user's wording or current context, use it.
-- If exactly one repository exists, use it.
-- If no AUT environments exist and the user supplied or requirement contains a URL, use that URL as `default_aut_environment_url` for AI execution.
-- If AUT environments exist, choose the environment whose URL/name best matches the target AUT. Ask only if no match is clear.
-- After creating any manual test execution, start Run with AI automatically and wait for completion unless the user explicitly says not to run AI.
-- If a matching test case already exists, reuse and update/link it instead of creating a duplicate.
-- If a matching test suite already exists, reuse it and add missing cases instead of creating a duplicate.
+## Consent
 
-Ask the user only when a required value cannot be resolved safely, multiple equally valid choices remain, credentials/accounts are missing, the next action is destructive, or the user explicitly asks for approval gates.
+The full rules are in `references/write-policy.md`. In short:
 
-## Availability First
+- Reads need no confirmation.
+- Before a write, preview the whole mutation set, get one confirmation, run it, then read back.
+- A destructive tool needs a yes that names the target.
+- Before `create_test_run`, `create_manual_ai_session`, or `rerun_execution`, confirm. These use cloud minutes and can change AUT data. A confirmation covers one run.
+- Never rely on a server prompt or on sampling. Ask in chat.
 
-Before promising a workflow, state the automation boundary:
+A user who asks for a full flow has not confirmed each write. Preview at each stage boundary, or once for the whole chain when the chain is short and the user agrees.
 
-- Available through Katalon MCP: list projects/repositories, find/read requirements, create/read/update test cases, link requirements, find/manage test suites and folders, create manual test runs, start Run with AI, poll AI sessions, read execution/test results, fetch quality metrics, and create ALM-linked defects.
-- Not directly available through Katalon MCP: create requirements, create a formal Test Plan entity, guarantee AI execution completion, or inspect the live AUT UI without Browser/Playwright.
-- Workaround for test plans: use a named test suite or folder plus release/sprint association as the executable test plan structure.
+## Hand Off Between Skills
 
-For details, read `references/unavailable-capabilities.md` when the user asks "can Katalon do X?" or when planning scope.
-
-## Required Context Workflow
-
-Always resolve context in this order before mutating Katalon data:
+When one skill finishes and the next begins, pass a short block:
 
 ```text
-+---------------+ --> +---------------------+ --> +-----------------------+
-| list_projects |     | list_repositories   |     | resolve repository    |
-+---------------+     +---------------------+     +-----------------------+
+Context:
+- Project: <name> (project_id)
+- Repository: <name> (repository_id)
+- Requirement or scope: <key or description>
+- Created or changed so far: <IDs>
+- Open boundary: <anything the MCP cannot do here>
 ```
 
-Rules:
+If the client cannot load another skill, open that skill's instruction file in the skills folder and follow it. Do not copy its workflow into this conversation from memory.
 
-- Treat repository and Test Project as the same resolution target.
-- If the user says "Katalon Cloud" or "cloud repo", prefer a repository named `Katalon Cloud` when present.
-- Do not scan all repositories to avoid choosing. Resolve from context or ask when ambiguous.
-- For full-flow requests, perform non-destructive writes without asking again once project/repository/requirement scope is resolved.
-- Before destructive writes or bulk changes outside the requested flow, summarize the intended changes and get approval.
+## Capability Boundary
 
-## Requirement Analysis
+State the boundary before you promise a workflow. The MCP can run both manual and automated runs, rerun a completed execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, and work with TrueTest sessions. It cannot create requirements, create a formal Test Plan entity, cancel Run with AI, stop a running execution, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
 
-Use `find_requirements` or `read_requirement` when requirements exist in Jira/Azure integration. If requirements are provided in chat, analyze them locally and only use Katalon to create/link test assets.
+## References
 
-Output requirement analysis as:
-
-- Requirement intent
-- User roles/personas
-- Main flows
-- Alternate and negative flows
-- Data and environment assumptions
-- Risk areas
-- Coverage recommendations
-
-Read `references/requirement-analysis.md` for the checklist.
-
-## Manual Test Case Design
-
-Write manual test cases in a platform-importable style:
-
-- Title: concise and action-oriented.
-- Description: what behavior is verified.
-- Pre-condition: environment, data, account, AUT state.
-- Steps: manual tester phrasing, each starting with a concrete action.
-- Expected results: observable UI/API/platform result per step.
-- Test data: values, URLs, accounts, or `N/A`.
-- Priority: P0/P1/P2 when useful.
-- Requirement links: source keys or internal requirement IDs when available.
-
-Mirror the style of related existing test cases before drafting new or updated cases:
-
-- Read representative existing cases for the same requirement, feature area, folder, suite, product flow, or repository.
-- Use their naming convention, field structure, step granularity, vocabulary, pre-condition style, test data style, and expected-result detail level.
-- Keep new coverage consistent with the local suite unless the existing style is clearly incomplete or obsolete.
-- If existing cases are weak, preserve platform compatibility while improving only what is needed for correctness and coverage.
-- When no related cases exist, use the default manual test case format below.
-
-Design enough coverage using ISTQB test design techniques as a reference before importing cases (the techniques guide the design; the output is plain platform test cases, not an ISTQB certification):
-
-- Use equivalence partitioning for input classes, filters, statuses, user roles, and product states.
-- Use boundary value analysis for numeric ranges, quantities, prices, dates, pagination, and length limits.
-- Use decision table testing for business rules with combinations of conditions.
-- Use state transition testing for workflows such as cart, checkout, execution status, and lifecycle changes.
-- Use use-case/scenario testing for end-to-end user journeys.
-- Use error guessing/checklist-based testing for common ecommerce/platform risks.
-- Use pairwise or combinatorial reduction when variants explode, while preserving high-risk combinations.
-
-Keep each case **atomic in scope** (one validation condition per case) so a failure pinpoints the exact rule and each requirement line maps 1:1 to a result. Atomic is about scope, not step count: every case is still a complete, runnable flow (precondition/navigation -> enter surrounding valid data -> action under test -> verify), never a lone bare assertion. Cover the happy-path flow and its edge cases (boundary + negative variants), not just the positive path. Reserve combined cases for true end-to-end scenarios. Quote expected error/UI strings verbatim from the requirement, including source typos (flag them separately). If coverage is intentionally reduced, state the risk-based rationale.
-
-Read `references/istqb-coverage.md` before designing cases from requirements. Read `references/manual-test-case-format.md` before creating many cases or when the user asks for a specific format.
-
-## Existing Test Case Check
-
-Before creating or importing any test case, check whether suitable coverage already exists:
-
-- If requirement IDs are known, call `find_test_cases_by_requirement` first.
-- Search by requirement key, title keywords, feature area, and target folder with `find_test_cases`.
-- Read likely matches with `read_test_case` when title alone is not enough to judge coverage.
-- Read enough related cases to infer the local writing style before drafting new cases, even when the related cases do not fully cover the requested behavior.
-- Reuse, update, move, or link existing cases when they already cover the behavior.
-- Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete/incorrect existing coverage.
-- Report what was reused, what was updated, and what was newly created.
-
-This check is mandatory for write/import/full-flow requests, including retries after partial failure. Do not create duplicate cases simply because a previous create attempt failed. If no related cases can be found, say that the new cases follow the default skill format.
-
-## Import And Traceability Workflow
-
-Use this flow for "write test cases and import to platform":
-
-```text
-+----------------------+     +-----------------------+     +----------------------+
-| Analyze requirements | --> | Draft coverage design | --> | Find existing cases  |
-+----------------------+     +-----------------------+     +----------------------+
-          |                             |                              |
-          v                             v                              v
-+----------------------+     +-----------------------+     +----------------------+
-| create/update needed | --> | link_requirements     | --> | read_test_case verify|
-+----------------------+     +-----------------------+     +----------------------+
-```
-
-Tool rules:
-
-- Search for existing matching test cases before every create/import action.
-- Use `create_test_case` only for manual test cases that do not already have suitable coverage.
-- Use `link_requirements_to_test_case` only after requirement IDs are known.
-- Use `read_test_case` after creation when verification matters.
-- Use `update_test_case` for revisions; pass all intended updates in one call.
-- Use `manage_test_folder` or `move_test_case` for organization when requested.
-
-## Test Suite And "Test Plan" Workflow
-
-When the user says "search and design test plan":
-
-1. Use `find_test_cases`, `find_requirements`, and `find_iterations` as needed to understand scope.
-2. Propose a test plan structure in chat: objectives, in-scope/out-of-scope, coverage matrix, risks, environments, suites.
-3. Implement the executable structure with `manage_test_suite` and optional folders.
-4. Add selected test cases to suites.
-5. Verify with `read_test_suite`.
-
-For formal Test Plan entity creation, state that the current MCP does not expose a direct create-test-plan tool.
-
-## Manual Execution And Run With AI
-
-Use this flow for manual execution:
-
-```text
-+------------------+     +----------------------+     +-----------------------+
-| read_auts        | --> | create_manual_run    | --> | read_test_suite       |
-+------------------+     +----------------------+     +-----------------------+
-          |                           |                            |
-          v                           v                            v
-+------------------+     +----------------------+     +-----------------------+
-| create_ai_session| --> | read_ai_session poll | --> | report results        |
-+------------------+     +----------------------+     +-----------------------+
-```
-
-Rules:
-
-- If the user asks for the full flow, test cases just created, or Run with AI, treat the execution as manual unless they explicitly ask for automated execution.
-- If the user asks only to "run tests" and no test type can be inferred, ask: "Do you want to run manually or automated?"
-- For manual execution, always call `read_auts` immediately before `create_manual_test_run`.
-- Choose the best matching AUT/environment automatically when URL/name clearly matches the target AUT. Ask only when multiple AUTs are equally plausible.
-- Never reuse AUT environment selection from an earlier turn or earlier run.
-- After any manual test execution is created, start Run with AI automatically unless the user explicitly says not to. Do not ask whether to continue with AI.
-- Before `create_manual_ai_session`, call `read_test_suite` for every suite from the manual run and pass non-empty test case lists.
-- Poll `read_manual_ai_session` until all items are no longer TODO/IN_TESTING. If the session stays queued or running for a long time, keep polling at practical intervals and report an in-progress state only when the user asks for status or an external platform timeout/error is observed.
-
-Read `references/execution-workflow.md` before creating executions.
-
-## Automated Execution
-
-Use automated execution only for automated test suites:
-
-```text
-+------------------+ --> +--------------------+ --> +----------------------+
-| find_test_suites |     | build run config   |     | schedule_test_run    |
-+------------------+     +--------------------+     +----------------------+
-```
-
-Rules:
-
-- Use `schedule_test_run`, never `create_manual_test_run`, for automated suites.
-- Do not run individual manual test cases through `schedule_test_run`.
-- Use `find_execution_profiles`, `list_test_cloud_environments`, `build_run_configuration`, and optionally `build_schedule`.
-- For mobile runs, ask whether the target is mobile browser or mobile app when app details are missing.
-
-## Result Review And Response
-
-After execution, read results before responding:
-
-- Manual AI run: `read_manual_ai_session`, then relevant execution/result tools if IDs are available.
-- TestOps execution: `read_execution`, `read_execution_test_results`, `read_test_result`.
-- Recent or specific results: `find_test_results`.
-- Quality summaries: `fetch_requirement_data`, `fetch_test_case_data`, `fetch_defect_data`, `fetch_test_configuration_data`, `fetch_test_stability_data`.
-
-Report in chat with:
-
-- Execution/run link when returned by the platform.
-- Pass/fail/blocked counts.
-- Failed cases and concise failure reason.
-- Defects created or recommended.
-- Gaps, skipped items, and what needs manual follow-up.
-
-## Defects
-
-Use `create_defect` only when a failed test result ID is known. First call `find_alm_integration_projects` if ALM integration IDs are unknown. Ask the user before creating defects unless they explicitly requested defect creation for failures.
+| File | Read it when |
+|---|---|
+| `references/lifecycle-map.md` | you route by role or intent, or draw the lifecycle |
+| `references/combination-recipes.md` | the request chains several skills |
+| `references/prompt-recipes.md` | you need starter prompts or notes for small models |
+| `references/mcp-tool-index.md` | you need to find a tool or check its class |
+| `references/capability-boundaries.md` | the user asks "can Katalon do X" |
+| `references/write-policy.md` | you are about to write data or start a run |

@@ -1,39 +1,45 @@
 ---
 name: test-case-to-katalon-studio
-description: Convert Katalon True Platform/TestOps manual test cases into Katalon Studio automation inside a local Studio Test Project checkout. Use when you need to author or extend a .tc test case file and its paired Groovy script under Scripts/, keep test case variable GUIDs consistent with the .ts test suite bindings that read them, model page elements as .rs test objects in the Object Repository instead of inline selectors, write WebUI, Mobile, or WS keyword steps in Groovy with Java interop, or wire data files, execution profiles, and GlobalVariable into a generated case. Also use to decide whether a headless katalonc run is possible at all, since Katalon Runtime Engine is a separately licensed paid runtime whose CLI requires -apiKey. Once a Studio run has finished and its report exists, hand off to upload-report. Written for the automation tester who has to land a manual case inside a Katalon Studio project rather than a code-first framework.
+description: Converts Katalon True Platform manual test cases into Katalon Studio automation inside a local Studio Test Project, including the .tc file, its paired Groovy script, Object Repository test objects, and the data-driven suite bindings. Use when a manual case must become a Studio case, or when the question is whether a headless katalonc run is possible. It does not upload a finished report (that is upload-report) or write Playwright code (test-case-to-playwright). For the automation tester.
+license: MIT
+compatibility: Requires the Katalon True Platform MCP server, network access, and a local Katalon Studio Test Project checkout. Running from the command line also needs a Katalon Test Execution - Local licence and a Java runtime.
+metadata:
+  version: "0.5.0"
+  mcp-contract: "katalon-docs-2026-10"
 ---
 
 # Katalon Test Case To Katalon Studio
 
-Use this skill to turn Katalon Platform/TestOps manual test cases into Katalon Studio automation: `.tc` metadata, the paired Groovy script, Object Repository test objects, and the test suite that binds data to them. Prefer the conventions the target project already uses. Treat the human as a tool: ask concise questions whenever a project path, credential, selector, or test data value cannot be discovered safely.
+This skill turns Katalon True Platform (formerly TestOps) manual test cases into Katalon Studio automation. The output is `.tc` metadata, the paired Groovy script, Object Repository test objects, and the test suite that binds data to them. Follow the conventions the target project already uses. Ask short questions in chat when a project path, credential, selector, or data value cannot be found safely. MCP clients may add a prefix to tool names (Claude Code uses `mcp__<server>__<tool>`). This skill uses the bare names.
 
 ## Availability Boundary
 
-State the boundary before promising automation. It has three parts and none of them is optional.
+State the boundary before you promise automation. It has three parts.
 
 **Available through Katalon MCP**
 
 - Resolve context with `list_projects` and `list_repositories`.
-- Read the source case with `find_test_cases` and `read_test_case`; resolve a requirement key with `find_requirements`, `read_requirement`, and `find_test_cases_by_requirement`.
+- Read the source case with `find_test_cases` and `read_test_case`. Resolve a requirement key with `find_requirements`, `read_requirement`, and `find_test_cases_by_requirement`.
 - Read platform-side suites with `find_test_suites` and `read_test_suite`.
-- Write the generated Studio path back onto the platform case with `update_test_case`, for traceability.
+- Write the generated Studio path onto the platform case with `update_test_case`, for traceability. This is a write. Show the proposed change, get one confirmation, run it, then read the case back.
 
 **Not available through Katalon MCP**
 
-- No MCP tool reads or writes a Studio project file. `.prj`, `.tc`, `.rs`, `.ts`, `.glbl`, `.dat`, and everything under `Scripts/` live on disk only. Work on a local checkout and ask the human for the path.
-- No MCP tool captures web objects. Web Spy and Record are Studio desktop features; write `.rs` files by hand.
-- No MCP tool inspects the live application. Use Browser/Playwright to discover selectors, then encode them as test objects.
-- No MCP tool runs anything. `katalonc` is a local command.
+- No MCP tool reads or writes a Studio project file. `.prj`, `.tc`, `.rs`, `.ts`, `.glbl`, `.dat`, and everything under `Scripts/` exist on disk only. Work on a local checkout and ask for the path.
+- No MCP tool captures web objects. Web Spy and Record are Studio desktop features. Write `.rs` files by hand.
+- No MCP tool inspects the live application. Explore it with a browser tool to find selectors, then encode them as test objects.
+- No MCP tool runs a Studio suite. `katalonc` is a local command.
 - No MCP tool uploads a Studio report. That is `upload-report`.
-- No MCP tool parses or validates a generated `.tc`, `.ts`, or `.rs`. Studio is the only parser, so this skill verifies XML well-formedness and GUID consistency and reports what stays unverified.
+- No MCP tool parses or validates a generated `.tc`, `.ts`, or `.rs`. Studio is the only parser. This skill checks XML well-formedness and GUID consistency, and it names what stays unverified.
+- `create_test_case` with an AUTOMATED type creates nothing and returns guidance only. Do not use it to register the Studio case.
 
-**Command-line execution is a paid licence, and this is the part people get wrong**
+**Command-line execution needs a separate licence**
 
-Katalon Studio's desktop IDE authors and runs a test case interactively. Running the same suite from a terminal or a pipeline is a different, separately licensed product: **Katalon Runtime Engine**. `katalonc -runMode=console` lists `-apiKey` among its required arguments and will not execute without an activated KRE licence, and a floating KRE licence allows one active session at a time.
+Katalon Studio's desktop IDE authors and runs a case interactively. Running the same suite from a terminal or a pipeline needs Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE), which is licensed separately. `katalonc -runMode=console` lists `-apiKey` among its required arguments and does not run without an activated licence. A floating licence allows one active session at a time.
 
-So everything this skill generates is usable by a reader on the free Studio tier, and none of it runs headlessly for them. Say that before promising a CI story. Never imply the generated files are pipeline-ready without the licence.
+So everything this skill generates works for a reader on the free Studio tier, but none of it runs headless for that reader. Say this before you promise a CI story. Never imply the generated files are pipeline-ready without the licence.
 
-Report flag, version-dependent: `-report.folderPath` is available from Katalon Studio 11.1.2 and is the current flag. `-reportFolder` is deprecated from 11.1.2, still accepted, and can produce reports with missing test-suite-collection and test-suite folder names. Emit `-report.folderPath` unless the project is pinned below 11.1.2, and say which you chose.
+The report flag depends on the Studio version. `-report.folderPath` is available from Katalon Studio 11.1.2 and is the current flag. `-reportFolder` is deprecated from 11.1.2, still accepted, and can produce reports with missing test-suite-collection and test-suite folder names. Use `-report.folderPath` unless the project is pinned below 11.1.2, and say which one you chose.
 
 ## Workflow
 
@@ -51,32 +57,32 @@ Report flag, version-dependent: `-report.folderPath` is available from Katalon S
 
 ## Katalon Source
 
-Resolve the Katalon context before writing files:
+Resolve the Katalon context before you write files.
 
-- Use Katalon MCP tools to list projects and repositories, find test suites, find test cases, and read each selected case.
-- If the user gives a test suite, read the suite and every included case before generating anything.
-- If the user gives requirement keys, find requirement-linked cases first.
-- If MCP tools are unavailable or authentication fails, ask for exported cases, case URLs, case keys, or the case text.
-- Preserve traceability in both directions: put the platform case key in the `.tc` `<description>` and `<tag>`, and write the generated `Test Cases/...` path back onto the platform case with `update_test_case`.
+- Call `list_projects` and `list_repositories`, then `find_test_suites`, `find_test_cases`, and `read_test_case` for each selected case. See the tool schema for filter shapes.
+- For a suite, call `read_test_suite` and read every included case before you generate anything.
+- For requirement keys, find the linked cases first with `find_test_cases_by_requirement`.
+- If MCP is unavailable or authentication fails, ask for exported cases, case URLs, case keys, or the case text.
+- Keep traceability in both directions. Put the platform case key in the `.tc` `<description>` and `<tag>`. Write the generated `Test Cases/...` path back with `update_test_case`. Keep the case name within the characters the platform accepts, and read the case back to confirm.
 
-Extract for each case: title, priority, requirement links, folder, preconditions, test data, manual steps, expected results, AUT URL, roles and accounts, environment, browser or device assumptions, and cleanup. Flag ambiguous selectors and business data that need human input.
+Extract for each case: title, priority, requirement links, folder, preconditions, test data, manual steps, expected results, AUT URL, roles and accounts, environment, browser or device assumptions, and cleanup. Flag selectors and business data that need human input.
 
 ## Project Resolution
 
-Inspect the workspace before creating anything:
+Inspect the workspace before you create anything.
 
-- Search for `*.prj` at a directory root, plus the sibling folders `Test Cases/`, `Scripts/`, `Object Repository/`, `Test Suites/`, `Keywords/`, `Profiles/`, `Data Files/`, `Include/`, `Libs/`, and `settings/`. A `.prj` with those siblings is a Studio Test Project.
-- If a project exists, summarise the detected path, its folder conventions, its existing test objects, and the files you intend to add, then ask the user to confirm before writing.
+- Look for a `*.prj` at a directory root, with the sibling folders `Test Cases/`, `Scripts/`, `Object Repository/`, `Test Suites/`, `Keywords/`, `Profiles/`, `Data Files/`, `Include/`, `Libs/`, and `settings/`. A `.prj` with those siblings is a Studio Test Project.
+- If a project exists, summarize the path, its folder conventions, its existing test objects, and the files you plan to add. Ask the user to confirm before you write.
 - If several projects exist, ask which one.
-- If none exists, ask whether the user has a repository or path to use. Creating a Studio project from scratch outside the Studio IDE is possible but brittle; prefer an existing project or one created once in Studio.
-- Never write into `Libs/`. `Libs/internal/GlobalVariable.groovy` is generated by Studio from `Profiles/*.glbl` and carries a do-not-modify banner. Edit the `.glbl` instead.
-- `Reports/` is build output and is git-ignored in Katalon's own sample projects. Do not commit it.
+- If none exists, ask for a repository or path. Creating a Studio project outside the IDE is brittle. Prefer an existing project, or one the user creates once in Studio.
+- Never write into `Libs/`. Studio generates `Libs/internal/GlobalVariable.groovy` from `Profiles/*.glbl` and marks it do-not-modify. Edit the `.glbl` instead.
+- `Reports/` is build output. Do not commit it.
 
-Read `references/studio-project-anatomy.md` before writing any file. Read `references/groovy-authoring.md` before writing script or custom keyword code.
+Read `references/studio-project-anatomy.md` before you write any file. Read `references/groovy-authoring.md` before you write script or custom keyword code.
 
-## The Two Pairings
+## The Three Pairings
 
-A Katalon Studio test case is two files, and a data-driven suite adds a third relationship. All three are silent when broken: nothing raises an error, and the run continues on defaults.
+A Studio test case is two files, and a data-driven suite adds a third link. All three break silently. Nothing raises an error, and the run continues on defaults.
 
 **1. `.tc` to its script, paired by folder path.**
 
@@ -85,35 +91,36 @@ Test Cases/Authentication/TC-1042 Login.tc
 Scripts/Authentication/TC-1042 Login/Script1754870400000.groovy
 ```
 
-`Scripts/` mirrors the `Test Cases/` relative path, then adds a folder named exactly after the case, holding exactly one `Script*.groovy`. The number is an epoch-millis stamp and nothing references it. Rename or move the `.tc` without moving that folder and Studio sees a case with no steps.
+`Scripts/` mirrors the `Test Cases/` relative path, then adds a folder named exactly after the case. That folder holds exactly one `Script*.groovy`. The number is an epoch-millisecond stamp and nothing references it. If you rename or move the `.tc` without moving the folder, Studio shows a case with no steps.
 
 **2. `.ts` to the `.tc`, paired by project-relative path.** The suite's `<testCaseId>` is the path with no extension, for example `Test Cases/Authentication/TC-1042 Login`.
 
-**3. `.ts` variable bindings to `.tc` variables, paired by GUID.** Each `<variable>` in the `.tc` carries an `<id>`; each `<variableLink>` in the suite carries a `<variableId>` that must equal it, plus a `<testDataLinkId>` that must equal the `<testDataLink><id>` in the same file.
+**3. `.ts` variable bindings to `.tc` variables, paired by GUID.** Each `<variable>` in the `.tc` has an `<id>`. Each `<variableLink>` in the suite has a `<variableId>` that must equal it. It also has a `<testDataLinkId>` that must equal the `<testDataLink><id>` in the same file.
 
-**When a `variableId` does not match, nothing errors.** The variable keeps its `<defaultValue>` and every iteration runs on that default. Depending on the assertion, that shows up as a late timeout that looks like an application bug, or as a green suite over meaningless data. Cross-check the GUIDs after every write; the check is in the Verification section.
+When a `variableId` does not match, nothing errors. The variable keeps its `<defaultValue>` and every iteration runs on that default. With a strict assertion, this shows up as a late timeout that looks like an application bug. With a tolerant assertion, the suite goes green over meaningless data. Cross-check the GUIDs after every write, using the check in Verification.
 
-## Object Repository Is The Page-Object Layer
+## Object Repository
 
-Katalon Studio has no page-object classes. `Object Repository/` is the equivalent layer, and the discipline is the same one Page Object Model asks for.
+Studio has no page-object classes. `Object Repository/` is the equivalent layer, and the same discipline applies.
 
-- One `.rs` file per element, named for what it is (`input_Username`, `button_SignIn`), grouped in a folder per page.
-- A new Object Repository folder needs a `.meta` `<FolderEntity>` with `<folderType>WEBELEMENT</folderType>`. A new Test Cases folder needs one with `<folderType>TESTCASE</folderType>`.
-- Reference objects from the script only as `findTestObject('Login Page/input_Username')`. Never inline a raw XPath or CSS string in a script step.
-- Reuse an existing test object when one already matches. Glob `Object Repository/**/*.rs` and read `<name>` plus the selected `webElementProperties` before creating a duplicate.
-- Prefer stable properties: `id`, `name`, `aria-label`, visible text. Set `<isSelected>true</isSelected>` only on the properties you actually want matched. Fall back to XPath only when the application gives nothing better, and say so.
+- Use one `.rs` file per element, named for what it is (`input_Username`, `button_SignIn`), grouped in one folder per page.
+- A new Object Repository folder needs a `.meta` entry with `<folderType>WEBELEMENT</folderType>`. A new Test Cases folder needs one with `<folderType>TESTCASE</folderType>`. See `references/studio-project-anatomy.md`.
+- Reference objects from a script only as `findTestObject('Login Page/input_Username')`. Never write a raw XPath or CSS string in a script step.
+- Reuse an existing test object when one matches. Search `Object Repository/**/*.rs` and read `<name>` plus the selected `webElementProperties` before you create a duplicate.
+- Prefer stable properties: `id`, `name`, `aria-label`, visible text. Set `<isSelected>true</isSelected>` only on the properties you want matched. Use XPath only when the application offers nothing better, and say so.
 - Test objects hold locators. They do not hold assertions.
+- Do not change `<isSelected>` on an existing object to make a run pass. Studio self-healing also edits those flags, and a person approves its changes in Studio.
 
 ## Authoring Rules
 
 - Translate one manual step into one keyword call, in step order, so a manual tester can still read the script.
-- Use `WebUI` for web, `Mobile` for mobile, `WS` for API. Import them with the alias form the project already uses.
-- Turn expected results into `WebUI.verify*` calls next to the action that produces them.
-- Use test case variables for anything the manual case parameterises, with a safe `<defaultValue>`. Use `GlobalVariable` for environment values that come from a profile.
-- Use `setEncryptedText` only when the source value is Katalon-encrypted; use `setText` otherwise. Mark a credential variable `<masked>true</masked>`.
-- Put shared logic in `Keywords/` as a Groovy class with `@Keyword` methods, and call it through `CustomKeywords`. Groovy is Java-compatible, so a Java library on the project classpath can be imported directly.
-- Keep one Studio case aligned to one Katalon Platform case unless the project groups scenarios differently.
-- Do not invent credentials, URLs, product IDs, account state, or selectors. Ask, or leave a narrow TODO with the exact missing value named.
+- Use `WebUI` for web, `Mobile` for mobile, `WS` for API. Use the import alias the project already uses.
+- Turn each expected result into a `WebUI.verify*` call next to the action that produces it.
+- Use test case variables for anything the manual case parameterizes, with a safe `<defaultValue>`. Use `GlobalVariable` for environment values that come from a profile.
+- Use `setEncryptedText` only when the source value is Katalon-encrypted. Use `setText` otherwise. Mark a credential variable `<masked>true</masked>`.
+- Put shared logic in `Keywords/` as a Groovy class with `@Keyword` methods, and call it through `CustomKeywords`. See `references/groovy-authoring.md`.
+- Keep one Studio case aligned to one platform case unless the project groups scenarios differently.
+- Do not invent credentials, URLs, record IDs, account state, or selectors. Ask, or leave one narrow TODO that names the missing value.
 
 ## Worked Example
 
@@ -129,34 +136,7 @@ Steps:       1 Open the login page  2 Enter <username>  3 Enter <password>  4 Cl
 Expected:    The dashboard header "System dashboard" is visible
 ```
 
-Output, four files plus a suite. `Test Cases/Authentication/TC-1042 Login with valid credentials.tc`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<TestCaseEntity>
-   <description>Generated from Katalon Platform test case TC-1042. Requirement CEL-6.</description>
-   <name>TC-1042 Login with valid credentials</name>
-   <tag>TC-1042</tag>
-   <comment></comment>
-   <testCaseGuid>3f8b1c02-6d41-4a97-b0e5-9c2a7d15e830</testCaseGuid>
-   <variable>
-      <defaultValue>''</defaultValue>
-      <description>Login username, bound from the suite data file</description>
-      <id>a41d55e6-2b78-4c10-9f33-6e0b8c74d219</id>
-      <masked>false</masked>
-      <name>username</name>
-   </variable>
-   <variable>
-      <defaultValue>''</defaultValue>
-      <description>Login password, bound from the suite data file</description>
-      <id>c07e93a4-1f65-48db-8a52-77b1e9f0d3cc</id>
-      <masked>true</masked>
-      <name>password</name>
-   </variable>
-</TestCaseEntity>
-```
-
-`Scripts/Authentication/TC-1042 Login with valid credentials/Script1754870400000.groovy`:
+Output: a `.tc` with two variables, the paired script, three test objects, a data file, and a suite. `references/studio-project-anatomy.md` holds the full XML for every file. The script is:
 
 ```groovy
 import static com.kms.katalon.core.testobject.ObjectRepository.findTestObject
@@ -180,99 +160,27 @@ WebUI.verifyTextPresent('System dashboard', false)
 WebUI.closeBrowser()
 ```
 
-`username` and `password` are unqualified: Studio injects test case variables into the script binding by name, and the GUID never appears in Groovy. The password step uses `setText` because the data file holds plain values; `setEncryptedText` is only for a Katalon-encrypted value, and `<masked>true</masked>` on the variable is a separate decision from either.
+`username` and `password` are unqualified. Studio injects test case variables into the script binding by name, and the GUID never appears in Groovy. The password step uses `setText` because the data file holds literal values. `<masked>true</masked>` on the variable is a separate choice.
 
-`Object Repository/Login Page/input_Username.rs`:
+The failure this example shows: change one character of the first `<variableId>` in the suite to `...d21f`. There is no XML error, no Studio dialog, and no CLI warning. `username` is unbound, keeps `''`, and every data row logs in with an empty username. Here it surfaces as a `waitForElementVisible` timeout on the dashboard header, which reads like an application bug.
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<WebElementEntity>
-   <description></description>
-   <name>input_Username</name>
-   <tag></tag>
-   <elementGuidId>b8d0f472-5e19-4c86-a1d7-2f9c63b04e55</elementGuidId>
-   <selectorCollection>
-      <entry>
-         <key>BASIC</key>
-         <value></value>
-      </entry>
-   </selectorCollection>
-   <selectorMethod>BASIC</selectorMethod>
-   <useRalativeImagePath>false</useRalativeImagePath>
-   <webElementProperties>
-      <isSelected>false</isSelected>
-      <matchCondition>equals</matchCondition>
-      <name>tag</name>
-      <type>Main</type>
-      <value>input</value>
-   </webElementProperties>
-   <webElementProperties>
-      <isSelected>true</isSelected>
-      <matchCondition>equals</matchCondition>
-      <name>id</name>
-      <type>Main</type>
-      <value>username</value>
-   </webElementProperties>
-</WebElementEntity>
-```
+## Review Of Generated Files
 
-`useRalativeImagePath` is spelled that way in the schema. Do not "fix" it.
+A model drafted these files, so check them before you call them done.
 
-`Test Suites/Regression/Login Regression.ts`, where the GUIDs have to line up:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<TestSuiteEntity>
-   <description></description>
-   <name>Login Regression</name>
-   <tag></tag>
-   <isRerun>false</isRerun>
-   <mailRecipient></mailRecipient>
-   <numberOfRerun>0</numberOfRerun>
-   <pageLoadTimeout>30</pageLoadTimeout>
-   <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
-   <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
-   <testSuiteGuid>91a3c6f8-4d27-4b0e-9c85-3ad2f7e61b40</testSuiteGuid>
-   <testCaseLink>
-      <guid>5c2e8b31-9a04-4f7d-b6e2-18d95c0a7f63</guid>
-      <isReuseDriver>false</isReuseDriver>
-      <isRun>true</isRun>
-      <testCaseId>Test Cases/Authentication/TC-1042 Login with valid credentials</testCaseId>
-      <testDataLink>
-         <combinationType>ONE</combinationType>
-         <id>7e14a09c-3b52-4d68-8f01-c5b7e2493a1d</id>
-         <iterationEntity>
-            <iterationType>ALL</iterationType>
-            <value></value>
-         </iterationEntity>
-         <testDataId>Data Files/valid-accounts</testDataId>
-      </testDataLink>
-      <variableLink>
-         <testDataLinkId>7e14a09c-3b52-4d68-8f01-c5b7e2493a1d</testDataLinkId>
-         <type>DATA_COLUMN</type>
-         <value>Username</value>
-         <variableId>a41d55e6-2b78-4c10-9f33-6e0b8c74d219</variableId>
-      </variableLink>
-      <variableLink>
-         <testDataLinkId>7e14a09c-3b52-4d68-8f01-c5b7e2493a1d</testDataLinkId>
-         <type>DATA_COLUMN</type>
-         <value>Password</value>
-         <variableId>c07e93a4-1f65-48db-8a52-77b1e9f0d3cc</variableId>
-      </variableLink>
-   </testCaseLink>
-</TestSuiteEntity>
-```
-
-**The failure this example exists to show.** Change one character of the first `<variableId>` to `...d21f`. There is no XML error, no Studio dialog, no CLI warning. `username` is unbound, keeps `''`, and every data row logs in with an empty username. Here it surfaces late as a `waitForElementVisible` timeout on the dashboard header, which reads like an application bug. In a search or filter case with a tolerant assertion it does not surface at all and the suite reports green over meaningless data.
+- Compare every expected result with the requirement text and the case. Do not trust a value the model supplied.
+- Keep customer data and real credentials out of data files and committed files.
+- Record that the case is AI-drafted, in the `.tc` `<description>` or a tag, so a reviewer reads it closely.
+- Judge the case by whether it fails when the behavior breaks. A well-formed file is not evidence of a working test.
 
 ## Verification
 
-Studio is the only parser for these files, so verify what you can and name what you cannot.
+Studio is the only parser for these files. Verify what you can, and name what you cannot.
 
-1. **XML well-formedness** on every file written: `xmllint --noout <file>` or any equivalent parser.
-2. **Path pairing.** For each generated `.tc`, assert that `Scripts/<same relative path>/<case name>/` exists and holds exactly one `Script*.groovy`.
-3. **Suite-to-case pairing.** Each `<testCaseId>` in the suite resolves to an existing `.tc` at that path plus `.tc`.
-4. **Variable GUID cross-check.** Every `<variableId>` in the suite must appear as a `<variable><id>` in the linked case:
+1. XML well-formedness on every file written: `xmllint --noout <file>`, or any equivalent parser.
+2. Path pairing. For each generated `.tc`, confirm that `Scripts/<same relative path>/<case name>/` exists and holds exactly one `Script*.groovy`.
+3. Suite-to-case pairing. Each `<testCaseId>` in the suite must resolve to an existing `.tc` at that path plus `.tc`.
+4. Variable GUID cross-check. Every `<variableId>` in the suite must appear as a `<variable><id>` in the linked case. In bash:
 
    ```bash
    comm -23 \
@@ -280,11 +188,11 @@ Studio is the only parser for these files, so verify what you can and name what 
      <(grep -ho '<id>[^<]*' "Test Cases/Authentication/TC-1042 Login with valid credentials.tc" | sed 's/<id>//' | sort -u)
    ```
 
-   Empty output means the bindings hold. Any printed line is a variable that will silently run on its default.
-5. **Object references.** Every `findTestObject('<path>')` in the script resolves to an existing `.rs` under `Object Repository/`.
-6. **Report what stays unverified.** Groovy compilation, keyword arity, selector correctness against the live application, and whether Studio opens the project are all outside what you can check here. Name them; do not imply a green check covers them.
+   Empty output means the bindings hold. Each printed line is a variable that will run on its default.
+5. Object references. Every `findTestObject('<path>')` in a script must resolve to an existing `.rs` under `Object Repository/`.
+6. Report what stays unverified: Groovy compilation, keyword arity, selector correctness against the live application, and whether Studio opens the project.
 
-If the user has a Katalon Runtime Engine licence and asks for a run, print the command and hand off:
+If the user has a Katalon Test Execution - Local licence and asks for a run, print the command and hand off:
 
 ```text
 katalonc -noSplash -runMode=console \
@@ -296,11 +204,11 @@ katalonc -noSplash -runMode=console \
   -report.folderPath="<run_report_folder>"
 ```
 
-Never ask the user to paste an API key into chat; source it from a secure variable.
+Never ask the user to paste an API key into chat. Read it from a secure variable.
 
 ## Report Back
 
-Report created and updated files with full paths, the Katalon Platform cases they map to, every test object created or reused, the GUID cross-check result, what remains unverified, and any value still needed from a human. If the user has no Katalon Runtime Engine licence, say plainly that the generated suite runs from the Studio IDE and not from a terminal or a pipeline.
+Report the created and updated files with full paths, the platform cases they map to, every test object created or reused, the GUID cross-check result, what stays unverified, and any value still needed from a human. If the user has no licence for command-line runs, say that the generated suite runs from the Studio IDE and not from a terminal or a pipeline.
 
 ## Prompt recipes
 
@@ -311,10 +219,10 @@ Report created and updated files with full paths, the Katalon Platform cases the
 
 ## Hand-offs
 
-- A Studio run has finished and a report exists -> `upload-report`.
-- The target framework is Playwright, not Studio -> `test-case-to-playwright`.
-- The manual case does not exist yet -> `create-test-cases`.
-- The generated suite has started failing intermittently -> `test-maintenance`.
-- A red run needs triage -> `analyze-failures`.
+- A Studio run has finished and a report exists: `upload-report`.
+- The target framework is Playwright: `test-case-to-playwright`.
+- The manual case does not exist yet: `create-test-cases`.
+- The generated suite fails intermittently: `test-maintenance`. For one red run, use `analyze-failures`.
+- The user asks what Katalon can do through MCP in general: `true-platform-testing`.
 
-Read `references/studio-project-anatomy.md` for the file formats and folder rules. Read `references/groovy-authoring.md` for keywords, custom keywords, profiles, and data files. Read the orchestrator `true-platform-testing/references/unavailable-capabilities.md` when the user asks what Katalon can do through MCP.
+Read `references/studio-project-anatomy.md` for folder rules, file formats, and the do-not-touch list. Read `references/groovy-authoring.md` for keywords, custom keywords, profiles, and data files.

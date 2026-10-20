@@ -3,46 +3,59 @@
  * build-adapters.mjs - generate every agent's native config from canonical skills/.
  *
  * Single source of truth: skills/<name>/SKILL.md (+ references/*.md).
- * Everything else in this repo under the generated paths below is derived from it.
+ * Everything else under the generated paths below is derived from it.
  * Run `node scripts/build-adapters.mjs` after editing any skill, then commit the result.
+ * Run `node scripts/build-adapters.mjs --check` to build into a temp folder and
+ * fail when the committed files differ (CI uses this).
  *
  * Generated targets:
- *   plugin.json + mcp.json           Agent Plugins standard manifest (agent-plugins.org, spec 1.0.0)
- *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces + standard manifest)
- *   .cursor/rules/*.mdc              Cursor rules (lightweight, always-available)
- *   .kiro/steering/*.md              Kiro
- *   .github/skills/                  GitHub Copilot Agent Skills (VS Code, CLI, coding agent, code review)
- *   .github/mcp.json                 Copilot CLI MCP config (auto-loaded from the repo)
- *   .github/prompts/*.prompt.md      GitHub Copilot prompt files (+ copilot-instructions.md, .vscode/mcp.json)
- *   .windsurf/rules/*.md             Windsurf
- *   .clinerules/*.md                 Cline
- *   .continue/rules/*.md             Continue (+ .continue/mcpServers/katalon.yaml)
- *   AGENTS.md                        Universal fallback for any other agent
+ *   plugin.json + mcp.json           Agent Plugins standard manifest (agent-plugins.org, spec 1.0.0),
+ *                                    with the Codex interface under extensions["com.openai"]
+ *   plugins/katalon-true-platform/   Claude Code + Codex + Cursor plugin (+ root marketplaces)
+ *   .agents/skills/                  Skills for Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed,
+ *                                    Junie, Factory, Augment, Roo, Windsurf/Devin and others
+ *   .kiro/skills/                    Kiro skills (Kiro does not read .agents/skills)
+ *   .cline/skills/                   Cline skills (Cline does not read .agents/skills)
+ *   .continue/rules/                 Continue rules (kept until Continue skills support is confirmed)
+ *   MCP files per client             Written from the CLIENTS table below
+ *   docs/connect.md                  Per-client MCP snippet table, from the same CLIENTS table
+ *   .github/copilot-instructions.md  Short pointer for Copilot
+ *   AGENTS.md                        Short universal pointer (under 4 KB)
+ *   apps/ + app-assets/              Kiro Crew app
+ *
+ * Retired outputs (removed on every run): .cursor/rules, .kiro/steering, .windsurf,
+ * .clinerules, .github/prompts, .github/skills. Native skills folders replace them.
  *
  * No external dependencies - Node >= 18, ESM.
  */
 
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync, existsSync, statSync } from "node:fs";
+import {
+  readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync, existsSync, statSync, mkdtempSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INTERFACE, ORDER, ROLES, ROUTER } from "./skills.config.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS_DIR = join(ROOT, "skills");
+const CHECK = process.argv.includes("--check");
+// In check mode every write goes to a temp folder, then the result is compared with ROOT.
+const OUT = CHECK ? mkdtempSync(join(tmpdir(), "true-skills-build-")) : ROOT;
 
 // ---- constants -------------------------------------------------------------
 const ORG = "katalon-labs";
 const REPO = "true-skills";
 const REPO_URL = `https://github.com/${ORG}/${REPO}`;
 const PLUGIN_NAME = "katalon-true-platform";
-const PLUGIN_VERSION = "0.4.0";
+// The one place the release version lives. Every manifest and the marketplace read it from here.
+const PLUGIN_VERSION = "0.5.0";
 // Agent Plugins standard (https://agent-plugins.org) schema URLs, spec 1.0.0.
 const AP_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const AP_MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 const MCP_SERVER = "katalon-prod-mcp";
 // Kiro Crew app packaging (apps/<KIROCREW_APP_NAME>/app.json + skills/). Kiro Crew
-// reads app.json on install and registers the declared skills + MCP server. The
-// app id is kebab-case per the Kiro Crew manifest contract.
+// reads app.json on install and registers the declared skills + MCP server.
 const KIROCREW_APP_NAME = "katalon-testing-skills";
 const KIROCREW_APP_DISPLAY = "Katalon Testing Skills";
 // Canonical universal endpoint. It presents a workspace picker after sign-in, so a
@@ -50,32 +63,57 @@ const KIROCREW_APP_DISPLAY = "Katalon Testing Skills";
 // Enterprises on a dedicated domain may substitute MCP_TENANT_ENDPOINT themselves.
 const MCP_ENDPOINT = "https://platform.katalon.io/mcp";
 const MCP_TENANT_ENDPOINT = "https://<your.sub.domain>.katalon.io/mcp";
-// stdio fallback for clients without native remote-MCP support (Kiro, Continue).
-const MCP_ARGS = ["-y", "mcp-remote", MCP_ENDPOINT, "--transport", "http-first"];
+// stdio fallback for clients without native remote-MCP support. No shipped config uses it.
+const MCP_ARGS = ["-y", "mcp-remote@0.14.3", MCP_ENDPOINT, "--transport", "http-first"];
 const HOMEPAGE = "https://docs.katalon.com/katalon-platform/testops-mcp-server";
-
-// Per-skill interface metadata (INTERFACE) and index order (ORDER) live in
-// scripts/skills.config.mjs so the validator can check them against skills/.
+const ISSUES_URL = `${REPO_URL}/issues`;
+const PRIVACY_URL = "https://katalon.com/terms#privacy-policy";
+const TERMS_URL = "https://katalon.com/terms";
+const VERIFIED = "2026-10-20";
 
 const GENERATED_NOTE = "<!-- GENERATED by scripts/build-adapters.mjs from skills/. Do not edit by hand. -->";
 
+// Outputs that earlier versions wrote. Removed on every run so a rebuild also cleans them.
+const RETIRED = [".cursor/rules", ".kiro/steering", ".windsurf", ".clinerules", ".github/prompts", ".github/skills"];
+// Whole folders and single files this script owns. --check compares exactly these.
+const GENERATED_DIRS = [
+  ".claude-plugin", ".agents", ".kiro", ".cline", ".codex", ".continue", ".cursor", ".cursor-plugin",
+  ".vscode", "plugins", "apps", "app-assets",
+];
+const GENERATED_FILES = ["plugin.json", "mcp.json", ".mcp.json", "AGENTS.md", "docs/connect.md", ".github/mcp.json", ".github/copilot-instructions.md"];
+
 // ---- helpers ---------------------------------------------------------------
+/** Read one top-level scalar from a frontmatter block: plain, quoted, or a folded/literal block. */
+function readScalar(fm, key) {
+  const lines = fm.split("\n");
+  const i = lines.findIndex((l) => l.startsWith(`${key}:`));
+  if (i < 0) return "";
+  const first = lines[i].slice(key.length + 1).trim();
+  if (/^[>|][+-]?$/.test(first)) {
+    const parts = [];
+    for (let k = i + 1; k < lines.length && (/^\s/.test(lines[k]) || lines[k] === ""); k++) parts.push(lines[k].trim());
+    return parts.join(first.startsWith(">") ? " " : "\n").trim();
+  }
+  if ((first.startsWith('"') && first.endsWith('"')) || (first.startsWith("'") && first.endsWith("'"))) {
+    return first.slice(1, -1);
+  }
+  return first;
+}
+
 function parseSkill(name) {
   const dir = join(SKILLS_DIR, name);
   const raw = readFileSync(join(dir, "SKILL.md"), "utf8");
   const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!m) throw new Error(`${name}: missing frontmatter`);
-  const fm = {};
-  for (const line of m[1].split("\n")) {
-    const mm = line.match(/^(\w[\w-]*):\s*(.*)$/);
-    if (mm) fm[mm[1]] = mm[2].trim();
-  }
+  const declared = readScalar(m[1], "name");
+  if (declared !== name) throw new Error(`${name}: frontmatter name "${declared}" does not match the folder`);
+  const description = readScalar(m[1], "description");
   const body = m[2].trim();
   const refsDir = join(dir, "references");
   const references = existsSync(refsDir)
     ? readdirSync(refsDir).filter((f) => f.endsWith(".md")).sort()
     : [];
-  return { name, dir, fm, body, references, refsDir };
+  return { name, dir, description, body, references, refsDir };
 }
 
 /** Body with each references/*.md inlined as an appended section - for single-file agents. */
@@ -94,19 +132,25 @@ function inlineBody(skill) {
 }
 
 function writeFile(rel, content) {
-  const abs = join(ROOT, rel);
+  const abs = join(OUT, rel);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, content.endsWith("\n") ? content : content + "\n");
   return rel;
 }
 
 function resetDir(rel) {
-  const abs = join(ROOT, rel);
+  const abs = join(OUT, rel);
   if (existsSync(abs)) rmSync(abs, { recursive: true, force: true });
   mkdirSync(abs, { recursive: true });
 }
 
+const notDsStore = (src) => basename(src) !== ".DS_Store";
+const copyTree = (from, toRel) => cpSync(from, join(OUT, toRel), { recursive: true, filter: notDsStore });
+
 const j = (o) => JSON.stringify(o, null, 2);
+const jsonInline = (str) => JSON.stringify(str); // YAML-safe single-line scalar
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const lc = (str) => str.charAt(0).toLowerCase() + str.slice(1);
 const written = [];
 const track = (rel) => written.push(rel);
 
@@ -115,51 +159,251 @@ const present = readdirSync(SKILLS_DIR).filter((d) => statSync(join(SKILLS_DIR, 
 const names = [...ORDER.filter((n) => present.includes(n)), ...present.filter((n) => !ORDER.includes(n))];
 const skills = names.map(parseSkill);
 
+// Codex per-skill overlay (agents/openai.yaml). It names the Katalon MCP server as a
+// dependency so Codex knows the skill needs it. The `transport` token follows the
+// Codex skills docs example; it is the one value not re-verified in the 2026-10 research.
+function openaiYaml(skillName) {
+  const i = INTERFACE[skillName];
+  return (
+    `interface:\n` +
+    `  display_name: ${JSON.stringify(i.title)}\n` +
+    `  short_description: ${JSON.stringify(i.short)}\n` +
+    `  default_prompt: ${JSON.stringify(`Use $${skillName} to ${lc(i.prompt)}`)}\n` +
+    `dependencies:\n` +
+    `  tools:\n` +
+    `    - type: "mcp"\n` +
+    `      value: "${MCP_SERVER}"\n` +
+    `      description: "Katalon True Platform MCP server"\n` +
+    `      transport: "streamable_http"\n` +
+    `      url: "${MCP_ENDPOINT}"\n`
+  );
+}
+
+/** Verbatim skill mirror plus the Codex overlay, for any folder an agent scans for skills. */
+function mirrorSkills(destRel) {
+  resetDir(destRel);
+  for (const s of skills) {
+    copyTree(s.dir, join(destRel, s.name));
+    track(writeFile(join(destRel, s.name, "agents", "openai.yaml"), openaiYaml(s.name)));
+    track(`${destRel}/${s.name}/SKILL.md`);
+  }
+}
+
+// ===========================================================================
+// MCP client table: one data structure feeds every shipped MCP file and docs/connect.md
+// ===========================================================================
+// Each entry: id, name, format (json|toml|yaml), config (object for json, string otherwise),
+// files (repo paths this script writes), where (user-level path when no repo file applies),
+// steps (sign-in sentence), source (docs URL), note (optional).
+const remote = { url: MCP_ENDPOINT };
+const CLIENTS = [
+  {
+    id: "claude-code", name: "Claude Code", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } },
+    files: [".mcp.json", `plugins/${PLUGIN_NAME}/.mcp.json`],
+    where: "`.mcp.json` in the project, or `~/.claude.json`",
+    steps: `Or run \`claude mcp add --transport http ${MCP_SERVER} ${MCP_ENDPOINT}\`. Run \`/mcp\` in a session to sign in.`,
+    source: "https://code.claude.com/docs/en/mcp",
+    note: "Type `http` is the documented value. An entry with `url` and no `type` is read as stdio and skipped.",
+  },
+  {
+    id: "codex", name: "Codex", format: "toml",
+    config:
+      `[mcp_servers.${MCP_SERVER}]\n` +
+      `url = "${MCP_ENDPOINT}"\n`,
+    files: [".codex/config.toml"],
+    where: "`~/.codex/config.toml`, or `.codex/config.toml` in a trusted project",
+    steps: `Or run \`codex mcp add ${MCP_SERVER} --url ${MCP_ENDPOINT}\`. Then run \`codex mcp login ${MCP_SERVER}\`. OAuth is the default, so set no token.`,
+    source: "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+    note: "Codex reads the project file only when you trust the project.",
+  },
+  {
+    id: "cursor", name: "Cursor", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { ...remote } } },
+    files: [".cursor/mcp.json"],
+    where: "`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json`",
+    steps: "Cursor opens the sign-in page on first use.",
+    source: "https://cursor.com/docs/context/mcp",
+  },
+  {
+    id: "vscode", name: "VS Code (GitHub Copilot)", format: "json",
+    config: { servers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } },
+    files: [".vscode/mcp.json"],
+    where: "`.vscode/mcp.json` in the workspace",
+    steps: "Start the server from the editor. VS Code opens the sign-in page.",
+    source: "https://code.visualstudio.com/docs/agents/reference/mcp-configuration",
+    note: "The top key is `servers` here and `mcpServers` in the other JSON files. Do not copy between them unchecked.",
+  },
+  {
+    id: "copilot-cli", name: "GitHub Copilot CLI", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } },
+    files: [".github/mcp.json"],
+    where: "`.github/mcp.json` or `.mcp.json` in the project, or `~/.copilot/mcp-config.json`",
+    steps: "Or register the server with `/mcp add` (type `http`).",
+    source: "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers",
+    note: "The Copilot docs show bearer headers and do not describe OAuth for remote servers. Test sign-in before you rely on it. The project folder must be trusted.",
+  },
+  {
+    id: "kiro", name: "Kiro", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { ...remote, disabled: false, autoApprove: [] } } },
+    files: [".kiro/settings/mcp.json"],
+    where: "`.kiro/settings/mcp.json` in the workspace, or `~/.kiro/settings/mcp.json`",
+    steps: "Kiro runs the browser sign-in itself. In the CLI, run `/mcp auth`.",
+    source: "https://kiro.dev/docs/mcp/configuration/",
+    note: "Kiro reads remote servers natively. The `mcp-remote` wrapper is not needed.",
+  },
+  {
+    id: "windsurf", name: "Windsurf and Devin Desktop", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { serverUrl: MCP_ENDPOINT } } },
+    files: [],
+    where: "`~/.config/devin/mcp_config.json`",
+    steps: "The client opens the sign-in page on first use.",
+    source: "https://docs.devin.ai/desktop/cascade/mcp",
+    note: "This client caps the total tool count across all servers at 100.",
+  },
+  {
+    id: "cline", name: "Cline", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { type: "streamableHttp", url: MCP_ENDPOINT } } },
+    files: [],
+    where: "`cline_mcp_settings.json` (user level)",
+    steps: "Use the authorize option in the MCP settings screen.",
+    source: "https://docs.cline.bot/mcp/configuring-mcp-servers",
+    note: "The value is `streamableHttp`. Without `type`, Cline assumes the old `sse` transport.",
+  },
+  {
+    id: "continue", name: "Continue", format: "yaml",
+    config:
+      `name: ${MCP_SERVER}\n` +
+      `version: 0.0.1\n` +
+      `schema: v1\n` +
+      `mcpServers:\n` +
+      `  - name: ${MCP_SERVER}\n` +
+      `    type: streamable-http\n` +
+      `    url: ${MCP_ENDPOINT}\n`,
+    files: [".continue/mcpServers/katalon.yaml"],
+    where: "`.continue/mcpServers/katalon.yaml` in the project",
+    steps: "Use agent mode.",
+    source: "https://docs.continue.dev/customize/deep-dives/mcp",
+    note: "The Continue page documents no OAuth. If sign-in fails, use the fallback below.",
+  },
+  {
+    id: "gemini-cli", name: "Gemini CLI", format: "json",
+    config: { mcpServers: { [MCP_SERVER]: { httpUrl: MCP_ENDPOINT } } },
+    files: [],
+    where: "`settings.json` (project `.gemini/settings.json` or user level)",
+    steps: `Or run \`gemini mcp add --transport http ${MCP_SERVER} ${MCP_ENDPOINT}\`.`,
+    source: "https://geminicli.com/docs/tools/mcp-server/",
+    note: "`httpUrl` means Streamable HTTP. The key `url` means SSE.",
+  },
+  {
+    id: "opencode", name: "OpenCode", format: "json",
+    config: { mcp: { [MCP_SERVER]: { type: "remote", url: MCP_ENDPOINT } } },
+    files: [],
+    where: "`opencode.json` in the project",
+    steps: `Run \`opencode mcp auth ${MCP_SERVER}\` to sign in.`,
+    source: "https://opencode.ai/docs/mcp-servers/",
+    note: "OpenCode waits 5 seconds for the tool list by default. Raise `timeout` if the first load fails.",
+  },
+  {
+    id: "amp", name: "Amp", format: "json",
+    config: { "amp.mcpServers": { [MCP_SERVER]: { ...remote } } },
+    files: [],
+    where: "`.amp/settings.json` or `~/.config/amp/settings.json`",
+    steps: "Amp starts OAuth on first use. Run `amp mcp approve` for a workspace server.",
+    source: "https://ampcode.com/docs/customize/mcp",
+  },
+  {
+    id: "zed", name: "Zed", format: "json",
+    config: { context_servers: { [MCP_SERVER]: { ...remote } } },
+    files: [],
+    where: "Zed `settings.json`",
+    steps: "Zed prompts for sign-in when no `Authorization` header is set.",
+    source: "https://zed.dev/docs/ai/mcp",
+  },
+  {
+    id: "agent-plugins", name: "Agent Plugins clients", format: "json",
+    config: { $schema: AP_MCP_SCHEMA, mcpServers: { [MCP_SERVER]: { type: "streamable-http", url: MCP_ENDPOINT } } },
+    files: ["mcp.json", `plugins/${PLUGIN_NAME}/mcp.json`],
+    where: "`mcp.json` at the plugin root",
+    steps: "The client reads the file when it installs the plugin.",
+    source: "https://agent-plugins.org/specification",
+    note: "The schema accepts `stdio`, `streamable-http`, and `sse`. It does not accept `http`.",
+  },
+];
+
+const MCP_FALLBACK = { mcpServers: { [MCP_SERVER]: { command: "npx", args: MCP_ARGS } } };
+
 // ===========================================================================
 // 1. Claude Code + Codex + Cursor plugin
 // ===========================================================================
 const PLUGIN_DIR = `plugins/${PLUGIN_NAME}`;
 resetDir(PLUGIN_DIR);
 
-// copy canonical skills into the plugin (Claude/Codex read skills natively here)
+// skills inside the plugin (Claude Code and Codex read them natively), with the Codex overlay
 for (const s of skills) {
-  cpSync(s.dir, join(ROOT, PLUGIN_DIR, "skills", s.name), { recursive: true });
-  // Codex per-skill interface overlay
-  const i = INTERFACE[s.name];
-  const yaml =
-    `interface:\n` +
-    `  display_name: ${JSON.stringify(i.title)}\n` +
-    `  short_description: ${JSON.stringify(i.short)}\n` +
-    `  default_prompt: ${JSON.stringify(`Use $${s.name} to ${lc(i.prompt)}`)}\n`;
-  track(writeFile(join(PLUGIN_DIR, "skills", s.name, "agents", "openai.yaml"), yaml));
+  copyTree(s.dir, join(PLUGIN_DIR, "skills", s.name));
+  track(writeFile(join(PLUGIN_DIR, "skills", s.name, "agents", "openai.yaml"), openaiYaml(s.name)));
 }
-function lc(str) {
-  return str.charAt(0).toLowerCase() + str.slice(1);
-}
+copyTree(join(ROOT, "assets"), join(PLUGIN_DIR, "assets"));
 
-// shared assets + mcp
-cpSync(join(ROOT, "assets"), join(ROOT, PLUGIN_DIR, "assets"), { recursive: true });
-// Claude Code speaks remote MCP natively ("type": "http") and drives the OAuth
-// browser flow itself, so there is nothing to install and nothing to edit.
-const mcpJson = { mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } };
-track(writeFile(join(PLUGIN_DIR, ".mcp.json"), j(mcpJson)));
+// MCP files for every client, written from the CLIENTS table (repo root and plugin folder).
+for (const c of CLIENTS) {
+  const text = c.format === "json" ? j(c.config) : c.config;
+  for (const f of c.files) track(writeFile(f, text));
+}
 
 const author = { name: ORG, url: `https://github.com/${ORG}` };
 const keywords = ["katalon", "testops", "truetest", "true-platform", "testing", "ai-testing", "agentic-testing", "qa", "test-automation", "test-management", "requirement-traceability", "release-readiness", "test-maintenance", "playwright", "mcp"];
 const description =
-  "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.";
+  "Agent-neutral AI testing skills for Katalon True Platform (formerly TestOps) covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance. The skills operate through the Katalon MCP.";
 
+// Claude Code manifest. The listing fields are read only by Anthropic's plugin directory.
 track(
   writeFile(
     join(PLUGIN_DIR, ".claude-plugin", "plugin.json"),
-    j({ name: PLUGIN_NAME, version: PLUGIN_VERSION, description, author, homepage: HOMEPAGE, repository: REPO_URL, license: "MIT", keywords }),
+    j({
+      name: PLUGIN_NAME,
+      displayName: "Katalon True Platform",
+      version: PLUGIN_VERSION,
+      description,
+      author,
+      homepage: HOMEPAGE,
+      repository: REPO_URL,
+      license: "MIT",
+      keywords,
+      icon: "./assets/katalon-icon-tile.svg",
+      documentationUrl: HOMEPAGE,
+      supportUrl: ISSUES_URL,
+      privacyPolicyUrl: PRIVACY_URL,
+      termsOfServiceUrl: TERMS_URL,
+    }),
   ),
 );
 
-// Agent Plugins standard (agent-plugins.org, spec 1.0.0): one portable manifest
-// any conformant client can load. The contract is plugin.json + skills/ + mcp.json
-// at the plugin root. The MCP server is declared as streamable-http against the
-// canonical endpoint, so a conformant client connects with no user configuration.
+// Shared rich interface block. Codex reads it from extensions["com.openai"] in the
+// Agent Plugins manifest (current path) and from .codex-plugin/plugin.json (fallback).
+const pluginInterface = {
+  displayName: "Katalon True Platform",
+  shortDescription: "Design, run, upload, and analyze Katalon tests.",
+  longDescription:
+    "Bundle Katalon True Platform (formerly TestOps) workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
+  developerName: ORG,
+  category: "Productivity",
+  capabilities: ["Read", "Write", "Interactive"],
+  defaultPrompt: ORDER.slice(0, 5).map((n) => INTERFACE[n].prompt),
+  brandColor: "#00A3A3",
+  composerIcon: "./assets/katalon-logo.svg",
+  logo: "./assets/katalon-logo.svg",
+  websiteURL: HOMEPAGE,
+  privacyPolicyURL: PRIVACY_URL,
+  termsOfServiceURL: TERMS_URL,
+  screenshots: [],
+};
+const codexExtension = { interface: pluginInterface };
+if (names.includes("get-started")) codexExtension.onboardingSkill = "./skills/get-started/SKILL.md";
+
+// Agent Plugins standard (agent-plugins.org, spec 1.0.0): one portable manifest any
+// conformant client can load. Contract: plugin.json + skills/ + mcp.json at the plugin root.
 const agentPluginManifest = {
   $schema: AP_PLUGIN_SCHEMA,
   name: PLUGIN_NAME,
@@ -170,74 +414,70 @@ const agentPluginManifest = {
   repository: REPO_URL,
   license: "MIT",
   keywords,
-};
-const agentPluginMcp = {
-  $schema: AP_MCP_SCHEMA,
-  mcpServers: { [MCP_SERVER]: { type: "streamable-http", url: MCP_ENDPOINT } },
+  extensions: { "com.openai": codexExtension },
 };
 track(writeFile(join(PLUGIN_DIR, "plugin.json"), j(agentPluginManifest)));
-track(writeFile(join(PLUGIN_DIR, "mcp.json"), j(agentPluginMcp)));
 // The repo root is itself a conformant Agent Plugin: root skills/ is the canonical
-// source, so cloning the repo == installing the plugin for standard-aware clients.
+// source, so cloning the repo equals installing the plugin for standard-aware clients.
 track(writeFile("plugin.json", j(agentPluginManifest)));
-track(writeFile("mcp.json", j(agentPluginMcp)));
 
-// Shared rich interface block - consumed by the Codex and Cursor plugin manifests.
-const pluginInterface = {
-  displayName: "Katalon True Platform",
-  shortDescription: "Design, run, upload, and analyze Katalon tests.",
-  longDescription:
-    "Bundle Katalon True Platform/TestOps workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
-  developerName: ORG,
-  category: "Productivity",
-  capabilities: ["Read", "Write", "Interactive"],
-  defaultPrompt: ORDER.slice(0, 5).map((n) => INTERFACE[n].prompt),
-  brandColor: "#00A3A3",
-  composerIcon: "./assets/katalon-logo.svg",
-  logo: "./assets/katalon-logo.svg",
-  websiteURL: HOMEPAGE,
-  privacyPolicyURL: "https://katalon.com/terms#privacy-policy",
-  termsOfServiceURL: "https://katalon.com/terms",
-  screenshots: [],
-};
+// Codex fallback manifest. Codex uses it only when extensions["com.openai"] is absent.
+track(
+  writeFile(
+    join(PLUGIN_DIR, ".codex-plugin", "plugin.json"),
+    j({
+      name: PLUGIN_NAME,
+      version: PLUGIN_VERSION,
+      description,
+      author,
+      homepage: HOMEPAGE,
+      repository: REPO_URL,
+      license: "MIT",
+      keywords,
+      skills: "./skills/",
+      mcpServers: "./.mcp.json",
+      interface: pluginInterface,
+    }),
+  ),
+);
 
-const richPluginManifest = {
-  name: PLUGIN_NAME,
-  version: PLUGIN_VERSION,
-  description,
-  author,
-  homepage: HOMEPAGE,
-  repository: REPO_URL,
-  license: "MIT",
-  keywords,
-  skills: "./skills/",
-  mcpServers: "./.mcp.json",
-  interface: pluginInterface,
-};
-
-track(writeFile(join(PLUGIN_DIR, ".codex-plugin", "plugin.json"), j(richPluginManifest)));
-
-// Cursor reads .cursor-plugin/plugin.json at the plugin root (same schema as Codex).
-track(writeFile(join(PLUGIN_DIR, ".cursor-plugin", "plugin.json"), j(richPluginManifest)));
+// Cursor manifest: base fields, skills, logo. The Codex-only `interface` block is not in the
+// Cursor docs, so it is not written here. Cursor reads the default root mcp.json.
+track(
+  writeFile(
+    join(PLUGIN_DIR, ".cursor-plugin", "plugin.json"),
+    j({
+      name: PLUGIN_NAME,
+      version: PLUGIN_VERSION,
+      description,
+      author,
+      homepage: HOMEPAGE,
+      repository: REPO_URL,
+      license: "MIT",
+      keywords,
+      skills: "./skills/",
+      logo: "./assets/katalon-logo.svg",
+    }),
+  ),
+);
 
 // plugin README
 track(
   writeFile(
     join(PLUGIN_DIR, "README.md"),
     `${GENERATED_NOTE}\n\n# Katalon True Platform Plugin\n\n` +
-      `Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. ` +
-      `The platform wrappers live in \`.claude-plugin/plugin.json\` and \`.codex-plugin/plugin.json\`; ` +
-      `the \`skills/\` and \`assets/\` folders are shared.\n\n` +
+      `Plugin for Claude Code, Codex, and Cursor. It bundles ${skills.length} Katalon True Platform (formerly TestOps) testing skills. ` +
+      `The manifests live in \`.claude-plugin/plugin.json\`, \`.codex-plugin/plugin.json\`, \`.cursor-plugin/plugin.json\`, and the standard \`plugin.json\`. ` +
+      `The \`skills/\` and \`assets/\` folders are shared.\n\n` +
       `## Included skills\n\n` +
       skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
-      `\n\n## Bundled MCP server\n\n\`.mcp.json\` points at \`${MCP_ENDPOINT}\`, the canonical endpoint. ` +
+      `\n\n## Bundled MCP server\n\n\`.mcp.json\` points at \`${MCP_ENDPOINT}\`. ` +
       `Nothing to edit: on first use the browser opens for sign-in and you pick your workspace. ` +
-      `Enterprises on a dedicated Katalon domain can substitute \`${MCP_TENANT_ENDPOINT}\`. ` +
+      `Enterprises on a dedicated Katalon domain can use \`${MCP_TENANT_ENDPOINT}\` instead. ` +
       `Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`) ` +
-      `and as an [Agent Plugins standard](https://agent-plugins.org) plugin (\`plugin.json\` + \`mcp.json\` + \`skills/\`, spec 1.0.0) ` +
-      `for any conformant client. ` +
-      `For install instructions across all supported agents, see the [repository README](${REPO_URL}#install).\n`,
+      `Distributed from the repository root marketplaces (\`.claude-plugin/marketplace.json\`, \`.agents/plugins/marketplace.json\`, \`.cursor-plugin/marketplace.json\`) ` +
+      `and as an [Agent Plugins standard](https://agent-plugins.org) plugin. ` +
+      `For other agents, see [docs/connect.md](${REPO_URL}/blob/main/docs/connect.md) and the [repository README](${REPO_URL}#install).\n`,
   ),
 );
 
@@ -247,9 +487,17 @@ track(
     ".claude-plugin/marketplace.json",
     j({
       name: `${PLUGIN_NAME}-marketplace`,
-      metadata: { description: "Katalon True Platform skills marketplace for Claude Code" },
+      description: "Katalon True Platform skills marketplace for Claude Code",
       owner: author,
-      plugins: [{ name: PLUGIN_NAME, source: `./${PLUGIN_DIR}`, description, version: PLUGIN_VERSION }],
+      plugins: [
+        {
+          name: PLUGIN_NAME,
+          source: `./${PLUGIN_DIR}`,
+          description,
+          category: "testing",
+          tags: ["katalon", "testing", "test-automation", "playwright", "mcp"],
+        },
+      ],
     }),
   ),
 );
@@ -270,22 +518,21 @@ track(
     }),
   ),
 );
-// Cursor multi-plugin marketplace manifest at the repo root.
+// Cursor marketplace: `source` is a string path and there is no `policy` block (Cursor docs define neither).
 track(
   writeFile(
     ".cursor-plugin/marketplace.json",
     j({
       name: `${PLUGIN_NAME}-marketplace`,
-      interface: { displayName: "Katalon True Platform" },
       owner: author,
+      metadata: { description: "Katalon True Platform skills marketplace for Cursor", version: PLUGIN_VERSION },
       plugins: [
         {
           name: PLUGIN_NAME,
-          source: { source: "local", path: `./${PLUGIN_DIR}` },
-          policy: { installation: "AVAILABLE", authentication: "ON_INSTALL" },
-          category: "Productivity",
+          source: PLUGIN_DIR,
           description,
           version: PLUGIN_VERSION,
+          category: "Productivity",
         },
       ],
     }),
@@ -293,144 +540,82 @@ track(
 );
 
 // ===========================================================================
-// 2. Cursor - .cursor/rules/*.mdc + .cursor/mcp.json
+// 2. Skills folders for agents that scan a skills path
 // ===========================================================================
-resetDir(".cursor/rules");
-for (const s of skills) {
-  const fm = `---\ndescription: ${s.fm.description}\nalwaysApply: false\n---`;
-  track(writeFile(`.cursor/rules/${s.name}.mdc`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
-}
-track(writeFile(".cursor/mcp.json", j({ mcpServers: { [MCP_SERVER]: { url: MCP_ENDPOINT } } })));
+mirrorSkills(".agents/skills");
+mirrorSkills(".kiro/skills");
+mirrorSkills(".cline/skills");
 
 // ===========================================================================
-// 3. Kiro - .kiro/steering/*.md + .kiro/settings/mcp.json
+// 3. Continue rules (kept until Continue skills support is confirmed)
 // ===========================================================================
-resetDir(".kiro/steering");
+resetDir(".continue/rules");
 for (const s of skills) {
-  const fm = `---\ninclusion: manual\n---`;
-  track(writeFile(`.kiro/steering/${s.name}.md`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
+  const fm = `---\nname: ${INTERFACE[s.name].title}\ndescription: ${jsonInline(s.description)}\nalwaysApply: false\n---`;
+  track(writeFile(`.continue/rules/${s.name}.md`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
 }
-// Kiro MCP settings: disabled by default until the user fills the subdomain.
-track(
-  writeFile(
-    ".kiro/settings/mcp.json",
-    j({
-      mcpServers: {
-        [MCP_SERVER]: { command: "npx", args: MCP_ARGS, disabled: false, autoApprove: [] },
-      },
-    }),
-  ),
-);
 
 // ===========================================================================
-// 4. GitHub Copilot - .github/skills/ + .github/prompts/*.prompt.md
-//    + copilot-instructions.md + .vscode/mcp.json
+// 4. Copilot instructions (short pointer; skills load from .agents/skills)
 // ===========================================================================
-// Agent Skills (agentskills.io spec - same format as canonical skills/):
-// auto-discovered from .github/skills/ by the Copilot coding agent, Copilot
-// code review, Copilot CLI, and agent mode in VS Code / JetBrains. Mirrored
-// verbatim so relative references/ paths keep working.
-resetDir(".github/skills");
-for (const s of skills) {
-  cpSync(s.dir, join(ROOT, ".github/skills", s.name), { recursive: true });
-  track(`.github/skills/${s.name}/SKILL.md`);
-}
-
-// Copilot CLI MCP config: the CLI auto-loads .github/mcp.json (top-level key
-// "mcpServers", explicit "type") - it does NOT read .vscode/mcp.json. The CLI
-// has no inputs mechanism, so the subdomain stays a documented placeholder.
-track(
-  writeFile(
-    ".github/mcp.json",
-    j({ mcpServers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } }),
-  ),
-);
-
-// Prompt files: kept alongside skills for explicit /name invocation in VS Code chat.
-resetDir(".github/prompts");
-for (const s of skills) {
-  const i = INTERFACE[s.name];
-  const fm = `---\nmode: agent\ndescription: ${jsonInline(s.fm.description)}\n---`;
-  track(writeFile(`.github/prompts/${s.name}.prompt.md`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
-}
-function jsonInline(str) {
-  // YAML-safe single-line scalar
-  return JSON.stringify(str);
-}
 track(
   writeFile(
     ".github/copilot-instructions.md",
     `${GENERATED_NOTE}\n\n# Katalon True Platform - Copilot instructions\n\n` +
-      `This repository ships the Katalon True Platform testing toolkit as GitHub Copilot **Agent Skills** in \`.github/skills/\`. ` +
-      `Copilot discovers them automatically (coding agent, code review, Copilot CLI, agent mode in VS Code, and JetBrains agent mode in public preview) ` +
-      `and loads the matching skill when a request fits its description. ` +
-      `The same skills are also available as prompt files in \`.github/prompts/\` for explicit \`/name\` invocation in VS Code chat.\n\n` +
-      `## Skills\n\n` +
-      skills.map((s) => `- \`${s.name}\` - ${INTERFACE[s.name].short}.`).join("\n") +
-      `\n\n## Katalon MCP server\n\n` +
-      `These workflows depend on the Katalon MCP server.\n\n` +
-      `- **VS Code**: \`.vscode/mcp.json\` (included) defines the \`${MCP_SERVER}\` server as a remote HTTP server ` +
-      `on \`${MCP_ENDPOINT}\`. Start it and VS Code signs you in through the browser OAuth flow - no subdomain to supply.\n` +
-      `- **Copilot CLI**: \`.github/mcp.json\` (included) is auto-loaded and needs no edits, ` +
-      `or register interactively with \`/mcp add\` (type \`http\`, URL \`${MCP_ENDPOINT}\`).\n` +
-      `- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports ` +
-      `OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.\n\n` +
-      `Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `When a request matches a skill's description, load that skill and follow it. ` +
-      `Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.\n`,
-  ),
-);
-// VS Code MCP: native remote HTTP server on the canonical endpoint. VS Code runs
-// the OAuth browser flow itself (the Katalon server supports dynamic client
-// registration) and the workspace picker replaces the old subdomain prompt.
-track(
-  writeFile(
-    ".vscode/mcp.json",
-    j({ servers: { [MCP_SERVER]: { type: "http", url: MCP_ENDPOINT } } }),
+      `This repository holds ${skills.length} Katalon True Platform (formerly TestOps) testing skills in \`.agents/skills/\`. ` +
+      `Copilot loads the matching skill when a request fits its description.\n\n` +
+      `## Katalon MCP server\n\n` +
+      `The skills need the Katalon MCP server at \`${MCP_ENDPOINT}\`.\n\n` +
+      `- **VS Code**: \`.vscode/mcp.json\` is included. Start the server and sign in through the browser.\n` +
+      `- **Copilot CLI**: \`.github/mcp.json\` is included. The Copilot docs do not describe OAuth for remote servers, so test sign-in first.\n` +
+      `- **Copilot coding agent and code review**: the skills load, but these surfaces cannot sign in to OAuth-protected remote MCP servers. Run platform operations from VS Code or the CLI.\n\n` +
+      `Other clients: see [docs/connect.md](../docs/connect.md). ` +
+      `Authentication is a browser OAuth flow. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n`,
   ),
 );
 
 // ===========================================================================
-// 5. Windsurf - .windsurf/rules/*.md
+// 5. docs/connect.md - per-client MCP snippets, from the CLIENTS table
 // ===========================================================================
-resetDir(".windsurf/rules");
-for (const s of skills) {
-  const fm = `---\ntrigger: model_decision\ndescription: ${jsonInline(s.fm.description)}\n---`;
-  track(writeFile(`.windsurf/rules/${s.name}.md`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
-}
+const fence = (c) => {
+  const lang = c.format === "json" ? "json" : c.format;
+  const text = c.format === "json" ? j(c.config) : c.config.trimEnd();
+  return "```" + lang + "\n" + text + "\n```";
+};
+const connectDoc =
+  `${GENERATED_NOTE}\n\n# Connect an agent to the Katalon True Platform MCP server\n\n` +
+  `Katalon True Platform (formerly TestOps) runs one MCP server for every workspace: \`${MCP_ENDPOINT}\`. ` +
+  `Sign-in opens in your browser, then you pick a workspace. There is no subdomain to look up. ` +
+  `Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
+  `Enterprises on a dedicated Katalon domain use \`${MCP_TENANT_ENDPOINT}\` in place of the endpoint above.\n\n` +
+  `The server name in every snippet is \`${MCP_SERVER}\`. The skills in this repo name tools by bare name, for example \`list_projects\`. ` +
+  `Some clients add a prefix. Claude Code shows \`mcp__<server>__<tool>\`, and \`mcp__plugin_${PLUGIN_NAME}_${MCP_SERVER}__<tool>\` when the server comes from the plugin.\n\n` +
+  `## Files this repo ships\n\n` +
+  `| Client | File in this repo | Otherwise put it in |\n| --- | --- | --- |\n` +
+  CLIENTS.map((c) => `| ${c.name} | ${c.files.length ? c.files.filter((f) => !f.startsWith("plugins/")).map((f) => `\`${f}\``).join(", ") : "none"} | ${c.where} |`).join("\n") +
+  `\n\nClients that read a skills folder find the skills without more files. ` +
+  `\`.agents/skills/\` serves Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Junie, Factory, Augment, Roo, and Windsurf or Devin Desktop. ` +
+  `Kiro reads \`.kiro/skills/\` and Cline reads \`.cline/skills/\`.\n\n` +
+  `## Snippets\n\n` +
+  CLIENTS.map((c) => `### ${c.name}\n\nFile: ${c.where}.\n\n${fence(c)}\n\n${c.steps}${c.note ? ` ${c.note}` : ""}\n`).join("\n") +
+  `\n## Clients without remote MCP support\n\n` +
+  `Use the \`mcp-remote\` wrapper against the same endpoint. It starts a local process and handles sign-in for the client.\n\n` +
+  "```json\n" + j(MCP_FALLBACK) + "\n```\n\n" +
+  `## Why the shapes differ\n\n` +
+  `Each client picks its own transport value. Claude Code and Copilot use \`http\`. ` +
+  `The Agent Plugins schema and Continue use \`streamable-http\`. Cline uses \`streamableHttp\`. OpenCode uses \`remote\`. ` +
+  `Cursor, Kiro, Amp, and Zed take only a \`url\`. One file cannot serve all clients, so this table is the source for every shipped MCP file.\n\n` +
+  `## Sources\n\n` +
+  `Checked ${VERIFIED}.\n\n` +
+  CLIENTS.map((c) => `- ${c.name}: ${c.source}`).join("\n") +
+  `\n`;
+track(writeFile("docs/connect.md", connectDoc));
 
 // ===========================================================================
-// 6. Cline - .clinerules/*.md
+// 6. AGENTS.md - short universal pointer (hard cap 4 KB, see below)
 // ===========================================================================
-resetDir(".clinerules");
-for (const s of skills) {
-  track(writeFile(`.clinerules/${s.name}.md`, `${GENERATED_NOTE}\n\n# ${INTERFACE[s.name].title}\n\n> ${s.fm.description}\n\n${inlineBody(s)}`));
-}
-
-// ===========================================================================
-// 7. Continue - .continue/rules/*.md + .continue/mcpServers/katalon.yaml
-// ===========================================================================
-resetDir(".continue/rules");
-for (const s of skills) {
-  const fm = `---\nname: ${INTERFACE[s.name].title}\ndescription: ${jsonInline(s.fm.description)}\nalwaysApply: false\n---`;
-  track(writeFile(`.continue/rules/${s.name}.md`, `${fm}\n\n${GENERATED_NOTE}\n\n${inlineBody(s)}`));
-}
-resetDir(".continue/mcpServers");
-track(
-  writeFile(
-    ".continue/mcpServers/katalon.yaml",
-    `name: ${MCP_SERVER}\nversion: 0.0.1\nschema: v1\nmcpServers:\n  - name: ${MCP_SERVER}\n    command: npx\n    args:\n` +
-      MCP_ARGS.map((a) => `      - ${JSON.stringify(a)}`).join("\n") +
-      `\n`,
-  ),
-);
-
-// ===========================================================================
-// 8. AGENTS.md - universal fallback for any other agent
-// ===========================================================================
-const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const roleIndex =
-  `## Find your skill by role\n\n| Role | Starts at |\n| --- | --- |\n` +
+  `| Role | Starts at |\n| --- | --- |\n` +
   ROLES.map(
     (r) =>
       `| ${cap(r)} | ` +
@@ -439,65 +624,45 @@ const roleIndex =
         .map((s) => `\`${s.name}\``)
         .join(", ") +
       ` |`,
-  ).join("\n") +
-  `\n\n\`platform-setup\` is role-neutral and comes first for anyone not yet connected. ` +
-  `A request that names a job rather than one task starts at \`${ROUTER}\`, which routes by role and by stage.\n\n`;
+  ).join("\n");
 
-track(
-  writeFile(
-    "AGENTS.md",
-    `${GENERATED_NOTE}\n\n# AGENTS.md - Katalon True Platform skills\n\n` +
-      `This file lets any AI coding agent that reads \`AGENTS.md\` use the Katalon True Platform testing toolkit, ` +
-      `even without a native adapter in this repo.\n\n` +
-      roleIndex +
-      `## Skills (single source of truth: \`skills/\`)\n\n` +
-      `When a user request matches one of the descriptions below, read that skill's \`skills/<name>/SKILL.md\` ` +
-      `(and the files in its \`references/\` folder) and follow it.\n\n` +
-      skills
-        .map((s) => `### ${s.name}\n\n${s.fm.description}\n\nFile: \`skills/${s.name}/SKILL.md\``)
-        .join("\n\n") +
-      `\n\n## Katalon MCP server\n\n` +
-      `These workflows depend on the Katalon MCP server. Add an \`mcpServers\` entry to your agent's MCP config ` +
-      `using the canonical shape in \`.mcp.json\` at the repo root. One endpoint serves every workspace - sign-in presents a picker, so there is nothing to fill in.\n\n` +
-      "```json\n" +
-      `{ "mcpServers": { "${MCP_SERVER}": { "type": "http", "url": "${MCP_ENDPOINT}" } } }\n` +
-      "```\n\n" +
-      `Agents without native remote-MCP support use the wrapper against the same endpoint:\n\n` +
-      "```sh\n" +
-      `npx ${MCP_ARGS.join(" ")}\n` +
-      "```\n\n" +
-      `Authentication is a browser/OAuth flow. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
-      `Start with \`platform-setup\` to connect and verify the MCP, then use the workflow skills. ` +
-      `For human-facing install instructions per agent, see [README.md](${REPO_URL}#install).\n`,
-  ),
-);
-
-// root canonical .mcp.json (referenced by AGENTS.md and docs)
-track(writeFile(".mcp.json", j(mcpJson)));
+const agentsMd =
+  `${GENERATED_NOTE}\n\n# AGENTS.md - Katalon True Platform skills\n\n` +
+  `This repo holds ${skills.length} testing skills for Katalon True Platform (formerly TestOps). ` +
+  `Each skill is a folder with a \`SKILL.md\`. The source is \`skills/<name>/SKILL.md\`. ` +
+  `Agents that scan \`.agents/skills/\` load the skills without more setup. ` +
+  `Otherwise read a skill's \`SKILL.md\` when a request matches its \`description\`.\n\n` +
+  `## Where to start\n\n` +
+  `- A request that names a job, not one task: \`${ROUTER}\`.\n` +
+  `- Not connected yet: \`platform-setup\`, then \`get-started\`.\n\n` +
+  `## Skills by role\n\n${roleIndex}\n\n` +
+  `## Katalon MCP server\n\n` +
+  `The skills need the Katalon MCP server. Endpoint: \`${MCP_ENDPOINT}\`. Sign-in is a browser OAuth flow. ` +
+  `Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.\n\n` +
+  `Each client has its own config shape. Copy the snippet for your client from [docs/connect.md](docs/connect.md). ` +
+  `Skills name tools by bare name. Clients may add a prefix (Claude Code: \`mcp__<server>__<tool>\`).\n\n` +
+  `Preview every create, update, or delete, get one confirmation for the set, run it, then read it back.\n`;
+const agentsBytes = Buffer.byteLength(agentsMd, "utf8");
+if (agentsBytes >= 4096) throw new Error(`AGENTS.md is ${agentsBytes} bytes; the limit is 4096`);
+track(writeFile("AGENTS.md", agentsMd));
 
 // ===========================================================================
-// 6. Kiro Crew app - apps/katalon-testing-skills/ (+ app-assets/)
+// 7. Kiro Crew app - apps/katalon-testing-skills/ (+ app-assets/)
 // ===========================================================================
 // Kiro Crew (https://kirocrew.com) discovers an app from an app.json manifest and,
-// on install, registers the skills it declares and the MCP server it names. This
-// adapter emits that manifest plus a generated copy of the canonical skills, so
-// the app installs the same skills any other adapter ships. The manifest's
-// skill paths are app-relative (Kiro Crew refuses ".." segments), so the copy is
-// vendored under the app dir rather than referenced out to root skills/.
+// on install, registers the skills it declares and the MCP server it names. The
+// manifest contract was not re-verified in the 2026-10 research; the output is unchanged
+// apart from the version and skill count. Skill paths are app-relative (Kiro Crew
+// refuses ".." segments), so the skills are vendored under the app dir.
 const KIROCREW_APP_DIR = `apps/${KIROCREW_APP_NAME}`;
 resetDir(KIROCREW_APP_DIR);
 
-// canonical skills -> app-relative copy (Kiro Crew reads these natively)
 for (const s of skills) {
-  cpSync(s.dir, join(ROOT, KIROCREW_APP_DIR, "skills", s.name), { recursive: true });
+  copyTree(s.dir, join(KIROCREW_APP_DIR, "skills", s.name));
   track(`${KIROCREW_APP_DIR}/skills/${s.name}/SKILL.md`);
 }
 
-// app.json manifest. Router skill first so it leads the declared list.
-const kirocrewSkillOrder = [
-  ROUTER,
-  ...skills.map((s) => s.name).filter((n) => n !== ROUTER),
-];
+const kirocrewSkillOrder = [ROUTER, ...skills.map((s) => s.name).filter((n) => n !== ROUTER)];
 const kirocrewManifest = {
   name: KIROCREW_APP_NAME,
   version: PLUGIN_VERSION,
@@ -512,7 +677,7 @@ const kirocrewManifest = {
     "Operates your real Katalon True Platform workspace through the Katalon MCP, not a mock",
     "Turn a requirement into linked manual cases, then run them with Run-with-AI",
     "Convert manual cases to Playwright TypeScript or Katalon Studio Groovy",
-    "Upload and verify Katalon Studio/KRE, JUnit XML, and Playwright reports, then answer 'is this release safe to ship?'",
+    "Upload and verify Katalon Studio, JUnit XML, and Playwright reports, then answer 'is this release safe to ship?'",
     "Browser-OAuth auth only - no tokens or keys pasted into chat; each skill enforces this",
   ],
   defaultEnabled: false,
@@ -527,7 +692,6 @@ const kirocrewManifest = {
 };
 track(writeFile(join(KIROCREW_APP_DIR, "app.json"), j(kirocrewManifest)));
 
-// install hook - skills are vendored above, so it only verifies + prints the MCP step
 const kirocrewInstallHook =
   `#!/usr/bin/env bash\n` +
   `# GENERATED by scripts/build-adapters.mjs from skills/. Do not edit by hand.\n` +
@@ -542,7 +706,6 @@ const kirocrewInstallHook =
   `echo "[${KIROCREW_APP_NAME}] First connect opens a browser OAuth flow at ${MCP_ENDPOINT} and lets you pick your workspace."\n`;
 track(writeFile(join(KIROCREW_APP_DIR, "setup", "on-install.sh"), kirocrewInstallHook));
 
-// app README (human-facing)
 const kirocrewReadme =
   `${GENERATED_NOTE}\n\n# ${KIROCREW_APP_DISPLAY} - Kiro Crew app\n\n` +
   `A [Kiro Crew](https://kirocrew.com) app that packages the ${skills.length} Katalon True Platform ` +
@@ -564,7 +727,6 @@ const kirocrewReadme =
   `Skills (c) Katalon (MIT). "Katalon" and "Katalon True Platform" are trademarks of Katalon, Inc.\n`;
 track(writeFile(join(KIROCREW_APP_DIR, "README.md"), kirocrewReadme));
 
-// app-assets: icon + light/dark hero, emitted here so the whole app is generated.
 const kcIcon =
   `<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">\n` +
   `  <rect width="48" height="48" rx="10" fill="#0F8461"/>\n` +
@@ -573,7 +735,7 @@ const kcIcon =
   `  <path d="M15 24l12 11" stroke="#EAFBF3" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>\n` +
   `  <path d="M30 30l3.4 3.4L40 27" stroke="#7DF3C0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>\n` +
   `</svg>\n`;
-const kcHero = (bg, grad0, grad1, ring, title, sub, cap) =>
+const kcHero = (bg, grad0, grad1, ring, title, sub, capColor) =>
   `<svg width="960" height="360" viewBox="0 0 960 360" fill="none" xmlns="http://www.w3.org/2000/svg">\n` +
   `  <rect width="960" height="360" fill="${bg}"/>\n` +
   `  <rect width="960" height="360" fill="url(#g)"/>\n` +
@@ -585,7 +747,7 @@ const kcHero = (bg, grad0, grad1, ring, title, sub, cap) =>
   `  </g>\n` +
   `  <text x="72" y="150" font-family="Georgia, serif" font-size="46" fill="${title}" font-weight="700">${KIROCREW_APP_DISPLAY}</text>\n` +
   `  <text x="72" y="196" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="${sub}">The full testing lifecycle for your agent - through the Katalon True Platform MCP.</text>\n` +
-  `  <text x="72" y="236" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="${cap}">18 skills - plan - design - manage - review - execute - analyze - maintain</text>\n` +
+  `  <text x="72" y="236" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="${capColor}">${skills.length} skills - plan - design - manage - review - execute - analyze - maintain</text>\n` +
   `  <defs><linearGradient id="g" x1="0" y1="0" x2="960" y2="360" gradientUnits="userSpaceOnUse">\n` +
   `    <stop stop-color="${grad0}"/><stop offset="1" stop-color="${grad1}"/>\n` +
   `  </linearGradient></defs>\n` +
@@ -594,8 +756,54 @@ track(writeFile(`app-assets/${KIROCREW_APP_NAME}/icon.svg`, kcIcon));
 track(writeFile(`app-assets/${KIROCREW_APP_NAME}/hero-light.svg`, kcHero("#F3FBF8", "#EAFBF3", "#D5F3E6", "#0F8461", "#0B3B2C", "#2C5B4C", "#4B7A6B")));
 track(writeFile(`app-assets/${KIROCREW_APP_NAME}/hero-dark.svg`, kcHero("#07130F", "#0B221A", "#07130F", "#12A97C", "#EAFBF3", "#A9D8C7", "#6FAF9B")));
 
+// ---- retired outputs --------------------------------------------------------
+for (const p of RETIRED) rmSync(join(OUT, p), { recursive: true, force: true });
+
+// ---- both MCP shapes must name the same endpoint -----------------------------
+for (const c of CLIENTS) {
+  const text = c.format === "json" ? j(c.config) : c.config;
+  if (!text.includes(MCP_ENDPOINT)) throw new Error(`${c.id}: config does not name ${MCP_ENDPOINT}`);
+}
+
+// ---- check mode: compare the temp build with the committed tree ---------------
+function walk(dir, base = dir, acc = []) {
+  if (!existsSync(dir)) return acc;
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === ".DS_Store") continue;
+    const abs = join(dir, e.name);
+    if (e.isDirectory()) walk(abs, base, acc);
+    else acc.push(abs.slice(base.length + 1));
+  }
+  return acc;
+}
+
+if (CHECK) {
+  const problems = [];
+  const built = new Set(walk(OUT));
+  for (const rel of [...built].sort()) {
+    const committed = join(ROOT, rel);
+    if (!existsSync(committed)) problems.push(`missing: ${rel}`);
+    else if (!readFileSync(committed).equals(readFileSync(join(OUT, rel)))) problems.push(`out of date: ${rel}`);
+  }
+  for (const d of GENERATED_DIRS) {
+    for (const rel of walk(join(ROOT, d), ROOT)) if (!built.has(rel)) problems.push(`stale: ${rel}`);
+  }
+  for (const f of GENERATED_FILES) if (!built.has(f)) problems.push(`not generated: ${f}`);
+  for (const p of RETIRED) if (existsSync(join(ROOT, p))) problems.push(`retired path still present: ${p}`);
+  rmSync(OUT, { recursive: true, force: true });
+  if (problems.length) {
+    console.error(`Generated files are out of sync with skills/ (${problems.length} problems):\n`);
+    for (const p of problems.slice(0, 60)) console.error("  " + p);
+    if (problems.length > 60) console.error(`  ... and ${problems.length - 60} more`);
+    console.error("\nRun 'node scripts/build-adapters.mjs' and commit the result.");
+    process.exit(1);
+  }
+  console.log(`Generated files match skills/ (${built.size} files checked).`);
+  process.exit(0);
+}
+
 // ---- report ----------------------------------------------------------------
 written.sort();
-console.log(`Generated ${written.length} files from ${skills.length} skills:\n`);
+console.log(`Generated ${written.length} files from ${skills.length} skills (AGENTS.md ${agentsBytes} bytes):\n`);
 for (const w of written) console.log("  " + w);
 console.log("\nDone.");

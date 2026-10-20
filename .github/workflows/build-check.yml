@@ -1,13 +1,16 @@
 name: build-check
 
-# Verifies that the generated agent adapters are in sync with skills/.
-# If someone edited a skill (or a generated file) without rebuilding, the
-# working tree changes and this job fails.
+# Verifies that shared references and generated agent adapters are in sync with skills/.
+# Blocking jobs: adapters-in-sync, chatgpt-package.
+# Advisory jobs (continue-on-error): claude-plugin-validate, skills-cli-discovery.
 
 on:
   push:
     branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   adapters-in-sync:
@@ -16,14 +19,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Validate skills against skills.config.mjs
-        run: node scripts/validate-skills.mjs
-      - name: Regenerate adapters from skills/
-        run: node scripts/build-adapters.mjs
-      - name: Fail if generated files are out of sync
+          node-version: 22
+      - name: Sync shared references into skills
+        run: node scripts/sync-shared.mjs
+      - name: Fail if shared copies had drifted
         run: |
-          if ! git diff --exit-code; then
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            echo "::error::Shared reference copies were out of sync. Run 'node scripts/sync-shared.mjs' and commit the result."
+            exit 1
+          fi
+      - name: Validate skills, tool contract, and descriptions
+        run: node scripts/validate-skills.mjs
+      - name: Check generated adapters match skills/
+        run: node scripts/build-adapters.mjs --check
+      - name: Regenerate adapters and confirm a clean tree
+        run: |
+          node scripts/build-adapters.mjs
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
             echo "::error::Generated files are out of sync. Run 'node scripts/build-adapters.mjs' and commit the result."
             exit 1
           fi
@@ -39,3 +53,33 @@ jobs:
         run: python3 -m unittest discover -s tests
       - name: Build and validate the ChatGPT plugin package
         run: python3 scripts/build-chatgpt-plugin.py
+
+  # The Claude Code CLI may be missing on a runner, so this job installs it and
+  # never blocks a merge. A failure here is a signal to run the check locally.
+  claude-plugin-validate:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate the plugin folder
+        run: claude plugin validate ./plugins/katalon-true-platform --strict
+      - name: Validate the marketplace at the repo root
+        run: claude plugin validate .
+
+  # Checks that the skills CLI finds every skill in a plain checkout. The CLI needs
+  # Node 22.20 or newer. The exact command shape is not confirmed, so this job is advisory.
+  skills-cli-discovery:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: List skills the CLI discovers
+        run: npx --yes skills add ./ --list

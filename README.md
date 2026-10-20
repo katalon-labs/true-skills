@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.svg">
-  <img src="docs/images/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/hero-dark.svg">
+  <img src="docs/images/art/hero-light.svg" alt="True Skills: testing skills for agents, for Katalon True Platform, in the AI coding agent you already use" width="100%">
 </picture>
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![19 skills](https://img.shields.io/badge/skills-19-0f8461?style=flat-square) ![8 agents](https://img.shields.io/badge/agents-8%20+%20AGENTS.md-0f8461?style=flat-square) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
@@ -102,8 +102,8 @@ Multi-skill playbooks live in [`combination-recipes.md`](skills/true-platform-te
 Seven stages, each owned by a skill. The loop closes when maintenance feeds its gap list back into the plan.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/lifecycle-dark.svg">
-  <img src="docs/images/lifecycle-light.svg" alt="The seven-stage testing lifecycle and the skill that owns each stage, with the maintenance gap list feeding back into planning" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/art/lifecycle-dark.svg">
+  <img src="docs/images/art/lifecycle-light.svg" alt="The seven-stage testing lifecycle and the skill that owns each stage, with the maintenance gap list feeding back into planning" width="100%">
 </picture>
 
 `platform-setup` sits before all seven, connecting the MCP. Every skill states which Katalon MCP tools it uses and where the platform stops. Full stage map: [`lifecycle-map.md`](skills/true-platform-testing/references/lifecycle-map.md). Every tool in one line each: [`mcp-tool-index.md`](skills/true-platform-testing/references/mcp-tool-index.md). A self-contained visual for humans: [`docs/lifecycle.html`](docs/lifecycle.html).
@@ -112,11 +112,11 @@ Seven stages, each owned by a skill. The loop closes when maintenance feeds its 
 
 Each skill names its limits up front so the agent does not promise work the platform cannot do.
 
-**Through the MCP:** list projects and repositories, read requirements, create and update and link test cases, manage suites and folders, create manual runs, start Run with AI, poll AI sessions, read results, fetch quality metrics, and file ALM-linked defects.
+**Through the MCP:** list projects and repositories, read requirements, create and update and link test cases, manage suites and folders, create manual and automated runs, start Run with AI, poll AI sessions, rerun a completed execution, read and edit schedules, record manual results, upload evidence, read results and quality insights, and file ALM-linked defects.
 
-**Not through the MCP:** creating requirements, creating a formal Test Plan entity, guaranteeing an AI run finishes, or inspecting the live app UI without a browser tool. A named suite plus a release or sprint association stands in for the Test Plan entity.
+**Not through the MCP:** creating requirements, creating a formal Test Plan entity, cancelling Run with AI, stopping a running execution, guaranteeing an AI run finishes, or inspecting the live app UI without a browser tool. A named suite plus a release or sprint association stands in for the Test Plan entity.
 
-Some work is a product surface rather than an API call: object capture and resilience design in Studio, custom fields and Git config and governance in the TestOps UI, self-healing and Time Capsule and TrueTest regeneration, and rerun, terminate, and Live Monitor. The full list is in [`unavailable-capabilities.md`](skills/true-platform-testing/references/unavailable-capabilities.md).
+Some work is a product surface rather than an API call: object capture and resilience design in Studio, custom fields and Git config and governance in the TestOps UI, self-healing and Time Capsule, and terminate and Live Monitor. The full list is in [`capability-boundaries.md`](skills/true-platform-testing/references/capability-boundaries.md).
 
 ## Install
 
@@ -169,46 +169,24 @@ Open **Plugins** in Codex and install **Katalon True Platform**. Set your subdom
 </details>
 
 <details>
-<summary><b>GitHub Copilot</b> agent skills + MCP</summary>
+<summary><b>Copilot, Cursor, Kiro, Cline, Continue, Gemini CLI and others</b> skills folder + MCP</summary>
+
+Copy the skills folder your client reads into your project:
 
 ```bash
-mkdir -p .github .vscode \
-  && cp -R <checkout>/.github/skills .github/ \
-  && cp -R <checkout>/.github/prompts .github/ \
-  && cp <checkout>/.github/copilot-instructions.md .github/ \
-  && cp <checkout>/.github/mcp.json .github/ \
-  && cp <checkout>/.vscode/mcp.json .vscode/
+cp -R <checkout>/.agents .agents     # Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Windsurf
+cp -R <checkout>/.kiro .kiro         # Kiro (.kiro/skills/ plus .kiro/settings/mcp.json)
+cp -R <checkout>/.cline .cline       # Cline (.cline/skills/)
+cp -R <checkout>/.continue .continue # Continue (rules plus .continue/mcpServers/katalon.yaml)
 ```
 
-- **VS Code (agent mode)** - skills in `.github/skills/` load automatically; prompt files stay available as `/platform-setup` etc. Start the `katalon-prod-mcp` server when VS Code offers it: it signs you in through the browser OAuth flow and you pick your workspace. Nothing to configure, no token pasting.
-- **Copilot CLI** - the same skills are auto-discovered (`/skills list` to see them). The MCP server auto-loads from `.github/mcp.json` with no edits; or register it interactively with `/mcp add` (type `http`, same URL). The CLI does not read `.vscode/mcp.json`.
-- **Copilot coding agent & code review** - read `.github/skills/` from your repository automatically. Neither surface supports OAuth remote MCP servers yet, so keep Katalon platform operations in VS Code or the CLI for now.
-</details>
-
-<details>
-<summary><b>Cursor</b> project rules</summary>
-
-```bash
-cp -R <checkout>/.cursor .cursor
-```
-
-Rules in `.cursor/rules/*.mdc` load by description when relevant. MCP config lives in `.cursor/mcp.json`.
-</details>
-
-<details>
-<summary><b>Kiro</b> steering docs</summary>
-
-```bash
-cp -R <checkout>/.kiro .kiro
-```
-
-Steering docs use manual inclusion, so reference one in chat with `#true-platform-testing`. MCP config lives in `.kiro/settings/mcp.json`.
+The MCP config file and snippet for each client are in [`docs/connect.md`](docs/connect.md).
 </details>
 
 <details>
 <summary><b>Kiro Crew</b> app</summary>
 
-[Kiro Crew](https://kirocrew.com) installs this as an **app** — `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 19 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
+[Kiro Crew](https://kirocrew.com) installs this as an **app**. `apps/katalon-testing-skills/` carries an `app.json` manifest that registers all 19 skills and the `katalon-prod-mcp` server on install. From the dashboard's **Apps** page, install from the local path, or submit the repo to the Kiro Crew app registry so it appears under **Apps → Discover**. First MCP connect opens the browser OAuth flow and a workspace picker.
 
 ```bash
 # local/developer install: point Kiro Crew at the app directory
@@ -216,36 +194,6 @@ apps/katalon-testing-skills/
 ```
 
 Details in [`apps/katalon-testing-skills/README.md`](apps/katalon-testing-skills/README.md).
-</details>
-
-<details>
-<summary><b>Windsurf</b> rules</summary>
-
-```bash
-cp -R <checkout>/.windsurf .windsurf
-```
-
-Rules in `.windsurf/rules/*.md` trigger on their description. Add the MCP under **Settings → MCP**, or in `~/.codeium/windsurf/mcp_config.json`.
-</details>
-
-<details>
-<summary><b>Cline</b> project rules</summary>
-
-```bash
-cp -R <checkout>/.clinerules .clinerules
-```
-
-Cline loads every file in `.clinerules/`. Add the MCP through its **MCP Servers** panel.
-</details>
-
-<details>
-<summary><b>Continue</b> rules and MCP block</summary>
-
-```bash
-cp -R <checkout>/.continue .continue
-```
-
-Rules live in `.continue/rules/*.md`, the MCP block in `.continue/mcpServers/katalon.yaml`.
 </details>
 
 <details>
@@ -269,10 +217,10 @@ One endpoint serves every workspace: `https://platform.katalon.io/mcp`. Sign-in 
 }
 ```
 
-Agents without native remote-MCP support (Kiro, Continue, Codex) use the `mcp-remote` wrapper against the same endpoint:
+Most clients connect to the remote server natively. [`docs/connect.md`](docs/connect.md) has the file and snippet for each client. Use the `mcp-remote` wrapper only when a client has no native remote support or its native sign-in fails:
 
 ```sh
-npx -y mcp-remote https://platform.katalon.io/mcp --transport http-first
+npx -y mcp-remote@0.14.3 https://platform.katalon.io/mcp --transport http-first
 ```
 
 1. Complete the browser OAuth flow that opens on first connect.
@@ -288,11 +236,11 @@ On a dedicated Katalon domain, substitute `https://<your-sub-domain>.katalon.io/
 The skill bodies live once. Everything each agent needs is generated from them, so no adapter can drift.
 
 ```text
-  skills/                      13 SKILL.md files plus references/
+  skills/                      19 SKILL.md files plus references/
      |
      |  node scripts/build-adapters.mjs      deterministic, checked in CI
      v
-  Claude Code · Codex · Copilot · Cursor · Kiro · Windsurf · Cline · Continue · AGENTS.md
+  Claude Code · Codex · Copilot · Cursor · Kiro · Cline · Continue · .agents/skills · AGENTS.md
      |
      |  every adapter points at the same server
      v
@@ -304,8 +252,10 @@ skills/                              source of truth, 19 skills
 scripts/build-adapters.mjs           generates every agent config
 plugins/katalon-true-platform/       Claude Code and Codex plugin      (generated)
 .claude-plugin/  .agents/            plugin marketplaces               (generated)
-.cursor/  .kiro/  .github/           Cursor, Kiro, Copilot             (generated)
-.windsurf/  .clinerules/  .continue/ Windsurf, Cline, Continue         (generated)
+.agents/skills/                      shared skills folder for most agents (generated)
+.kiro/  .cline/  .continue/          Kiro, Cline, Continue             (generated)
+.cursor/  .github/  .codex/          Cursor, Copilot, Codex MCP config (generated)
+shared/references/                   canonical shared references (synced into skills/)
 apps/katalon-testing-skills/         Kiro Crew app                     (generated)
 .mcp.json  .vscode/mcp.json          MCP config                        (generated)
 AGENTS.md  llms.txt                  agent-readable index              (generated)

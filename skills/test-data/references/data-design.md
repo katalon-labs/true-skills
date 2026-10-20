@@ -5,10 +5,11 @@
 The steps come from the requirement's actions. The data comes from its **conditions**. Read the requirement once for each and do not mix the passes.
 
 1. List every condition the requirement states: thresholds, statuses, roles, tiers, quantities, dates, formats, and exclusions.
-2. Partition each condition into equivalence classes. One class is one case, matching the atomic-case rule in `create-test-cases`.
-3. Add boundary values for every ordered condition: at the boundary, one below, one above. A threshold of "500 or more" produces 499.99, 500.00, and 500.01, not "a big number".
-4. Add the exclusions the requirement names explicitly. "Never applies to gift cards" is a data class, not an edge case to remember later.
-5. Stop when every condition has at least one class. Combinatorial explosion is handled by pairwise reduction, not by inventing more accounts.
+2. Rank the conditions by risk (impact times likelihood of failure). Spend the most classes on the highest-risk conditions. Equivalence partitioning and boundary values are tools for finding classes. They do not prove the set is complete.
+3. Partition each condition into equivalence classes. One class is one case, matching the atomic-case rule in `create-test-cases`.
+4. Add boundary values for every ordered condition: at the boundary, one below, one above. A threshold of "500 or more" produces 499.99, 500.00, and 500.01. "A big number" is not a boundary value.
+5. Add the exclusions the requirement names explicitly. "Never applies to gift cards" is a data class. Do not leave it as an edge case to remember later.
+6. Stop when every condition has at least one class. Use pairwise reduction to control combinatorial growth. Do not invent more accounts.
 
 Write the classes as a table with the account state, the input values, and the expected outcome, and confirm it with the user before touching a single case.
 
@@ -37,7 +38,8 @@ A step that reads `Enter the loyalty email` survives a data change. A step that 
 ## Personally identifying data
 
 - **Never** copy real names, emails, phone numbers, addresses, payment details, or government identifiers into a test case, a fixture, a screenshot, or a report.
-- Mask or synthesize before the data leaves the source system, not after it has been written somewhere.
+- Captured user sessions (for example from TrueTest) hold real user input. Treat them as production data. Replace the values with reserved ones before they enter a case.
+- Mask or synthesize before the data leaves the source system. Masking after the write is too late.
 - Use reserved, non-routable values: `@example.com` for email, documented reserved ranges for phone numbers, and test card numbers published by the payment provider.
 - Production clones are the highest-risk path in this whole skill. If a clone is unavoidable, name in the report what was masked, what was not, and who approved it.
 
@@ -54,8 +56,8 @@ Credentials are not test data and never live with it.
 Run this before declaring a data design done.
 
 - [ ] Every requirement condition maps to at least one data class.
-- [ ] Every ordered condition has its boundary values, not just a representative value.
-- [ ] Every class names its expected outcome, not just its inputs.
+- [ ] Every ordered condition has its boundary values, and a representative value alone does not count.
+- [ ] Every class names its expected outcome as well as its inputs.
 - [ ] No value that the test mutates is shared between cases.
 - [ ] Every key that must be unique carries a run stamp.
 - [ ] No credential, token, or real personal detail appears anywhere in the contract.

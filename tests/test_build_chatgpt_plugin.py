@@ -315,7 +315,12 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         root_mcp = json.loads((ROOT / "mcp.json").read_text(encoding="utf-8"))
         self.assertEqual(root_mcp["mcpServers"], {"katalon-prod-mcp": {"type": "streamable-http", "url": "https://platform.katalon.io/mcp"}})
         root_plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
-        self.assertNotIn("extensions", root_plugin)
+        # The root manifest carries the Codex interface under extensions["com.openai"]
+        # (written by build-adapters.mjs). ChatGPT submission fields stay out of it.
+        root_openai = root_plugin.get("extensions", {}).get("com.openai", {})
+        self.assertNotIn("review", root_openai)
+        chatgpt_plugin = json.loads((self.base / "plugin.json").read_text(encoding="utf-8"))
+        self.assertNotEqual(root_plugin, chatgpt_plugin)
 
     def test_onboarding_requires_manifest_event_or_explicit_request(self) -> None:
         # AC-65: missing defaults discovered during another task do not permit

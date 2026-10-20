@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Review
-description: "Review Katalon True Platform/TestOps test quality and coverage before tests enter the delivery pipeline. Use when you need to check whether a suite is ready to run, review requirement and configuration coverage, assess test-case quality and flakiness/stability, spot weak or unreliable cases, and produce a review verdict (Approve / Approve with fixes / Reject for pipeline) with the specific cases to fix. This is a pre-execution quality gate, not a ship decision; for the release ship/no-ship call use release-analyze. Written for the test lead gating what is allowed into the pipeline, one suite at a time."
+description: "Reviews the coverage, case quality, and reliability of a Katalon True Platform (formerly TestOps) suite before it enters the delivery pipeline. It returns Approve, Approve with fixes, or Reject for pipeline, with the named weak cases and the reason for each. Use when someone must gate a suite before a CI or release run. This is a pre-run gate. The ship decision is release-analyze. For the test lead."
 alwaysApply: false
 ---
 
@@ -8,54 +8,62 @@ alwaysApply: false
 
 # Katalon Test Review
 
-Use this skill for the **review** stage: inspect coverage, quality, and reliability so weak tests do not enter the pipeline. The output is a **verdict with named weak cases**, never a metric dump.
+This skill covers the review stage. It inspects coverage, case quality, and reliability so weak tests stay out of the pipeline. The test lead gates one suite at a time. The output is a **verdict with named weak cases**, never a metric dump. This skill only reads. It changes nothing on Katalon True Platform (formerly TestOps).
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-- **Available via MCP:** coverage review (`fetch_requirement_data`, `find_test_cases_by_requirement`, `fetch_test_configuration_data`), quality review (`fetch_test_case_data`), reliability review (`fetch_test_stability_data`, `find_test_results`), and environment readiness (`read_auts`).
-- **Not directly available:** code/object review, local debug, StudioAssist Ask — these are Studio-desktop operations. For code-lane review, defer to `test-case-to-playwright` / `playwright-execute`. Use Browser/Playwright only for AUT sanity checks when asked.
+Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-## Review Workflow
+- **Available.** Coverage: `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights`. Quality: `get_test_case_insights`, `read_test_case`. Reliability: `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results`. Environment readiness: `read_auts`. Suite contents: `read_test_suite`.
+- **Not available.** No tool reviews script code, locators, or the Studio object repository. Those are Studio-side. For the code lane, use `test-case-to-playwright` and `playwright-execute`. No tool checks accessibility. Use a browser or Playwright check when the user asks.
+- **Not a run.** Review does not start a run. A suite that looks good still needs `execute-test`.
+
+## Review workflow
 
 ```text
-+---------------------+     +----------------------+     +----------------------+
-| Coverage review     | --> | Quality review       | --> | Reliability review   |
-| reqs + config       |     | case design signals  |     | flakiness/stability  |
-+---------------------+     +----------------------+     +----------------------+
-                                                                   |
-                                                                   v
-                                                         +----------------------+
-                                                         | Verdict + weak cases |
-                                                         +----------------------+
+Coverage review -> Quality review -> Reliability review -> Environment check -> Verdict
+ requirements       case design        flaky and erratic      AUT exists        named cases
+ configurations     oracle strength    run-count floor
 ```
 
-## Steps and tool rules
+## Steps
 
-1. **Coverage review.** `fetch_requirement_data` + `find_test_cases_by_requirement` for requirement coverage; `fetch_test_configuration_data` for browser/platform coverage. Flag orphan requirements and under-covered configurations.
-2. **Quality review.** `fetch_test_case_data` for design signals; read representative cases with `read_test_case` when a signal is ambiguous. Flag non-atomic cases (many assertions), missing negative/boundary variants, and vague expected results.
-3. **Reliability review.** `fetch_test_stability_data` for flakiness; `find_test_results` for recent pass/fail history. Flag probabilistically flaky cases that will erode pipeline trust.
-4. **Environment readiness.** `read_auts` to confirm an executable AUT exists for the suite.
-5. **Verdict.** One of **Approve** / **Approve with fixes** / **Reject for pipeline**, followed by the specific cases to fix and why. State the risk if approving with known gaps.
+1. **Read the suite.** Call `list_projects`, `list_repositories`, then `read_test_suite`. Note the case count, the lane (manual or automated), and whether the page is complete. Do not report a partial page as a total.
+2. **Coverage review.** Call `get_requirement_insights` and `find_test_cases_by_requirement` for requirement coverage. Call `get_test_configuration_insights` for browser and platform coverage. Flag orphan requirements and under-covered configurations. A link shows that a case exists. It does not show that the case passed.
+3. **Quality review.** Call `get_test_case_insights` for design signals. Read the cases behind any ambiguous signal with `read_test_case`. Apply the heuristics in `references/review-rubric.md`. Check each case for one behavior with a strong oracle, clear test data, and an observable expected result.
+4. **Reliability review.** Call `analyze_test_case_stability` for flaky, always failing, newly failing, and slow cases. Call `analyze_test_flakiness` with a minimum run count of about 10. Call `find_test_results` for recent history. Label a signal from fewer than about 10 runs as unconfirmed.
+5. **Environment readiness.** Call `read_auts` to confirm that an executable AUT exists for the suite.
+6. **Verdict.** Give one of **Approve**, **Approve with fixes**, or **Reject for pipeline**. List the cases to fix and why. State the risk of approving with known gaps.
 
-## Verdict rubric
+## Verdicts
 
-- **Approve:** coverage meets the plan, no flaky cases in the critical path, expected results are observable.
-- **Approve with fixes:** ship-able but list the exact cases needing a fix (flaky, non-atomic, weak expected result) and the owner action.
-- **Reject for pipeline:** orphan critical requirements, or flaky cases in the smoke/regression core — fix before the suite runs.
+- **Approve.** Coverage meets the plan. No flaky case sits in the critical path. Expected results are observable.
+- **Approve with fixes.** The suite can run. Name each case to fix (flaky, weak oracle, vague expected result) and the owner action.
+- **Reject for pipeline.** A critical requirement has no case, or a flaky case sits in the smoke or regression core. Fix these before the suite runs.
+
+## AI features and AI-drafted cases
+
+Two extra checks apply in some suites. Both are in `references/ai-review-checklists.md`.
+
+- The suite tests a feature that uses a model. Use the CT-AI 2.0 checklist.
+- Cases were drafted by a model. Use the CT-GenAI 1.1 risk checklist.
 
 ## Prompt recipes
 
-- `Review the regression suite for release 3.2: is it ready for the pipeline? Give a verdict and list weak cases.`
+- `Review the regression suite for release 3.2. Is it ready for the pipeline? Give a verdict and the weak cases.`
 - `Check requirement and configuration coverage for project X and flag anything under-covered.`
 - `Which cases in the smoke suite are flaky enough to reject before we wire them into CI?`
+- `This suite tests our chat assistant. What should the review check that a normal suite does not?`
 
 ## Hand-offs
 
-- Fixes needed -> `create-test-cases` (redesign) or `test-maintenance` (repair/flaky).
-- Approved -> `execute-test`.
+- Redesign or add cases -> `create-test-cases`.
+- Repair flaky or broken cases -> `test-maintenance`.
+- Approved suite -> `execute-test`.
+- Scope or priority questions -> `test-plan`.
 - Ship decision after execution -> `release-analyze`.
 
-Read `references/review-rubric.md` before issuing a verdict. Consult the orchestrator's `references/unavailable-capabilities.md` for boundaries.
+Read `references/review-rubric.md` before you issue a verdict. Read `references/ai-review-checklists.md` when the suite tests an AI feature or holds AI-drafted cases.
 
 ---
 
@@ -64,17 +72,108 @@ Read `references/review-rubric.md` before issuing a verdict. Consult the orchest
 _The reference material the skill points to is inlined below so this file is self-contained._
 
 
+### references/ai-review-checklists.md
+
+# AI review checklists
+
+Read this when the suite tests a feature that uses a model, or when a model drafted the cases. Both checklists add checks to the normal review. They do not replace it.
+
+The checklists apply two ISTQB syllabi. This file is a working summary for review, not a copy of either syllabus.
+
+- **CT-AI 2.0** (Certified Tester AI Testing, version 2.0, approved 2026-04-17). It is organized around data, models, and the system. It covers model testing (adversarial, metamorphic, drift, A/B, back-to-back), GenAI and LLM testing including exploratory testing and red teaming, and quality characteristics aligned with ISO/IEC 25059. Source: https://istqb.org/istqb-releases-certified-tester-ai-testing-ct-ai-syllabus-version-2-0/ (fetched 2026-10-20).
+- **CT-GenAI 1.1** (Certified Tester Testing with Generative AI). It covers prompting, risks (hallucination, reasoning errors, bias, privacy, regulation), and LLM-powered solutions. Source: https://istqb.org/certifications/gen-ai/ (fetched 2026-10-20).
+
+## Contents
+
+- Checklist A: the suite tests an AI feature
+- Checklist B: a model drafted the cases
+- How findings change the verdict
+
+## Checklist A: the suite tests an AI feature (CT-AI 2.0)
+
+Data
+- The cases name the data set they use. It is not "some prompts".
+- The data covers the user groups and input kinds the feature serves. Look for slices that are missing.
+- The data holds no real customer or personal records.
+
+Model
+- Outputs vary between runs. A suite that treats one pass as proof is a weak suite. Look for a repeat-run count and a pass proportion, not a single result.
+- The expected result for free-form output is a property or a rubric (contains the order number, stays under a length, refuses a banned request). Exact text equality is a weak oracle for this output.
+- Metamorphic cases exist: change the input in a way that must not change the answer (reword, reorder, change case) and check the answer holds.
+- Adversarial and malformed inputs exist: prompt injection, empty input, very long input, mixed languages.
+- The suite says which model version it ran against. A version change is a reason to rerun it. Drift over time is a reason to rerun it on a schedule.
+- A back-to-back comparison with the previous version exists when the team swaps models.
+
+System
+- The cases cover what happens when the model is slow, unavailable, or unsure. That includes the fallback text and the way a user reaches a person.
+- Guardrail cases exist for content the feature must refuse.
+- The team named the quality characteristics it cares about, such as correctness, transparency, and controllability. Each one has at least one case.
+
+Exploratory testing and red teaming
+- An exploratory session is planned for the feature. Hand the charter to `exploratory-charter`.
+- At least one red-team scenario is named: a user who tries to make the feature break its own rules.
+
+## Checklist B: a model drafted the cases (CT-GenAI 1.1)
+
+- Every expected result was checked against the requirement text by a person. A model can state an invented rule with confidence. Read the requirement with `read_requirement` and compare line by line.
+- The cases are not near-duplicates. Models repeat the common path and skip rare paths. Look for missing negative and boundary cases.
+- No customer or personal data went into the prompt, and none sits in the case data.
+- The case records that a model drafted it. Look for a note in the description, or a tag where the project has tags. Reviewers need to know.
+- The case names use only letters, digits, spaces, and `( ) . , _ -`. A model often adds `:` or `/`, which the platform rejects.
+- The team's own rules for AI-generated work are met. Ask the user for them. Do not assume them.
+- A person reviewed all drafted cases. Skimming a sample is not a review.
+
+## How findings change the verdict
+
+- An expected result in the critical path that nobody checked against the requirement counts as a weak oracle. Give Approve with fixes at best.
+- A suite for an AI feature with single-run pass checks only is Approve with fixes at best. Name the repeat-run count you expect.
+- Real personal data in cases or prompts is a Reject for pipeline until it is removed.
+- Missing provenance on drafted cases is a fix item. It never blocks on its own.
+
 ### references/review-rubric.md
 
 # Review rubric reference
 
-## Three review lenses (all MCP-backed)
+Read this before you issue a verdict.
+
+## Contents
+
+- Three review lenses
+- Atomicity heuristic
+- Run-count floor
+- Verdict decision table
+- Output template
+- Boundaries
+
+## Three review lenses
 
 | Lens | Tools | What to flag |
 |---|---|---|
-| Coverage | `fetch_requirement_data`, `find_test_cases_by_requirement`, `fetch_test_configuration_data` | orphan requirements; under-covered browsers/platforms/OS |
-| Quality | `fetch_test_case_data`, `read_test_case` | non-atomic cases; missing negative/boundary variants; vague or non-observable expected results; duplicate coverage |
-| Reliability | `fetch_test_stability_data`, `find_test_results` | probabilistically flaky cases; cases with erratic recent history; long-broken cases |
+| Coverage | `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights` | orphan requirements; under-covered browsers, platforms, and operating systems |
+| Quality | `get_test_case_insights`, `read_test_case` | cases that fail the atomicity heuristic; missing negative or boundary variants; vague or non-observable expected results; duplicate coverage |
+| Reliability | `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results` | flaky cases; cases with erratic recent history; long-broken cases; suites with zero failures across their whole history, which gives no proof they can fail |
+
+## Atomicity heuristic
+
+A case is atomic when it checks one behavior against one oracle. The number of assertions does not decide this. A checkout flow may need several observations to show that one rule holds.
+
+Ask these questions of each case:
+
+1. **One behavior.** Can the case fail for two unrelated business rules? If yes, split it. Example: one case that checks both the discount rule and the tax rule.
+2. **Independent failure.** If the first step fails, does the case still tell you something about the later steps? A case whose later steps can never run is a chain, not a unit. Consider a precondition instead.
+3. **Strong oracle.** Does the expected result name an observable outcome (a value, a state, a message)? "Works correctly" and "page loads" are weak.
+4. **Clear test data.** Does the case name its data, or does it depend on a record that may not exist? Hand data gaps to `test-data`.
+5. **Needed observations only.** Extra assertions on unrelated page details make a case brittle. Several assertions on one outcome do not.
+
+Do not flag a case for having many assertions alone. Flag it for failing one of the questions above, and say which.
+
+Check for missing variants too: one negative case and one boundary case for each rule that has a limit.
+
+## Run-count floor
+
+Give a stability signal a floor before it drives a verdict. Label one or two failures over fewer than about 10 recent runs as **unconfirmed** and say so in the fix list. `analyze_test_flakiness` takes a lookback window and a minimum run count. Set the minimum to 10 unless the team states another floor.
+
+If a stability tool returns zero flaky cases for a suite that has recorded failures, cross-check with `find_test_results` before you trust the zero. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
 
 ## Verdict decision table
 
@@ -83,21 +182,22 @@ _The reference material the skill points to is inlined below so this file is sel
 | meets plan | none | Approve |
 | meets plan | some non-critical | Approve with fixes |
 | minor gaps | none | Approve with fixes |
-| critical orphan reqs | any | Reject for pipeline |
-| any | flaky in smoke/regression core | Reject for pipeline |
+| critical orphan requirements | any | Reject for pipeline |
+| any | flaky in smoke or regression core | Reject for pipeline |
 
 ## Output template
 
 ```text
 Verdict:        Approve | Approve with fixes | Reject for pipeline
-Coverage:       reqs covered X/Y; configs covered A/B; orphans: <list>
-Quality flags:  <case: reason>
-Reliability:    flaky: <case: stability signal>
+Coverage:       requirements covered X/Y; configurations covered A/B; orphans: <list>
+Quality flags:  <case: which heuristic question it fails>
+Reliability:    flaky: <case: stability signal, run count, confirmed or unconfirmed>
 Fix list:       <case -> action -> owner hint>
-Risk if shipped as-is: <one line>
+Risk if run as-is: <one line>
 ```
 
 ## Boundaries
 
-- Case code, locators, and object maintainability are Studio-side — say so; do not claim to have reviewed script internals via MCP.
-- "Probabilistic flakiness" is a platform signal read through `fetch_test_stability_data`; report it, do not recompute it.
+- Case code, locators, and object maintainability are Studio-side. Say so. Do not claim to have reviewed script internals through the MCP.
+- Flakiness is a platform signal read through `analyze_test_case_stability` and `analyze_test_flakiness`. Report it. Do not recompute it.
+- Accessibility has no MCP tool. If the suite covers a user interface, say whether any case asserts accessibility. If none does, flag the gap. An axe-core check through Playwright is one way to close it on a local run.

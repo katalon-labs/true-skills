@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Management
-description: "Organize, classify, and trace Katalon True Platform/TestOps test assets. Use when you need to structure test cases into folders and suites, move or reorganize cases, search and find existing assets at scale, link or unlink requirements to test cases, or produce a requirement-to-test traceability report (which requirements have coverage, which cases are orphaned, coverage percentage). Prefer this skill for inventory hygiene and traceability audits. For authoring new cases use create-test-cases; for coverage quality verdicts use test-review. Written for the test lead doing inventory hygiene on a repository nobody has curated in months."
+description: "Organizes and traces Katalon True Platform (formerly TestOps) test assets such as folders, suites, suite collections, case moves, and requirement links. Produces a requirement-to-test traceability report with coverage percentage, orphan requirements, and orphan cases. Use when a repository needs inventory hygiene or a coverage map. Not for authoring cases (create-test-cases) or quality verdicts (test-review). For the test lead."
 alwaysApply: false
 ---
 
@@ -8,35 +8,41 @@ alwaysApply: false
 
 # Katalon Test Management
 
-Use this skill for the **management** stage: keep the test inventory organized, findable, and fully traceable to requirements. Traceability is the platform's differentiator, so the headline output is a **requirement <-> test case <-> suite** map, not just folder tidying.
+This skill covers the management stage: keep the test inventory organized, findable, and traceable to requirements. The headline output is a requirement to test case to suite map. Folder tidying is secondary. Tool names below are bare. Clients add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-- **Available via MCP:** folders (`find_test_folders`, `manage_test_folder`), suites (`find_test_suites`, `manage_test_suite`, `read_test_suite`), case organization (`move_test_case`, `duplicate_test_case`, `delete_test_case`), search (`find_test_cases`), and requirement links (`link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `find_test_cases_by_requirement`, `fetch_requirement_data`).
-- **Not directly available:** custom fields and tags authoring, dynamic test suites, Git repository configuration, script-repo upload, and project governance/notifications — these are TestOps-UI or Studio operations. Name them as boundaries; do not claim MCP writes for them.
-- **Naming charset:** test case names allow only letters, numbers, spaces and `( ) . , _ -`. Folder paths allow `/`. Prefer `update`/`move` over delete-and-recreate (`delete_test_case` has been unreliable).
+- **Can:** folders (`find_test_folders`, `manage_test_folder`), suites (`find_test_suites`, `read_test_suite`, `manage_test_suite`), suite collections (`find_test_suite_collections`, read-only), case organization (`move_test_case`, `duplicate_test_case`, `delete_test_case`), search (`find_test_cases`), requirement links (`link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `find_test_cases_by_requirement`), and requirement coverage (`get_requirement_insights`).
+- **Cannot:** author custom fields or tags, create dynamic test suites, configure Git repositories, upload scripts, or manage project governance and notifications. These are platform UI or Studio operations. Name them as boundaries. Never claim an MCP write for them.
+- **Collections are read-only.** No tool creates or edits a suite collection.
+- **Names:** test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Folder paths allow `/`. A move target path must start with `Test Cases`.
+- **Deletes:** prefer `update_test_case` and `move_test_case`. `delete_test_case` is unreliable.
+- **Suites:** a suite rejects a mix of MANUAL and AUTOMATED cases.
 
-## Traceability Workflow
+## Traceability workflow
 
 ```text
 +---------------------+     +-----------------------+     +----------------------+
-| Read requirements   | --> | Map cases <-> reqs    | --> | Find orphans + gaps  |
+| Read requirements   | --> | Map cases to reqs     | --> | Find orphans + gaps  |
 +---------------------+     +-----------------------+     +----------------------+
         |                             |                              |
         v                             v                              v
 +---------------------+     +-----------------------+     +----------------------+
-| Link/unlink to fix  | --> | Organize into suites  | --> | Report traceability  |
+| Plan fixes          | --> | Confirm, then execute | --> | Report traceability  |
 +---------------------+     +-----------------------+     +----------------------+
 ```
 
 ## Steps and tool rules
 
-1. **Establish scope.** `list_projects` -> `list_repositories`. Resolve one target from context.
-2. **Build the trace map.** For each requirement key, `find_test_cases_by_requirement`; use `fetch_requirement_data` for coverage status. Classify each requirement as: covered, partially covered, or orphan (no case).
-3. **Find loose assets.** `find_test_cases` by feature/folder/keyword to surface cases with no requirement link (orphan cases) and duplicates.
-4. **Fix links (only when known and requested).** `link_requirements_to_test_case` after requirement IDs are confirmed; `unlink_requirements_from_test_case` for wrong links. Never guess a link.
-5. **Organize inventory.** `manage_test_folder` and `move_test_case` for structure; `manage_test_suite` to group runnable cases. Reuse before creating; summarize bulk moves and get approval before executing them.
-6. **Report the traceability matrix.** requirement -> case(s) -> suite(s), coverage %, orphan requirements, orphan cases, and duplicate candidates. This is the deliverable.
+1. **Establish scope.** Call `list_projects`, then `list_repositories`. Resolve one target from context. Ask when several are equally likely.
+2. **Build the trace map.** For each in-scope requirement, call `find_test_cases_by_requirement`. Pass exactly one requirement identifier per call. Call `get_requirement_insights` for the platform coverage status of an iteration. Classify each requirement as covered, partially covered, or orphan.
+3. **Find loose assets.** Use `find_test_cases` by feature, folder, and keyword. Look for cases with no requirement link (orphan cases) and for duplicates. Page through every result. A first page is not the inventory.
+4. **Plan the changes.** Write one plan: links to add, links to remove, cases to move, folders to create, suite changes. Use the plan format in `references/traceability.md`. Never guess a link. Link only IDs you confirmed with `read_requirement` or `find_requirements`.
+5. **Validate, confirm, execute.** Follow `references/write-policy.md`. Check the plan against the rules in "Safe mutation" in `references/traceability.md`. Show the plan. Get one confirmation. Then call `link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `manage_test_folder`, `move_test_case`, and `manage_test_suite`. Reuse an existing folder or suite before creating one.
+6. **Read back.** Re-run `find_test_cases_by_requirement` for each changed requirement and `read_test_suite` for each changed suite. Link calls can fail in part. Confirm every link you meant to change.
+7. **Report the traceability matrix.** Show requirement, case, suite, coverage percentage, orphan requirements, orphan cases, and duplicate candidates. This is the deliverable.
+
+Deletes and folder or suite DELETE actions need an explicit yes that names the target. A bulk plan never hides one.
 
 ## Prompt recipes
 
@@ -44,13 +50,15 @@ Use this skill for the **management** stage: keep the test inventory organized, 
 - `Reorganize the smoke suite: move all P0 login cases into Test Cases/Auth/Smoke and report the new structure.`
 - `Link test cases TC-1042 and TC-1043 to requirement CEL-6 and confirm the coverage.`
 - `Find duplicate test cases in the Checkout folder and propose which to keep.`
+- `Which suites sit in the Release 12 collection, and which requirements do they cover?`
 
 ## Hand-offs
 
-- Coverage gaps found -> `create-test-cases` (author) or `test-plan` (schedule).
-- Quality verdict on the organized suite -> `test-review`.
+- Coverage gaps found: `create-test-cases` to author, `test-plan` to schedule.
+- Quality verdict on the organized suite: `test-review`.
+- Cases that keep breaking: `test-maintenance`.
 
-Read `references/traceability.md` before running an audit. Consult the orchestrator's `references/unavailable-capabilities.md` for the full boundary list.
+Read `references/traceability.md` before you run an audit.
 
 ---
 
@@ -66,33 +74,108 @@ _The reference material the skill points to is inlined below so this file is sel
 ## The trace map (the deliverable)
 
 ```text
-Requirement  ->  Test case(s)   ->  Suite(s)      Coverage
-CEL-6            TC-1042, TC-1043   Auth/Smoke     covered
-CEL-7            TC-1050            (none)         covered, not in a suite
-CEL-8            (none)             (none)         ORPHAN requirement
-—                TC-1099            (none)         ORPHAN case (no requirement link)
+Requirement  ->  Test case(s)       ->  Suite(s)       Coverage
+CEL-6            TC-1042, TC-1043       Auth/Smoke      covered
+CEL-7            TC-1050                (none)          covered but in no suite
+CEL-8            (none)                 (none)          ORPHAN requirement
+-                TC-1099                (none)          ORPHAN case (no requirement link)
 ```
 
-Coverage % = requirements with >=1 linked case / total in-scope requirements.
+Coverage percentage = requirements with at least one linked case, divided by in-scope requirements. State the denominator and the iteration or filter that defines "in scope".
 
 ## Tool sequence for an audit
 
-1. `find_requirements` (or the supplied keys) — the in-scope requirement set.
-2. `find_test_cases_by_requirement` per key — the linked cases.
-3. `fetch_requirement_data` — platform coverage status to reconcile against the link map.
-4. `find_test_cases` by folder/feature — surface cases that never appear in step 2 (orphan cases).
-5. Diff: requirements with no case = orphan requirements; cases with no requirement = orphan cases.
+1. `find_requirements`, or the keys the user supplied. This is the in-scope requirement set. Page through every result.
+2. `find_test_cases_by_requirement` per requirement. Pass exactly one identifier per call. Zero or several identifiers is a validation error.
+3. `get_requirement_insights` for the platform coverage status of the iteration. Reconcile it against your link map. Report any disagreement. Do not pick one silently.
+4. `find_test_cases` by folder or feature. Surface cases that never appeared in step 2. These are the orphan cases.
+5. `find_test_suites`, then `read_test_suite` for suites that matter. Map each linked case to its suites.
+6. `find_test_suite_collections` when the user cares about release or cycle groupings. A collection groups suites. It is read-only.
+7. Diff. Requirements with no case are orphan requirements. Cases with no requirement are orphan cases. Cases in no suite are unscheduled.
 
 ## Classification rules
 
-- **Covered:** requirement has >=1 linked, current test case.
-- **Partially covered:** linked cases exist but leave known behavior untested (defer the judgment to `test-review`).
-- **Orphan requirement:** no linked case — the top gap; route to planning/design.
-- **Orphan case:** case with no requirement link — either link it (if a requirement is known) or flag for review; do not delete without approval.
+- **Covered:** the requirement has at least one linked, current test case.
+- **Partially covered:** linked cases exist but leave known behavior untested. Defer the judgment to `test-review`.
+- **Orphan requirement:** no linked case. This is the top gap. Route it to `create-test-cases` or `test-plan`.
+- **Orphan case:** no requirement link. Link it if a requirement is known. Otherwise flag it for review. Never delete it without approval.
+- **Duplicate candidate:** two cases with the same intent in one folder. Propose which to keep. Do not merge or delete in the same pass.
 
-## Safe-mutation rules
+## Plan format for changes
 
-- Prefer `update_test_case` / `move_test_case` over `delete_test_case` (delete has been unreliable, HTTP 500 observed).
-- Test case name charset: letters, numbers, spaces, `( ) . , _ -` only. No `@ : /` in titles.
-- Summarize any bulk move/link/delete and get approval before executing.
-- Never fabricate a requirement<->case link; link only confirmed IDs.
+Use one row per change. Every row has a basis.
+
+| # | Change | Target | Detail | Basis |
+|---|---|---|---|---|
+| 1 | link | TC-1099 to CEL-6 | Requirement key | Key read with `read_requirement` |
+| 2 | unlink | TC-1042 from CEL-9 | Requirement key | Case steps cover login only, with no discount step |
+| 3 | move | TC-1050 to `Test Cases/Auth/Smoke` | Folder path | Folder found with `find_test_folders` |
+| 4 | folder create | `Test Cases/Auth/Smoke` | Path | No match in `find_test_folders` |
+| 5 | suite add | Suite `Auth Smoke` | Case list | Suite found with `find_test_suites` |
+
+Keep a plan to about 40 rows. Split a larger set into batches. Confirm and execute one batch at a time.
+
+## Safe mutation
+
+Check these before you ask for confirmation.
+
+- Every case name contains only letters, numbers, spaces, and `( ) . , _ -`. A rename must keep to the same charset.
+- Every move target path starts with `Test Cases`. Every folder in a path exists or has an earlier create row.
+- Every requirement ID in a link row was confirmed in this session.
+- Every suite keeps one type. A suite rejects a mix of MANUAL and AUTOMATED cases.
+- No row deletes a case, folder, or suite unless the user named that exact target and said yes.
+- Prefer `update_test_case` and `move_test_case` over `delete_test_case`. Delete has returned server errors.
+- Link and unlink calls can succeed in part. After execution, re-read the links for each changed requirement and report any gap.
+- Never fabricate a requirement to case link. Link confirmed IDs only.
+
+## Read back
+
+For each changed requirement, call `find_test_cases_by_requirement` and compare with the plan. For each changed suite, call `read_test_suite`. For each moved case, call `read_test_case` and check the folder path when the result shows it. Report each row as done, skipped, or failed.
+
+### references/write-policy.md
+
+<!-- GENERATED from shared/references/write-policy.md - edit the source -->
+# Write Policy, Execution Consent, and Session Rules
+
+These rules apply to every agent and every skill that changes data on Katalon True Platform (formerly TestOps).
+
+## Write policy
+
+1. Resolve the project and repository first.
+2. Preview the full mutation set in chat. List each create, update, move, link, and delete with its target.
+3. Ask for one confirmation for the whole set.
+4. Run the writes.
+5. Read back each changed item with a read tool and report what the platform now holds.
+
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+
+A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
+
+Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+
+Two more rules for bulk work:
+- Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
+- If a write fails part way, stop. Report which items changed and which did not. Do not retry blindly. Do not create a duplicate to replace a failed create. Search first.
+
+## Execution consent
+
+Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+- the suite or cases,
+- the AUT environment,
+- the mode (manual, Run with AI, or automated),
+- the schedule if one exists,
+- and any private network setup.
+
+A confirmation covers one run. Ask again for the next run.
+
+## Stateless MCP
+
+The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
+- Never rely on a server prompt or on sampling. Ask the user in chat.
+- Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
+- Prefer structured fields in a tool result. If they are missing, parse the text block.
+- Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
+
+## Terminology
+
+Katalon True Platform (formerly TestOps). Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE). Katalon Test Execution - Cloud (formerly TestCloud). On first mention, give both names. Use one name for one thing after that.

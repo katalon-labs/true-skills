@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 830 139" width="830" height="139" role="img" aria-label="A terminal types npx skills add katalon-labs/true-skills and installs the skills">
+<title>A terminal types npx skills add katalon-labs/true-skills and installs the skills</title>
+<style>
+text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;font-size:20px;fill:#0f8461}
+.m{fill:#5b6661}
+.fr{opacity:0}
+.f3{opacity:1}
+@media (prefers-reduced-motion: no-preference){
+.fr{animation-duration:3.20s;animation-timing-function:step-end;animation-iteration-count:infinite;animation-fill-mode:both}
+@keyframes f0{0%{opacity:1}18.75%{opacity:0}100%{opacity:0}}
+.f0{animation-name:f0}
+@keyframes f1{0%{opacity:0}18.75%{opacity:1}37.5%{opacity:0}100%{opacity:0}}
+.f1{animation-name:f1}
+@keyframes f2{0%{opacity:0}37.5%{opacity:1}56.25%{opacity:0}100%{opacity:0}}
+.f2{animation-name:f2}
+@keyframes f3{0%{opacity:0}56.25%{opacity:1}100%{opacity:1}}
+.f3{animation-name:f3}
+}
+@media (prefers-reduced-motion: reduce){.fr{animation:none;opacity:0}.f3{opacity:1}}
+</style>
+<rect x="0.5" y="0.5" width="829" height="138" rx="14" fill="#f6f8f7" stroke="#e2e7e4"/>
+<g class="fr f0"><text x="168" y="46.4" xml:space="preserve">$ npx skills add _</text></g>
+<g class="fr f1"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/_</text></g>
+<g class="fr f2"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/true-skills</text><text x="168" y="75.4" xml:space="preserve"><tspan class="m">&gt; detected: claude-code codex cursor kiro</tspan></text></g>
+<g class="fr f3"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/true-skills</text><text x="168" y="75.4" xml:space="preserve"><tspan class="m">&gt; detected: claude-code codex cursor kiro</tspan></text><text x="168" y="104.4" xml:space="preserve">&gt; 19 skills installed  [ ok ]</text></g>
+</svg>

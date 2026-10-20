@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Plan
-description: "Plan Katalon True Platform/TestOps testing for a release, sprint, or feature. Use when you need to translate quality goals into scope, prioritize testing by requirement coverage and risk, decide what to test first, or build the executable plan structure (folders, suites, and sprint/release association) that stands in for a formal Test Plan. Reads project/repository/iteration context and requirement coverage, then proposes and materializes a prioritized plan. For designing the actual test cases, hand off to create-test-cases; for the ship/no-ship call, hand off to release-analyze. Written for the test lead who owns the cycle and has to decide what gets tested first."
+description: "Plans Katalon True Platform (formerly TestOps) testing for a release, sprint, or feature. It ranks scope by requirement coverage, risk, and stability, then builds a named folder and suite as the execution scope. Use when someone must decide what to test first or turn quality goals into a runnable structure. Not for writing the cases (create-test-cases) or for the ship call (release-analyze). For the test lead."
 alwaysApply: false
 ---
 
@@ -8,52 +8,62 @@ alwaysApply: false
 
 # Katalon Test Plan
 
-Use this skill for the **planning** stage of the Katalon lifecycle: turn quality goals into a scoped, risk-prioritized, executable plan. The output is a plan the team can act on plus the folder/suite/release structure that makes it runnable. Prefer Katalon MCP tools for platform data; use the human as a tool when scope, risk appetite, or release target cannot be resolved safely.
+This skill covers the planning stage. It turns quality goals into a scoped, risk-ranked plan and into a folder and suite that the team can run. The test lead owns the cycle and decides what gets tested first. This skill gives that person the evidence.
 
-## Availability Boundary
+Katalon True Platform (formerly TestOps) holds no Test Plan entity. The plan itself is the text you write in chat. The folder and suite are the **execution scope** for that plan. Do not call them a plan of record.
 
-State the boundary before promising a plan:
+## What the MCP can and cannot do
 
-- **Available via MCP:** resolve scope (`list_projects`, `list_repositories`, `find_iterations`), read requirement coverage and gaps (`fetch_requirement_data`, `find_requirements`, `find_test_cases_by_requirement`), and build the executable plan structure (`manage_test_folder`, `manage_test_suite`, add cases to suites).
-- **Not directly available:** create a Release or Build entity, create a formal Test Plan entity, or author release gates through MCP. These live in the TestOps UI.
-- **Workaround (the MCP-legal test plan):** a **named folder + test suite associated with a sprint/release** is the executable plan. Create it, populate it, and report it as the plan of record.
+Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-## Planning Workflow
+- **Available.** Resolve scope with `list_projects`, `list_repositories`, and `find_iterations`. Read coverage and risk with `get_requirement_insights`, `get_test_configuration_insights`, `analyze_test_case_stability`, `analyze_test_flakiness`, `find_requirements`, and `find_test_cases_by_requirement`. Build the structure with `manage_test_folder` and `manage_test_suite`. Read existing schedules with `list_schedule` and `read_schedule_detail`. Edit them with `update_schedule_configuration`. Read suite collections with `find_test_suite_collections`.
+- **Not available.** No tool creates a Release, a Build, a Test Plan, a release gate, or a suite collection. No documented suite field binds a suite to a sprint or release. Check the tool schema before you claim one. If none exists, put the iteration name in the suite name.
+- **Another skill owns this.** Starting or scheduling a run is `execute-test`. It needs consent because runs use Katalon Test Execution - Cloud (formerly TestCloud) minutes.
+
+## Planning workflow
 
 ```text
-+---------------+     +----------------------+     +----------------------+
-| Resolve scope | --> | Read coverage + risk | --> | Prioritize what first|
-+---------------+     +----------------------+     +----------------------+
-        |                        |                             |
-        v                        v                             v
-+---------------+     +----------------------+     +----------------------+
-| Propose plan  | --> | Build folder + suite | --> | Associate sprint/rel |
-+---------------+     +----------------------+     +----------------------+
+Resolve scope -> Read coverage and risk -> Rank what first
+      |                                         |
+      v                                         v
+Propose the plan in chat -> Confirm -> Build execution scope -> Read back
 ```
 
-## Steps and tool rules
+## Steps
 
-1. **Resolve scope.** `list_projects` -> `list_repositories`. If exactly one matches the user's wording or context, use it. Use `find_iterations` to bind the plan to a sprint/release when named.
-2. **Read coverage and gaps.** Use `fetch_requirement_data` for requirement coverage status and `find_test_cases_by_requirement` to see which requirements already have cases. `find_requirements` / `read_requirement` when requirement keys are supplied.
-3. **Prioritize by risk and evidence.** Rank scope using: requirement coverage gaps first, then high-change/high-traffic areas, then areas with historically unstable tests (defer stability detail to `test-review`). State the risk basis; do not invent traffic numbers the MCP does not return.
-4. **Propose the plan in chat.** Objectives, in-scope / out-of-scope, coverage matrix (requirement -> planned cases), risk ranking, target environments, and the suite/folder structure you will create.
-5. **Materialize the executable structure.** `manage_test_folder` for the plan folder, `manage_test_suite` for the runnable suite, add the selected/known cases. Reuse an existing folder/suite when one already matches instead of creating a duplicate.
-6. **Verify and report.** `read_test_suite` to confirm; report the plan of record with the suite as the executable artifact and the open gaps to fill next.
+1. **Resolve scope.** Call `list_projects`, then `list_repositories`. Use the one match if the user's words fit exactly one. Otherwise ask. Call `find_iterations` when the user names a sprint or release. It gives the name and the dates.
+2. **Read coverage and gaps.** Call `get_requirement_insights` for the iteration. Call `find_test_cases_by_requirement` for any requirement that looks uncovered. A requirement with no linked case is the top gap. Call `find_requirements` or `read_requirement` when the user gives keys.
+3. **Read the risk signals.** Call `get_test_configuration_insights` for under-covered browsers and platforms. Call `analyze_test_case_stability` for flaky, always failing, newly failing, and slow cases. When you rank an area as unstable, call `analyze_test_flakiness` with a minimum run count of about 10. Fewer runs are too thin to trust. Do not invent traffic, change rate, or defect rate. Use those numbers only when the user supplies them, and cite the source.
+4. **Rank by risk.** Order: requirement gaps, then areas with recent change or heavy use, then unstable areas, then configuration gaps. State the signal behind each rank. See `references/planning-workflow.md` for impact-based selection and the recall check.
+5. **Check what already exists.** Call `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Reuse a folder, suite, or collection that already fits. Call `list_schedule` when the scope may already run on a schedule. Read the match with `read_schedule_detail`.
+6. **Propose the plan in chat.** Use the output template in `references/planning-workflow.md`. Show objectives, scope, the coverage matrix, the risk ranking, environments, and the folder and suite you will create. Keep manual and automated cases in separate suites. `manage_test_suite` rejects a suite that mixes the two.
+7. **Create the execution scope after one confirmation.** Follow `references/write-policy.md`: preview every create and edit, get one yes, run the calls, read back. Use `manage_test_folder` and `manage_test_suite`. Add the chosen cases. `update_schedule_configuration` edits existing schedules. Pass every target schedule in one call.
+8. **Read back and report.** Call `read_test_suite`. Report the suite ID and folder path as the execution scope. List the open gaps as the backlog.
+
+## Plan wording
+
+- Say "execution scope" for the folder and suite.
+- Say "plan" only for the text you wrote in chat. Offer to store that text where the team keeps plans, such as the Jira or Azure DevOps issue or a document.
+- If the user asks you to bind the suite to a sprint, say what the tools support today and name the workaround (iteration name in the suite name).
 
 ## Prompt recipes
 
-- `Plan testing for sprint 3.2 in project Cellphone Shop: show coverage gaps and build the executable suite.`
-- `What should we test first for release R-2026-Q3 based on requirement coverage? Propose a risk-ranked plan.`
-- `Create a test plan structure (folder + suite) for requirement CEL-6 and associate it with the current sprint.`
+- `Plan testing for sprint 3.2 in project Cellphone Shop. Show coverage gaps and build the execution scope.`
+- `What should we test first for release R-2026-Q3? Rank by requirement coverage and stability.`
+- `Set up a folder and suite for requirement CEL-6 and name it for the current sprint.`
+- `Does the regression suite already run on a schedule?`
 
 ## Hand-offs
 
 - Gaps to fill -> `create-test-cases`.
-- Plan ready to run -> `execute-test`.
+- Cost and headcount for the scoped cycle -> `test-estimation`.
+- Gate the suite before it runs -> `test-review`.
+- Run or schedule it -> `execute-test`.
 - Ship decision on the planned scope -> `release-analyze`.
-- Traceability audit of the plan -> `test-management`.
+- Traceability audit -> `test-management`.
+- For a request this skill cannot serve, ask `true-platform-testing` to route it.
 
-Read `references/planning-workflow.md` before proposing scope. Read the orchestrator `true-platform-testing/references/unavailable-capabilities.md` when the user asks "can Katalon plan X?".
+Read `references/planning-workflow.md` before you propose scope. Read `references/write-policy.md` before you create or edit anything.
 
 ---
 
@@ -66,45 +76,142 @@ _The reference material the skill points to is inlined below so this file is sel
 
 # Planning workflow reference
 
+Read this before you propose scope. It holds the scope order, the risk signals, the impact-based selection rule, the structure you build, and the plan template.
+
+## Contents
+
+- Scope resolution order
+- Risk signals
+- Impact-based selection and the recall check
+- Execution scope structure
+- Schedules and collections
+- AI features in scope
+- Plan output template
+
 ## Scope resolution order
 
-1. Project (`list_projects`) — one match from context, else ask.
-2. Repository / Test Project (`list_repositories`) — treat repository and Test Project as the same target; prefer `Katalon Cloud` when the user says "cloud repo".
-3. Iteration / sprint / release (`find_iterations`) — bind the plan when the user names a sprint or release.
+1. Project: `list_projects`. Use one match from context, otherwise ask.
+2. Repository (Test Project): `list_repositories`. Treat repository and Test Project as the same target. Prefer the `Katalon Cloud` repository when the user says "cloud repo".
+3. Iteration (sprint or release): `find_iterations`. Use it when the user names one. It returns a name and dates. It does not bind anything.
 
-## Risk-prioritization inputs (only what MCP returns)
+Carry `project_id` and `repository_id` into every later call. The MCP keeps no session state.
+
+## Risk signals
+
+Use only what the MCP returns, plus numbers the user supplies.
 
 | Signal | Tool | Use |
 |---|---|---|
-| Requirement coverage status | `fetch_requirement_data` | Untested / partially-covered requirements rank first. |
-| Requirement -> case links | `find_test_cases_by_requirement` | Orphan requirements (no case) are the top gap. |
-| Configuration coverage | `fetch_test_configuration_data` | Under-covered browsers/platforms are planning risk. |
-| Test stability | `fetch_test_stability_data` | Unstable areas need re-planning, not just re-run (defer detail to test-review). |
+| Requirement coverage for the iteration | `get_requirement_insights` | Uncovered and partly covered requirements rank first. |
+| Requirement to case links | `find_test_cases_by_requirement` | A requirement with no case is the top gap. Pass exactly one identifier. |
+| Configuration coverage | `get_test_configuration_insights` | Browsers and platforms with no coverage are plan risk. |
+| Flaky, always failing, newly failing, slow cases | `analyze_test_case_stability` | Unstable areas need repair before they join the scope. |
+| Flakiness over a lookback window | `analyze_test_flakiness` | Set a minimum run count of about 10. Fewer runs give an unconfirmed signal. |
+| Defect standing | `get_defect_insights` | Areas with open critical defects need retest cases in scope. |
 
-Do not fabricate production traffic, change frequency, or defect rates the MCP does not expose. If the user supplies them (from TrueTest Test Gap Analysis, PostHog, or Jira), use them and cite the source.
+Each insights tool accepts an iteration or a date range. See the tool schema for exact fields. If a stability tool returns zero for an area that has recorded failures, cross-check with `find_test_results` before you trust it. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
 
-## The executable "test plan" structure
+Do not invent production traffic, change frequency, or defect rates. If the user supplies them from TrueTest, an analytics product, or Jira, use them and name the source.
 
-Because MCP cannot create a Test Plan entity, the plan of record is:
+## Impact-based selection and the recall check
+
+Requirement links are the dependency map. Select by requirement-based impact analysis:
+
+1. Take the requirements that changed in the iteration, or that the user names.
+2. Run the cases linked to those requirements first.
+3. Run the remaining cases next, as capacity allows.
+
+This is a rule over links. It is not machine-learned test selection. Do not promise that.
+
+Add a recall check. After the cycle, list the cases that the plan would have skipped but that failed. If that list is not empty, the links are incomplete or the ranking is wrong. Report the cases and hand the missing links to `test-management`.
+
+## Execution scope structure
+
+The platform holds folders and suites. Use them as the runnable scope:
 
 ```text
 Folder:  Test Cases/<Release or Feature>/
-Suite:   <Feature> — <Sprint/Release>          (manage_test_suite)
-         + selected test cases added
-Assoc:   sprint/release via find_iterations context
+Suite:   <Feature> - <Sprint or Release name> - Manual        (manage_test_suite)
+Suite:   <Feature> - <Sprint or Release name> - Automated     (manage_test_suite)
+         + the selected cases added to the matching suite
 ```
 
-Report the suite ID as the plan artifact. List the requirement->case coverage matrix and the open gaps as the plan's backlog.
+Rules:
+
+- Put the iteration name in the suite name. No documented suite field binds a suite to an iteration. If the tool schema in your session shows one, use it and say so.
+- Keep MANUAL and AUTOMATED cases in separate suites. A suite that mixes them is rejected.
+- Reuse a folder or suite that already matches. Search with `find_test_folders` and `find_test_suites` first. Do not create a duplicate.
+- Report the suite ID and folder path as the execution scope. List the requirement to case matrix and the open gaps next to it.
+
+## Schedules and collections
+
+- `list_schedule` finds saved schedules by name. `read_schedule_detail` reads one. Use them to learn whether the scope already runs on a timer.
+- `update_schedule_configuration` edits existing schedules. It is a write. Preview the change, get one confirmation, and pass every target schedule in a single call.
+- A new schedule is created with `create_test_run` in automated mode plus a schedule from `build_schedule`. That belongs to `execute-test` and needs execution consent.
+- `find_test_suite_collections` reads collections. No tool creates or edits one. If the plan needs a new collection, tell the user to create it in the True Platform UI.
+
+## AI features in scope
+
+When the scope includes a feature that uses a model, plan for outputs that vary between runs. A single pass proves little. Add a repeat-run count to the plan, name the data set the cases use, and add an exploratory session for the feature. Ask the user which quality risks the team accepts for it. `test-review` holds the review checklist for suites that test AI features.
 
 ## Plan output template
 
 ```text
-Objective:        <what quality outcome this plan targets>
-In scope:         <features/requirements>
-Out of scope:     <explicitly excluded + why>
-Coverage matrix:  requirement -> planned/existing cases (mark gaps)
-Risk ranking:     1..n with the signal that drove each rank
-Environments:     <AUT/config targets>
-Executable plan:  folder + suite (IDs) associated to <sprint/release>
-Next:             gaps to fill (-> create-test-cases)
+Objective:         <the quality outcome this plan targets>
+In scope:          <features and requirements>
+Out of scope:      <excluded items and the reason>
+Coverage matrix:   requirement -> planned or existing cases (mark gaps)
+Risk ranking:      1..n, each with the signal that drove the rank
+Environments:      <AUT and configuration targets>
+Execution scope:   folder and suite(s), IDs, named for <sprint or release>
+Schedule:          <existing schedule found, or none>
+Next:              gaps to fill (create-test-cases), cost (test-estimation), run (execute-test)
 ```
+
+### references/write-policy.md
+
+<!-- GENERATED from shared/references/write-policy.md - edit the source -->
+# Write Policy, Execution Consent, and Session Rules
+
+These rules apply to every agent and every skill that changes data on Katalon True Platform (formerly TestOps).
+
+## Write policy
+
+1. Resolve the project and repository first.
+2. Preview the full mutation set in chat. List each create, update, move, link, and delete with its target.
+3. Ask for one confirmation for the whole set.
+4. Run the writes.
+5. Read back each changed item with a read tool and report what the platform now holds.
+
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+
+A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
+
+Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+
+Two more rules for bulk work:
+- Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
+- If a write fails part way, stop. Report which items changed and which did not. Do not retry blindly. Do not create a duplicate to replace a failed create. Search first.
+
+## Execution consent
+
+Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+- the suite or cases,
+- the AUT environment,
+- the mode (manual, Run with AI, or automated),
+- the schedule if one exists,
+- and any private network setup.
+
+A confirmation covers one run. Ask again for the next run.
+
+## Stateless MCP
+
+The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
+- Never rely on a server prompt or on sampling. Ask the user in chat.
+- Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
+- Prefer structured fields in a tool result. If they are missing, parse the text block.
+- Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
+
+## Terminology
+
+Katalon True Platform (formerly TestOps). Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE). Katalon Test Execution - Cloud (formerly TestCloud). On first mention, give both names. Use one name for one thing after that.

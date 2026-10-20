@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "katalon-true-platform",
-  "version": "0.4.0",
-  "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
+  "version": "0.5.0",
+  "description": "Agent-neutral AI testing skills for Katalon True Platform (formerly TestOps) covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance. The skills operate through the Katalon MCP.",
   "author": {
     "name": "katalon-labs",
     "url": "https://github.com/katalon-labs"
@@ -26,5 +26,36 @@
     "test-maintenance",
     "playwright",
     "mcp"
-  ]
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Katalon True Platform",
+        "shortDescription": "Design, run, upload, and analyze Katalon tests.",
+        "longDescription": "Bundle Katalon True Platform (formerly TestOps) workflows for MCP setup, requirement-based manual test creation, manual and automated execution, Playwright automation generation, Playwright execution with report upload, and release readiness analysis.",
+        "developerName": "katalon-labs",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write",
+          "Interactive"
+        ],
+        "defaultPrompt": [
+          "Install the Katalon MCP server and connect it to my platform account.",
+          "Plan testing for this sprint: show coverage gaps and build the executable suite.",
+          "How long will testing this release take, and with how many people?",
+          "Design and import manual test cases from requirement CEL-6.",
+          "Which data does this case need, and how do I seed and reset it?"
+        ],
+        "brandColor": "#00A3A3",
+        "composerIcon": "./assets/katalon-logo.svg",
+        "logo": "./assets/katalon-logo.svg",
+        "websiteURL": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
+        "privacyPolicyURL": "https://katalon.com/terms#privacy-policy",
+        "termsOfServiceURL": "https://katalon.com/terms",
+        "screenshots": []
+      },
+      "onboardingSkill": "./skills/get-started/SKILL.md"
+    }
+  }
 }

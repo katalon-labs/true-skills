@@ -18,9 +18,9 @@ Done when    <the observable condition that ends the session>
 | Field | The one rule |
 |---|---|
 | Mission | A target plus an information goal. If it does not say what you want to *learn*, it is not a mission. |
-| Areas | Named surfaces, not the whole feature. Four is a session, twelve is a release. |
+| Areas | Named surfaces. Four is a session. Twelve is a release. |
 | Oracles | Each one must be checkable by a second person. Point at an acceptance line, a covered flow, a published behavior, or a stated purpose. |
-| Tours | Named in advance so another tester can reproduce the session, not just the bugs. |
+| Tours | Named in advance so another tester can reproduce the whole session, and the bugs with it. |
 | Timebox | Includes the environment. A charter that does not say where it runs will be run in the wrong place. |
 | Out of scope | Written down so a tempting detour becomes a note instead of a lost 20 minutes. |
 | Done when | An observable condition. "When I have looked at it enough" is not one. |
@@ -41,7 +41,7 @@ One line per note. Timestamped, typed, written as you go and never reconstructed
 
 | Type | Means | Rule |
 |---|---|---|
-| `SETUP` | Getting the environment ready | Counts against the timebox. Log it honestly. |
+| `SETUP` | Getting the environment ready | Counts against the timebox. Log the real minutes. |
 | `OBS` | Something observed, no rule broken | The default. Most notes are this. |
 | `Q` | A question no oracle answers | Names the missing rule, and who should answer. |
 | `BUG` | An oracle was broken | **Carries its repro, or it is an `OBS`.** |
@@ -52,9 +52,10 @@ Rules that make the sheet worth keeping:
 
 - **Timestamp every line** as `MM:SS` from the session start. The timestamps are what produce the accounting below.
 - **Write the repro before moving on.** The state is on screen now and gone in 90 seconds. Steps, the data used, and how many times out of how many it reproduced.
-- **Name the broken oracle inside the `BUG` note**, not later. A `BUG` that cannot name its oracle is an `OBS` that got excited.
+- **Name the broken oracle inside the `BUG` note.** Do not wait for the debrief. A `BUG` that cannot name its oracle is an `OBS` that got excited.
 - **Log out-of-scope discoveries as `OBS` and keep going.** That is what the out-of-scope field is for.
-- **Evidence capture is on the tester.** The MCP has no attachment upload, so screenshots and recordings go in the ALM ticket, not the platform.
+- **Evidence capture is on the tester.** Capture screenshots and recordings as you go. Strip personal data and credentials before any upload. Files of 10 MiB or less can go to the platform with `prepare_artifact_upload` and `confirm_artifact_upload`. Larger files go in the tracker ticket. See "Evidence" in `SKILL.md`.
+- **A `BUG` note records the end state left behind.** Check what data now exists or is missing (the order record, the cart content, the balance), the same way BUG-1 in the worked example checks Orders and the provider dashboard alongside the blank page.
 
 ## Timebox accounting
 
@@ -112,5 +113,5 @@ Expected: <one line>
 
 - **45 minutes** for a narrow surface with a known oracle.
 - **60 minutes** is the default and the one to reach for when unsure.
-- **90 minutes** only with a second tester or a heavy setup cost, and only when the mission genuinely cannot be split.
-- **A charter that needs more than 90 minutes is two charters.** Split it on the mission, not on the clock.
+- **90 minutes** only with a second tester or a heavy setup cost, and only when the mission cannot be split.
+- **A charter that needs more than 90 minutes is two charters.** Split it on the mission. Do not split it on the clock.
