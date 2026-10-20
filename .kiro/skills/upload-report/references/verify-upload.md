@@ -1,6 +1,6 @@
 # Verify an upload
 
-Read this after any upload. The upload command can print success while the platform holds no results. Check the platform itself. Source: Katalon docs "Katalon True Platform MCP Server" (October 2026). Parameters are mostly undocumented on that page, so check each tool schema.
+Read this after any upload. The upload command can print success while the platform holds no results. Check the platform itself. Parameters follow the live tool schemas captured 2026-10-20.
 
 ## Local counts first
 
@@ -14,7 +14,7 @@ For JUnit, read `tests`, `failures`, `errors`, and `skipped` on each test suite 
 
 ## Find the execution
 
-1. Call `list_executions` with a window that starts just before the upload. Narrow by `status` if needed. It returns numeric TestOps execution IDs.
+1. Call `list_executions` with a window that starts just before the upload. Set both `start_time` and `end_time` (ISO 8601) from the real current date and time. Narrow by `status` (`NOT_RUN`, `RUNNING`, `PASSED`, `FAILED`, `ERROR`) if needed. It returns numeric TestOps execution IDs.
 2. Match by project, upload time, and test names. If several match, show them to the user and ask.
 3. If nothing appears, the platform may still be importing. Wait and call again at practical intervals. After a few minutes, report the state as importing.
 
@@ -23,7 +23,7 @@ Do not use `list_execution_outputs` here. It uses TestCloud string IDs, which up
 ## Read and compare
 
 1. Call `read_execution` with the numeric `execution_id`.
-2. Call `read_execution_test_results` for the same ID.
+2. Call `find_test_results` with `filter: {filter_type: "EXECUTION", execution_id}` for the same ID. Add `status` (`PASSED`, `FAILED`, `ERROR` or `INCOMPLETE`) to count one class. Pages walk the execution's jobs. An execution without jobs returns results directly.
 3. Compare the platform counts with the local counts.
 
 | Result | Status to report |

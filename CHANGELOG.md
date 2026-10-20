@@ -8,6 +8,22 @@
 - The build no longer writes `.cursor/rules/`, `.kiro/steering/`, `.windsurf/rules/`, `.clinerules/`, `.github/prompts/`, or `.github/skills/`. Each agent reads skills from a native skills folder. This removes about 1.6 MB of duplicate text and fixes 10 Windsurf rule files that went over the 12,000-character limit.
 - Run with AI no longer starts automatically. `create_test_run`, `create_manual_ai_session`, and `rerun_execution` need a confirmation that names the suite, the AUT environment, the mode, the schedule, and the private network setup.
 
+### MCP live alignment
+
+- `docs/mcp-tools.json` now follows the live `tools/list` of platform.katalon.io, captured 2026-10-20: 74 tools. It supersedes the 71-tool docs-page contract named in the entries below. `node scripts/check-mcp-live.mjs` reports no missing and no new tools. 15 names from the docs page are not live and sit in `retired`.
+- `read_test_case` is now `read_test_cases` (`test_case_ids` array, `content_type` FLOW for steps).
+- `update_test_case` is now `update_test_cases` (`repository_id` required, one action per field in an `updates` array).
+- `link_requirements_to_test_case` and `unlink_requirements_from_test_case` are now `manage_requirement_test_case_linkages` with `action` link or unlink.
+- `read_test_result` and `read_execution_test_results` are now `find_test_results` with `filter_type` TEST_RESULT or EXECUTION.
+- `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, and `get_test_configuration_insights` are now `fetch_requirement_metrics`, `fetch_defect_metrics`, `fetch_test_case_metrics`, and `fetch_test_configuration_metrics`. The `fetch_*_data` names map to the same `fetch_*_metrics` tools.
+- `analyze_test_case_stability` and `analyze_test_flakiness` are now `fetch_test_stability_metrics` with `return_tests` (ALL, FLAKY, ALWAYS_FAIL, NEW_FAILURE, SLOW). There is no `min_runs` parameter.
+- `find_alm_integration_projects` is now `list_alm_integrations`.
+- `generate_truetest_test_cases_from_sessions` is now `create_truetest_test_case_from_session`.
+- `get_user_context` and `read_manual_test_run_detail_by_order` have no live replacement. `get-started` and `platform-setup` use `list_projects` as the connection check. Skills find a run with `list_executions` and `read_execution`.
+- `search_external_tool_ops` and `run_external_skill` are absent from the live server. Skills use the tracker connector directly.
+- New live tools adopted in skills: `update_test_run` (START, END, CONFIGURE), `create_truetest_test_case_from_flow`, `fetch_defects`, `search`, and the `memory_*` tools (read side only).
+- The ChatGPT build rewrites for `get-started` follow the new step text. The packaged copy keeps `katalon_profile` as step 1 and stops after step 5.
+
 ### MCP tool contract and validation
 
 - New `docs/mcp-tools.json` holds the tool contract from the October 2026 Katalon docs. It lists 71 tools with group, class (read, write, or destructive), and notes. It also holds a `retired` map for the seven removed names and an allowlist for parameter names that look like tool names.

@@ -8,9 +8,9 @@ Write the plan as a table in the reply, or as a local JSON file if the user want
 
 | # | Operation | Target | Detail | Basis |
 |---|---|---|---|---|
-| 1 | create | `Checkout / Guest` | Title, priority, requirement key | No match from `find_test_cases` |
-| 2 | update | TC-2101 | Fields that change | Existing case covers the line but lacks test data |
-| 3 | link | TC-2101 to CEL-9 | Requirement key | Key confirmed with `read_requirement` |
+| 1 | create | `Checkout / Guest` | Title, priority, requirement key | No match from `find_test_cases` or `search` |
+| 2 | update | TC-2101 | Fields that change, as `update_test_cases` actions in one call | Existing case covers the line but lacks test data |
+| 3 | link | TC-2101 to CEL-9 | Requirement key | Key confirmed with `read_requirement`; one `manage_requirement_test_case_linkages` call |
 | 4 | move | TC-2102 to `Test Cases/Checkout` | New folder path | Folder exists |
 | 5 | suite add | Suite `CEL-9 Regression` | Case list | Suite found with `find_test_suites` |
 
@@ -25,9 +25,9 @@ Rules for the table:
 
 Run every check before you ask for confirmation. Fix the plan, then re-run.
 
-1. Every name contains only letters, numbers, spaces, and `( ) . , _ -`.
+1. Every name starts with a letter or digit and contains only letters, numbers, spaces, and `( ) . , _ -`.
 2. No two new titles in the plan match. No new title matches an existing case in the target folder.
-3. Every folder path exists or has a create row earlier in the plan. A move target path starts with `Test Cases`.
+3. Every folder path exists or has a create row earlier in the plan. Check with `find_test_folders` on the full `rawPath`. A move target path starts with `Test Cases`.
 4. Every requirement key was read with `read_requirement` or found with `find_requirements` in this session.
 5. Every suite member has the same type. Do not mix MANUAL and AUTOMATED.
 6. Every create is a manual case. An AUTOMATED create produces nothing.
@@ -41,5 +41,5 @@ Run every check before you ask for confirmation. Fix the plan, then re-run.
 3. Run the rows in this order: folders, creates, updates, links, moves, suite changes.
 4. Carry IDs from each result into the next call. Do not re-search.
 5. On a failed row, stop that row. Do not retry a create until you search again for the title.
-6. Read back every created or updated case with `read_test_case`. Read each changed suite with `read_test_suite`.
+6. Read back every created or updated case with `read_test_cases` (`content_type` `FLOW`). Read each changed suite with `read_test_suite`.
 7. Report per row: done, skipped, or failed, with the reason.

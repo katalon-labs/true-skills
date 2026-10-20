@@ -79,9 +79,9 @@ Capture evidence for every failure. See `references/playwright-katalon-reporting
 
 ## Verify on the platform
 
-1. Call `list_executions` with a window that starts just before the upload. It returns numeric TestOps IDs.
+1. Call `list_executions` with a window that starts just before the upload. Set `start_time` and `end_time` from the real current date and time. It returns numeric TestOps IDs.
 2. Match by project, time, and test names.
-3. Call `read_execution` and `read_execution_test_results`. Compare the counts with the local run.
+3. Call `read_execution`, then `find_test_results` with `filter: {filter_type: "EXECUTION", execution_id}`. Compare the counts with the local run.
 4. If the import is still running, call again at practical intervals, then report the state as importing.
 5. Without the MCP, read the upload output and say that platform verification is blocked.
 

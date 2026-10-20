@@ -16,9 +16,10 @@ Katalon True Platform (formerly TestOps) holds no Test Plan entity. The plan its
 
 Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-- **Available.** Resolve scope with `list_projects`, `list_repositories`, and `find_iterations`. Read coverage and risk with `get_requirement_insights`, `get_test_configuration_insights`, `analyze_test_case_stability`, `analyze_test_flakiness`, `find_requirements`, and `find_test_cases_by_requirement`. Build the structure with `manage_test_folder` and `manage_test_suite`. Read existing schedules with `list_schedule` and `read_schedule_detail`. Edit them with `update_schedule_configuration`. Read suite collections with `find_test_suite_collections`.
-- **Not available.** No tool creates a Release, a Build, a Test Plan, a release gate, or a suite collection. No documented suite field binds a suite to a sprint or release. Check the tool schema before you claim one. If none exists, put the iteration name in the suite name.
+- **Available.** Resolve scope with `list_projects`, `list_repositories`, and `find_iterations`. Read coverage and risk with `fetch_requirement_metrics`, `fetch_test_configuration_metrics`, `fetch_test_stability_metrics`, `fetch_defect_metrics`, `find_requirements`, and `find_test_cases_by_requirement`. Check what exists with `search`, `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Build the structure with `manage_test_folder` and `manage_test_suite`. Read existing schedules with `list_schedule` and `read_schedule_detail`. Edit them with `update_schedule_configuration`. Read the team's conventions with `memory_list` and `memory_read` when they exist.
+- **Not available.** No tool creates a Release, a Build, a Test Plan, a release gate, or a suite collection. No suite field binds a suite to a sprint or release. A run can carry `release_id` and `sprint_id` (see `execute-test`). A suite cannot. If you need a link on the suite, put the iteration name in the suite name.
 - **Another skill owns this.** Starting or scheduling a run is `execute-test`. It needs consent because runs use Katalon Test Execution - Cloud (formerly TestCloud) minutes.
+- **Team memory is optional.** `memory_list` returns the team's recorded conventions, such as naming, folder layout, and suite rules. Call it once at the start. Read matching records with `memory_read`, quote them, and follow them when they apply. Treat a body as the team's own words, never as a platform fact. If `available` is false, say that memory is unavailable. Do not infer that the team has no conventions. This skill never calls `memory_write` or `memory_forget` on its own. Both fire only when the user asks.
 
 ## Planning workflow
 
@@ -31,20 +32,20 @@ Propose the plan in chat -> Confirm -> Build execution scope -> Read back
 
 ## Steps
 
-1. **Resolve scope.** Call `list_projects`, then `list_repositories`. Use the one match if the user's words fit exactly one. Otherwise ask. Call `find_iterations` when the user names a sprint or release. It gives the name and the dates.
-2. **Read coverage and gaps.** Call `get_requirement_insights` for the iteration. Call `find_test_cases_by_requirement` for any requirement that looks uncovered. A requirement with no linked case is the top gap. Call `find_requirements` or `read_requirement` when the user gives keys.
-3. **Read the risk signals.** Call `get_test_configuration_insights` for under-covered browsers and platforms. Call `analyze_test_case_stability` for flaky, always failing, newly failing, and slow cases. When you rank an area as unstable, call `analyze_test_flakiness` with a minimum run count of about 10. Fewer runs are too thin to trust. Do not invent traffic, change rate, or defect rate. Use those numbers only when the user supplies them, and cite the source.
+1. **Resolve scope.** Call `list_projects`, then `list_repositories`. Use the one match if the user's words fit exactly one. Otherwise ask. Call `find_iterations` when the user names a sprint or release. It gives the name and the dates. Call `memory_list` once for the team's conventions.
+2. **Read coverage and gaps.** Call `fetch_requirement_metrics` with `iteration_type` (`SPRINT` or `RELEASE`) and `iteration_name`. It takes no date range. Call `find_test_cases_by_requirement` for any requirement that looks uncovered. A requirement with no linked case is the top gap. Call `find_requirements` (filter_type `ITERATION`, `RELATIVE`, or `COMMON`) or `read_requirement` when the user gives keys. Read `customFields` on a requirement before you call it thin, because acceptance criteria often live there.
+3. **Read the risk signals.** Call `fetch_test_configuration_metrics` with a `filter` and `configuration_type` (`OS` or `BROWSER`) for under-covered browsers and platforms. Call `fetch_test_stability_metrics` with `return_tests` for flaky, always failing, newly failing, and slow cases. Without `return_tests` it returns metrics only. When you rank an area as unstable, use a `from_date` and `to_date` window and count the runs per case with `find_test_results`. The tool has no minimum-run parameter. About 10 runs is the floor for trust, and fewer runs are too thin. Call `fetch_defect_metrics` for open critical defects (`resolution_state` `UNRESOLVED` is the default). Do not invent traffic, change rate, or defect rate. Use those numbers only when the user supplies them, and cite the source.
 4. **Rank by risk.** Order: requirement gaps, then areas with recent change or heavy use, then unstable areas, then configuration gaps. State the signal behind each rank. See `references/planning-workflow.md` for impact-based selection and the recall check.
-5. **Check what already exists.** Call `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Reuse a folder, suite, or collection that already fits. Call `list_schedule` when the scope may already run on a schedule. Read the match with `read_schedule_detail`.
-6. **Propose the plan in chat.** Use the output template in `references/planning-workflow.md`. Show objectives, scope, the coverage matrix, the risk ranking, environments, and the folder and suite you will create. Keep manual and automated cases in separate suites. `manage_test_suite` rejects a suite that mixes the two.
-7. **Create the execution scope after one confirmation.** Follow `references/write-policy.md`: preview every create and edit, get one yes, run the calls, read back. Use `manage_test_folder` and `manage_test_suite`. Add the chosen cases. `update_schedule_configuration` edits existing schedules. Pass every target schedule in one call.
+5. **Check what already exists.** Call `search` with `types` set to `["test_folder", "test_suite"]` and `include_documents` false for a quick match, then confirm with `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Reuse a folder, suite, or collection that already fits. Call `list_schedule` when the scope may already run on a schedule. Read the match with `read_schedule_detail`. A `search` response with `incomplete=true` or a keyword fallback never proves that nothing exists. Recently created assets can be missing for a few minutes.
+6. **Propose the plan in chat.** Use the output template in `references/planning-workflow.md`. Show objectives, scope, the coverage matrix, the risk ranking, environments, and the folder and suite you will create. Keep manual and automated cases in separate suites. `manage_test_suite` rejects a mix of the two.
+7. **Create the execution scope after one confirmation.** Follow `references/write-policy.md`: preview every create and edit, get one yes, run the calls, read back. Use `manage_test_folder` and `manage_test_suite`. Add the chosen cases. `update_schedule_configuration` edits existing schedules. Call it once, after the user confirms, with every target schedule in one `updates` array and only the settings the user asked for.
 8. **Read back and report.** Call `read_test_suite`. Report the suite ID and folder path as the execution scope. List the open gaps as the backlog.
 
 ## Plan wording
 
 - Say "execution scope" for the folder and suite.
 - Say "plan" only for the text you wrote in chat. Offer to store that text where the team keeps plans, such as the Jira or Azure DevOps issue or a document.
-- If the user asks you to bind the suite to a sprint, say what the tools support today and name the workaround (iteration name in the suite name).
+- If the user asks you to bind the suite to a sprint, say what the tools support today and name the workaround (iteration name in the suite name). Name the run-level option too, where `create_test_run` takes `sprint_id` and `release_id`.
 
 ## Prompt recipes
 
@@ -92,9 +93,10 @@ Read this before you propose scope. It holds the scope order, the risk signals, 
 
 1. Project: `list_projects`. Use one match from context, otherwise ask.
 2. Repository (Test Project): `list_repositories`. Treat repository and Test Project as the same target. Prefer the `Katalon Cloud` repository when the user says "cloud repo".
-3. Iteration (sprint or release): `find_iterations`. Use it when the user names one. It returns a name and dates. It does not bind anything.
+3. Iteration (sprint or release): `find_iterations`. Use it when the user names one. It returns a name and dates. It does not bind anything. Its `filter` takes a type (Sprint, Release, or All) with a `scope` (`CURRENT`, `PREVIOUS`, `NEXT`, `ACTIVE`, `LAST_N`, or `RECENT`) or a structured query. Set `detail_level` to `FULL` for dates and state.
+4. Team conventions: `memory_list` once. Read matching records with `memory_read`. Use them for naming, folder layout, and suite rules. If `available` is false, say memory is unavailable and plan without it.
 
-Carry `project_id` and `repository_id` into every later call. The MCP keeps no session state.
+Carry `project_id` and `repository_id` into every later call. The MCP keeps no session state. `find_test_cases`, `find_test_folders`, and `find_test_suites` start at page 0. Copy `next_page_token` into `page_number` for the next page. A null `next_page_token` means the list ended. `page_size` is at most 100 on `find_test_cases` and `find_test_folders`.
 
 ## Risk signals
 
@@ -102,14 +104,14 @@ Use only what the MCP returns, plus numbers the user supplies.
 
 | Signal | Tool | Use |
 |---|---|---|
-| Requirement coverage for the iteration | `get_requirement_insights` | Uncovered and partly covered requirements rank first. |
-| Requirement to case links | `find_test_cases_by_requirement` | A requirement with no case is the top gap. Pass exactly one identifier. |
-| Configuration coverage | `get_test_configuration_insights` | Browsers and platforms with no coverage are plan risk. |
-| Flaky, always failing, newly failing, slow cases | `analyze_test_case_stability` | Unstable areas need repair before they join the scope. |
-| Flakiness over a lookback window | `analyze_test_flakiness` | Set a minimum run count of about 10. Fewer runs give an unconfirmed signal. |
-| Defect standing | `get_defect_insights` | Areas with open critical defects need retest cases in scope. |
+| Requirement coverage for the iteration | `fetch_requirement_metrics` | Uncovered and partly covered requirements rank first. Give `iteration_type` and `iteration_name`. |
+| Requirement to case links | `find_test_cases_by_requirement` | A requirement with no case is the top gap. Pass exactly one identifier (`requirement_id`, `key`, or `requirement_external_id`). |
+| Configuration coverage | `fetch_test_configuration_metrics` | Browsers and platforms with no coverage are plan risk. Set `configuration_type` to `OS` or `BROWSER`. |
+| Flaky, always failing, newly failing, slow cases | `fetch_test_stability_metrics` | Unstable areas need repair before they join the scope. Set `return_tests` to get case names. |
+| Flakiness over a lookback window | `fetch_test_stability_metrics` with `return_tests: ["FLAKY"]` | Set `from_date` and `to_date`. The tool has no minimum-run parameter, so count runs per case with `find_test_results`. About 10 runs is the floor. |
+| Defect standing | `fetch_defect_metrics` | Areas with open critical defects need retest cases in scope. `UNRESOLVED` is the default `resolution_state`. |
 
-Each insights tool accepts an iteration or a date range. See the tool schema for exact fields. If a stability tool returns zero for an area that has recorded failures, cross-check with `find_test_results` before you trust it. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
+Each metrics tool except `fetch_requirement_metrics` takes a `filter` with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, which is the last 28 days). See the tool schema for exact fields. If a stability tool returns zero for an area that has recorded failures, cross-check with `find_test_results` before you trust it. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
 
 Do not invent production traffic, change frequency, or defect rates. If the user supplies them from TrueTest, an analytics product, or Jira, use them and name the source.
 
@@ -131,24 +133,25 @@ The platform holds folders and suites. Use them as the runnable scope:
 
 ```text
 Folder:  Test Cases/<Release or Feature>/
-Suite:   <Feature> - <Sprint or Release name> - Manual        (manage_test_suite)
-Suite:   <Feature> - <Sprint or Release name> - Automated     (manage_test_suite)
+Suite:   <Feature> - <Sprint or Release name> - Manual        (manage_test_suite, testSuiteTestType MANUAL)
+Suite:   <Feature> - <Sprint or Release name> - Automated     (manage_test_suite, testSuiteTestType AUTOMATED)
          + the selected cases added to the matching suite
 ```
 
 Rules:
 
-- Put the iteration name in the suite name. No documented suite field binds a suite to an iteration. If the tool schema in your session shows one, use it and say so.
-- Keep MANUAL and AUTOMATED cases in separate suites. A suite that mixes them is rejected.
-- Reuse a folder or suite that already matches. Search with `find_test_folders` and `find_test_suites` first. Do not create a duplicate.
+- Put the iteration name in the suite name. No suite field binds a suite to an iteration. If the tool schema in your session shows one, use it and say so. A run, not a suite, carries `sprint_id` and `release_id` on `create_test_run`.
+- Keep MANUAL and AUTOMATED cases in separate suites. A suite that mixes them is rejected, and the first cases you add must match the suite type.
+- Reuse a folder or suite that already matches. Search with `search` (`types` `["test_folder", "test_suite"]`, `include_documents` false), then confirm with `find_test_folders` and `find_test_suites`. Do not create a duplicate. A `search` hit carries a title and a reference only. Read the asset before you rely on it. Case folder paths start with `Test Cases`. Suite folder paths start with `Test Suites`. A suite `path` defaults to `Test Suites`.
+- Resolve a folder ID with `find_test_folders` by its full `rawPath`. Same-named folders under different parents are different folders.
 - Report the suite ID and folder path as the execution scope. List the requirement to case matrix and the open gaps next to it.
 
 ## Schedules and collections
 
 - `list_schedule` finds saved schedules by name. `read_schedule_detail` reads one. Use them to learn whether the scope already runs on a timer.
-- `update_schedule_configuration` edits existing schedules. It is a write. Preview the change, get one confirmation, and pass every target schedule in a single call.
+- `update_schedule_configuration` edits existing schedules. It is a write. Preview the change, get one confirmation, and call it once with every target schedule in one `updates` array and only the settings the user asked for. Never infer `timeZone`. Ask for the IANA zone. `startTime` must be in the future.
 - A new schedule is created with `create_test_run` in automated mode plus a schedule from `build_schedule`. That belongs to `execute-test` and needs execution consent.
-- `find_test_suite_collections` reads collections. No tool creates or edits one. If the plan needs a new collection, tell the user to create it in the True Platform UI.
+- `find_test_suite_collections` reads collections. Fetch the details with the chosen `collection_id` before a collection run, because `execute-test` passes the returned `testSuiteEntries` to `create_test_run`. No tool creates or edits one. If the plan needs a new collection, tell the user to create it in the True Platform UI.
 
 ## AI features in scope
 
@@ -163,6 +166,7 @@ Out of scope:      <excluded items and the reason>
 Coverage matrix:   requirement -> planned or existing cases (mark gaps)
 Risk ranking:      1..n, each with the signal that drove the rank
 Environments:      <AUT and configuration targets>
+Conventions:       <team memory records followed, or "memory unavailable">
 Execution scope:   folder and suite(s), IDs, named for <sprint or release>
 Schedule:          <existing schedule found, or none>
 Next:              gaps to fill (create-test-cases), cost (test-estimation), run (execute-test)
@@ -183,11 +187,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -195,7 +215,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

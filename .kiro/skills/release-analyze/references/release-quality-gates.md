@@ -6,28 +6,28 @@ Use this reference to turn Katalon MCP quality data into a release readiness dec
 
 | Gate | What to pull | Tool |
 |---|---|---|
-| Requirement coverage | Coverage for the iteration, plus the requirements and their linked cases | `get_requirement_insights`, `find_requirements`, `find_test_cases_by_requirement` |
-| Test case quality | Execution stats, automation split, stale and incomplete cases | `get_test_case_insights`, `find_test_cases` |
-| Defect risk | Defect priority and severity for the iteration or date range | `get_defect_insights` |
-| Stability | Flaky, always failing, newly failing, and slow tests | `analyze_test_case_stability`, `analyze_test_flakiness` |
-| Configuration coverage | OS and browser coverage against the target matrix | `get_test_configuration_insights` |
-| Execution health | Latest executions and per-result outcomes | `list_executions`, `read_execution`, `read_execution_test_results`, `find_test_results` |
+| Requirement coverage | Coverage for the iteration, plus the requirements and their linked cases | `fetch_requirement_metrics`, `find_requirements`, `find_test_cases_by_requirement` |
+| Test case quality | Execution stats, automation split, stale and incomplete cases | `fetch_test_case_metrics`, `find_test_cases` |
+| Defect risk | Defect priority and severity for the iteration or date range, and the defects linked to failed results | `fetch_defect_metrics`, `fetch_defects` |
+| Stability | Flaky, always failing, newly failing, and slow tests | `fetch_test_stability_metrics` with `return_tests` |
+| Configuration coverage | OS and browser coverage against the target matrix | `fetch_test_configuration_metrics` |
+| Execution health | Latest executions and per-result outcomes | `list_executions`, `read_execution`, `find_test_results` |
 
-The insight tools take an iteration. Several also take a date range. `analyze_test_flakiness` takes a lookback window and a minimum run count. See the tool schema for the exact parameters. State the iteration, date range, or window in the report.
+The metrics tools take an iteration, a date range, or both, as follows. `fetch_requirement_metrics` takes `iteration_type` and `iteration_name` only. The defect, test case, and configuration tools take a `filter` object with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, which is the last 28 days). `fetch_test_stability_metrics` takes an `EXECUTION` or an `ITERATION` plus an optional `from_date` and `to_date`. It has no minimum-run parameter. `fetch_defect_metrics` returns `UNRESOLVED` defects unless you ask for `RESOLVED`, so a question about all defects needs two calls. State the iteration, date range, or window in the report.
 
 ## Core metrics
 
 - Requirement coverage: total in-scope requirements, linked requirements, unlinked requirements, requirements with no tests, and requirements with no recent passing result.
 - Test coverage: total cases, automated and manual split when available, unexecuted tests, stale tests, and blocked tests.
 - Execution health: latest execution status, pass, fail, blocked, skipped, and not-run counts, pass rate, failed critical tests, and rerun status. A P0 or P1 test that failed and then passed on an unmodified rerun counts as a stability risk pending investigation. It is never a cleared blocker on its own.
-- Defect risk: open defects, critical and high defects, defects linked to failed tests, reopened defects, and unresolved release-blocking bugs.
+- Defect risk: unresolved defects, critical and high defects, defects linked to failed tests (`fetch_defects`), failed results with no linked defect, and unresolved release-blocking bugs. The metrics return distributions by priority and severity. Take reopened counts and blocking flags from the tracker.
 - Stability: flaky tests, repeated failures, recent pass and fail trend, and unstable configurations.
 - Configuration coverage: tested browsers, devices, environments, and OS combinations against the release target matrix.
 - Data quality: missing execution data, missing requirement links, missing ownership, incomplete steps, and ambiguous release scope.
 
 ## Evidence freshness
 
-Results are stale when they predate the latest build or the latest change to a linked requirement. If the team gave no rule, state this one as your assumption. `list_executions` defaults to a short recent window, so widen the window to cover the release before you conclude that no execution exists.
+Results are stale when they predate the latest build or the latest change to a linked requirement. If the team gave no rule, state this one as your assumption. `list_executions` defaults to the last 24 hours, so set both `start_time` and `end_time` from the real current date to cover the release before you conclude that no execution exists.
 
 ## Requirement-based impact check
 

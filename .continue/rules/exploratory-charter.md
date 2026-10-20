@@ -16,8 +16,8 @@ Treat the human as a tool. Ask when the area, the timebox, the environment, or t
 
 There is no exploratory session object in the platform. Say so before you promise to "run a session in Katalon".
 
-- **Can read:** scope (`list_projects`, `list_repositories`), oracles you already have (`find_requirements`, `read_requirement`, `get_requirement_insights`), existing coverage (`find_test_cases`, `find_test_cases_by_requirement`), defect patterns for the area (`get_defect_insights`), and the target environment (`read_auts`).
-- **Can write:** the outcome (`manage_test_folder`, `create_test_case`, `link_requirements_to_test_case`, `manage_test_suite`, `read_test_suite`), manual results for promoted cases (`update_test_results`), and evidence files (`prepare_artifact_upload`, then `confirm_artifact_upload`).
+- **Can read:** scope (`list_projects`, `list_repositories`), oracles you already have (`find_requirements`, `read_requirement`, `fetch_requirement_metrics`), existing coverage (`find_test_cases`, `find_test_cases_by_requirement`, `search`), defect patterns for the area (`fetch_defect_metrics`, `fetch_defects`), and the target environment (`read_auts`).
+- **Can write:** the outcome (`manage_test_folder`, `create_test_case`, `manage_requirement_test_case_linkages`, `manage_test_suite`, then `read_test_suite` to confirm), manual results for promoted cases (`update_test_run`, `update_test_results`), and evidence files (`prepare_artifact_upload`, then `confirm_artifact_upload`).
 - **Cannot do:** hold a charter or session entity, time a session, tag a case as exploratory, or create a requirement for behavior the session found. No tool sees the application. Every observation comes from a browser you drive yourself. Use a browser tool or Playwright for the product and the MCP for the platform records.
 - **Where the charter lives:** write the charter and the session sheet as a local artifact the user keeps. Optionally mirror the charter into the platform as one test case in the charter folder, with the mission in Description and the session log in Steps. Say which you did.
 
@@ -25,16 +25,16 @@ Read `references/write-policy.md` before any write. Read `references/charter-and
 
 ## Filing a finding
 
-A session has no test result. `create_defect` needs a failed test result ID. Two paths exist.
+A session has no test result. `create_defect` needs a failed test result ID. Two paths exist. `create_defect` files a real Jira or Azure DevOps bug. Preview it and confirm.
 
 1. **Direct.** File the finding in Jira or Azure DevOps. This path needs no run.
 2. **Linked.** Promote the finding to a case, run it, and file from the failed result.
    1. Create the case (hand to `create-test-cases`).
-   2. Start a manual run for it after the user confirms. This consumes capacity. Hand the run to `execute-test`.
-   3. Reproduce the bug during the run. Record the result you observed with `update_test_results`. The tool needs an active run assigned to you. Treat only an `applied` or `unchanged` outcome as success.
+   2. Start a manual run for it after the user confirms. This consumes capacity. Hand the run to `execute-test`. It creates the run with `create_test_run` and starts it with `update_test_run` (`START`, `execution_mode: "MANUAL"`).
+   3. Reproduce the bug during the run. Record the result you observed with `update_test_results`. The tool needs an active run that you created. Treat only an `applied` or `unchanged` outcome as success. End the run with `update_test_run` (`END`) when every case has an outcome.
    4. Upload evidence (see "Evidence").
-   5. Find the ALM integration with `find_alm_integration_projects`. Show the user the defect summary. Get a yes. Then call `create_defect` with the failed result ID.
-   6. Read the result back.
+   5. Call `fetch_defects` with `filter: {"filter_type": "TEST_RESULT", "test_result_ids": [<failed result ID>]}` to check that the result has no linked defect. Find the integration and connection IDs with `list_alm_integrations`. Ask the user for the defect summary if it is missing. Suggest the failed case name or "Defect for {test case name}". Show the summary, get a yes, then call `create_defect` with the failed result ID.
+   6. Read the result back with `find_test_results` and `filter_type: "TEST_RESULT"`.
 
 Offer the direct path when the user has no ALM integration, or when the bug does not reproduce on demand. Never record a failed result for a bug you did not reproduce.
 
@@ -44,8 +44,8 @@ Evidence capture stays with the tester. The MCP only stores the files.
 
 - Capture screenshots, recordings, and HAR files from the browser you drive.
 - Remove personal data and credentials first. A HAR file holds cookies and tokens. Strip them or skip the file.
-- Call `prepare_artifact_upload` for each file of 10 MiB or less. Upload the file to the signed URL the tool returns. Then call `confirm_artifact_upload`. It returns an artifact ID.
-- Attach the artifact ID where the `update_test_results` schema accepts one. If the schema offers no field, put the artifact reference in the defect description.
+- Preview each file (filename, exact byte size, mime type, and that project members can see it) and get one confirmation first. Measure the exact byte size of each file of 10 MiB or less. Call `prepare_artifact_upload` with `upload: {filename, mime_type, content_length}`. Upload the raw bytes to the signed URL without Platform credentials. Then call `confirm_artifact_upload`. It returns an artifact ID.
+- Attach `{"artifact_id": "<id>"}` in the `evidence` list of the case or step in `update_test_results`. A case or step takes at most 3 items. Project members can see project artifacts.
 - Files over 10 MiB, such as long recordings, go into the tracker ticket. Reference the ticket ID from the finding.
 
 ## Session workflow
@@ -65,14 +65,14 @@ Evidence capture stays with the tester. The MCP only stores the files.
 
 ## Steps and tool rules
 
-1. **Resolve scope and existing coverage.** Call `list_projects`, then `list_repositories`. Call `find_test_cases` on the area keywords, and `find_test_cases_by_requirement` when a requirement key is known. Coverage is an input to the charter. An area with twenty cases is a poor use of the timebox. Point the charter at the gaps. Also check `get_defect_insights` for the area. A history of confirmed defects outweighs a hunch.
+1. **Resolve scope and existing coverage.** Call `list_projects`, then `list_repositories`. Call `find_test_cases` on the area keywords, and `find_test_cases_by_requirement` when a requirement key is known. Coverage is an input to the charter. An area with twenty cases is a poor use of the timebox. Point the charter at the gaps. Also call `fetch_defect_metrics` for the area. Its `filter` needs a `filter_type`: `ITERATION`, `DATE_RANGE` or `DEFAULT` (the last 28 days). It returns `UNRESOLVED` defects unless you set `resolution_state`, which accepts only `RESOLVED` or `UNRESOLVED`. Make two calls for all defects. For requirement-level counts, call `fetch_requirement_metrics` with `iteration_type` and `iteration_name`, and check the iteration with `find_iterations` first. A history of confirmed defects outweighs a hunch. When you need a duplicate or coverage check, `search` with `types: ["test_case"]` and `include_documents: false` helps. Its `tier` (exact, strong, weak) decides "exists", not the score. Treat a response with `incomplete=true`, `retrieval_mode="keyword_fallback"` or a warning as a limit and never as proof of absence.
 2. **Write the charter before you touch the application.** All fields are required. Show the charter to the user and get one confirmation. A charter without an oracle is a browsing session. Refuse to start until at least one oracle is named.
 3. **Choose the tours.** Pick two or three from `references/oracles-and-tours.md`. Name them in the charter so another tester can repeat the session.
 4. **Run the timebox and take notes as you go.** Timestamp and type every note: `SETUP`, `OBS`, `Q`, `BUG`, `RISK`, `IDEA`. A `BUG` needs its repro steps. Write them before you move on. Confirm the environment with `read_auts` or the user before the first action.
 5. **Stop when the timebox ends.** Record the accounting: minutes on charter, minutes on bug investigation and writeup, minutes on setup. A session that spent 40 of 60 minutes on setup is a finding about the environment. Report it as one.
 6. **Classify every finding against the oracle it broke.** The classes are product defect, test-data or environment issue, question for the product owner, and design risk. A finding with no broken oracle is an observation. Say so.
 7. **Debrief.** Report the mission, what was covered, what was not reached, the findings by class, the timebox accounting, and the next charter.
-8. **Promote, then hand off.** Turn confirmed findings into a promotion list: title, priority, requirement link if one exists, one-line expected result. Call `manage_test_folder` to create or reuse the charter folder. Hand authoring to `create-test-cases`. It owns duplicate checks, atomic-case rules, and import. Add the promoted cases to the right suite with `manage_test_suite` and confirm with `read_test_suite`. Offer to run them and record results (see "Filing a finding").
+8. **Promote, then hand off.** Turn confirmed findings into a promotion list: title, priority, requirement link if one exists, one-line expected result. Call `manage_test_folder` to create or reuse the charter folder. Hand authoring to `create-test-cases`. It owns duplicate checks, atomic-case rules, and import. Link each case to its requirement with `manage_requirement_test_case_linkages` (`action: "link"`). Add the promoted cases to the right suite with `manage_test_suite` and confirm with `read_test_suite`. Offer to run them and record results (see "Filing a finding").
 
 ## Hard rules
 
@@ -85,9 +85,9 @@ Evidence capture stays with the tester. The MCP only stores the files.
 
 ## Naming and platform constraints
 
-- Test case and folder names accept only letters, numbers, spaces, and `( ) . , _ -`. Charter titles tend to carry colons. A colon is rejected. Write `CH-01 Explore guest checkout with expired card`. Folder paths may use `/`.
-- No tag or custom field marks exploratory origin. Use the naming convention and the folder together. Folder: `Exploratory / <charter id> <short mission>`. Prefix promoted case titles with the charter id.
-- Prefer `update_test_case` over delete and recreate when a later session revises a promoted case. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
+- A test case name must start with a letter or a digit. Test case and folder names accept only letters, numbers, spaces, and `( ) . , _ -`. A case `path` starts with `Test Cases` or `Test Cases/`, and a suite path starts with `Test Suites`. Charter titles tend to carry colons. A colon is rejected. Write `CH-01 Explore guest checkout with expired card`. Folder paths may use `/`.
+- No tool field marks exploratory origin. Use the naming convention and the folder together. Folder: `Exploratory / <charter id> <short mission>`. Prefix promoted case titles with the charter id.
+- Prefer `update_test_cases` over delete and recreate when a later session revises a promoted case. It needs `repository_id` and an `updates` list with one action per field. Batch every change to one case in one call. `UPDATE_CONTENT` replaces all steps, so send the complete step list. `delete_test_case` needs an explicit yes that names the case. Updating keeps IDs, links, and history.
 
 ## Worked example
 
@@ -163,9 +163,10 @@ CH-01 Guest checkout shows a readable message instead of a provider code P1  CEL
 
 ```text
 find_test_cases "checkout expired card"  -> 0 matches   [dedupe before create]
+search "guest checkout expired card"     -> no exact or strong test_case hit
 manage_test_folder create "Exploratory / CH-01 Guest checkout payment"
                                          -> folder id 9134
--> hand to create-test-cases for create_test_case x3 + link_requirements_to_test_case
+-> hand to create-test-cases for create_test_case x3 + manage_requirement_test_case_linkages
 manage_test_suite add the 3 cases to "CEL-6 Regression"
 read_test_suite                          -> 7 cases, 3 new   [confirmed]
 ```
@@ -309,7 +310,7 @@ A finding becomes a scripted case when **all three** hold:
 
 1. It is **reproducible**, with steps that work from a stated starting state.
 2. It maps to a **rule someone will defend**, an oracle a product owner would stand behind.
-3. It **would not be caught by existing coverage**, checked with `find_test_cases` before proposing it.
+3. It **would not be caught by existing coverage**, checked with `find_test_cases` or `search` before proposing it. For `search`, an exact or strong tier hit means the case exists. No hit proves nothing when the response says `incomplete=true`, `retrieval_mode="keyword_fallback"` or carries a warning.
 
 Otherwise it stays where it is:
 
@@ -439,11 +440,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -451,7 +468,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

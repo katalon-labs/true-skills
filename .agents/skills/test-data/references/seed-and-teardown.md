@@ -44,7 +44,7 @@ Teardown:
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-Write it into the case with a single `update_test_case` call containing every edit, then confirm with `read_test_case`. If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
+Write it into the case with a single `update_test_cases` call containing every edit (`UPDATE_PRECONDITION` and `UPDATE_CONTENT`, which needs the complete step list), then confirm with `read_test_cases` (`content_type` `FLOW`). If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
 
 ## Automation lane pattern
 

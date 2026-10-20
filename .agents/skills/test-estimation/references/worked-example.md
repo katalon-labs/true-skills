@@ -24,12 +24,12 @@ Tag every line. Nothing untagged enters the model.
 | Input | Value | Source |
 |---|---|---|
 | Cycle window | 2026-08-17 to 2026-08-28, 10 working days | MCP `find_iterations` |
-| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `get_requirement_insights` |
+| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `fetch_requirement_metrics` |
 | Cases in the release folder | 214 (187 linked, 27 unlinked regression) | MCP `find_test_cases`, full page, not truncated |
-| Automated / manual split | 96 / 118 | MCP `get_test_case_insights` |
-| Unstable cases, last 30 days | 11 | MCP `analyze_test_case_stability` |
-| Automated pass rate, sprint 3.1 | 91% | MCP `read_execution_test_results` on the sprint 3.1 execution found with `list_executions` |
-| Target configurations | Chrome, Safari, Android Chrome. Automated covers all 3. Manual covers Chrome only. | MCP `get_test_configuration_insights` |
+| Automated / manual split | 96 / 118 | MCP `fetch_test_case_metrics` |
+| Unstable cases, last 30 days | 11 | MCP `fetch_test_stability_metrics` |
+| Automated pass rate, sprint 3.1 | 91% | MCP `find_test_results` (filter_type `EXECUTION`) on the sprint 3.1 execution found with `list_executions` |
+| Target configurations | Chrome, Safari, Android Chrome. Automated covers all 3. Manual covers Chrome only. | MCP `fetch_test_configuration_metrics` |
 | Sprint 3.1 automated elapsed | 41 min for 96 results | MCP `read_execution`, elapsed field confirmed on the record |
 | Session concurrency | 4 parallel sessions | **Team-supplied.** Not an MCP field. |
 | Manual minutes per case | 15 / 18 / 22 (low / likely / high) | **Team-supplied.** Likely value measured on sprint 3.1. |
@@ -126,11 +126,11 @@ Excluded:
   - Manual execution on Safari and Android Chrome: the manual matrix is Chrome only
   - Any money figure: the platform holds no rate
 Evidence:
-  MCP   get_requirement_insights -> 34 in scope, 8 uncovered
+  MCP   fetch_requirement_metrics -> 34 in scope, 8 uncovered
   MCP   find_test_cases -> 214 cases in the release folder
-  MCP   get_test_case_insights -> 96 automated / 118 manual
-  MCP   analyze_test_case_stability -> 11 unstable in 30 days
-  MCP   read_execution_test_results -> 91% pass on sprint 3.1
+  MCP   fetch_test_case_metrics -> 96 automated / 118 manual
+  MCP   fetch_test_stability_metrics -> 11 unstable in 30 days
+  MCP   find_test_results (EXECUTION) -> 91% pass on sprint 3.1
   Team  18 min per manual case -> measured by the team on sprint 3.1
   Team  4 parallel sessions -> TestCloud plan, not an MCP field
 ```

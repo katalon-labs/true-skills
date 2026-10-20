@@ -1,6 +1,6 @@
 ---
 name: Katalon Platform Setup
-description: "Connects an AI agent to the Katalon True Platform (formerly TestOps) MCP server and verifies the connection, covering endpoint, sign-in, signed-in user, project and repository discovery, and tunnels for private apps. Use when the MCP tools are missing, a call fails with an auth or access error, or someone asks how to install or configure the server. Not for choosing a default project, which belongs to get-started, and not for designing or running tests."
+description: "Connects an AI agent to the Katalon True Platform (formerly TestOps) MCP server and verifies the connection, covering endpoint, sign-in, project and repository discovery, and tunnels for private apps. Use when the MCP tools are missing, a call fails with an auth or access error, or someone asks how to install or configure the server. Not for choosing a default project, which belongs to get-started, and not for designing or running tests."
 alwaysApply: false
 ---
 
@@ -47,11 +47,10 @@ Restart or reload the agent only when sign-in succeeded and the tools are still 
 
 Run these in order. Stop at the first failure.
 
-1. Find the Katalon tools with the agent's tool discovery.
-2. Call `get_user_context`. Report the account name and organization in one line. Do not repeat the email address.
-3. Call `list_projects`. If several projects return, list them and ask which one to use.
-4. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
-5. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
+1. Find the Katalon tools with the agent's tool discovery. The live server exposes 74 tools. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`.
+2. Call `list_projects`. It is the sign-in check, because no tool returns the signed-in user. If it succeeds, say "connected" and give the project count. Do not repeat the email address. If several projects return, list them and ask which one to use.
+3. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
+4. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
 
 Report one of these states:
 
@@ -91,7 +90,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the Katalon docs page "Katalon True Platform MCP Server" (last updated October 2026). The live tool list needs sign-in, so this page is the contract. If a tool named here is missing in your session, say so and use the closest documented tool. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -99,35 +98,37 @@ Name tools by bare name, as written here. Clients add a prefix. Claude Code uses
 
 Workspace and discovery
 - `list_projects`, `list_repositories`, `find_iterations`, `find_execution_profiles`.
-- `get_user_context` returns the signed-in user. It does not look up other users.
+- `search` runs semantic search over test cases, suites, folders, requirements, and uploaded specification documents.
+- No tool returns the signed-in user. Take the user from the client session. Ask the user for any assignee UUID.
 
 Requirements and ALM
 - `find_requirements`, `read_requirement`. Requirements are a read-only mirror of Jira or Azure DevOps.
-- `find_test_cases_by_requirement`, `link_requirements_to_test_case`, `unlink_requirements_from_test_case`.
-- `find_alm_integration_projects`, `create_defect`.
+- `find_test_cases_by_requirement`.
+- `manage_requirement_test_case_linkages` links or unlinks, many requirements to many cases, in one call.
+- `list_alm_integrations` returns the integration and connection IDs. `fetch_defects` shows the defects already linked to a result, a case, or an execution. `create_defect` files a new one.
 
 Test cases, folders, suites
-- `find_test_cases`, `read_test_case`, `create_test_case`, `update_test_case`, `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
 
 Execution
-- `read_auts`, `create_test_run` (manual and automated), `create_manual_ai_session`, `read_manual_ai_session`.
-- `read_manual_test_run_detail_by_order` finds a manual run by its order number.
+- `read_auts`, `create_test_run` (manual and automated), `update_test_run` (CONFIGURE, START, END), `read_manual_ai_session`.
+- `create_manual_ai_session` is the legacy launcher for a subset of cases. Prefer `update_test_run` with START and `KATALON_AI`.
 - `build_run_configuration`, `build_schedule`, `build_private_local_testing_config`.
-- `rerun_execution` reruns a completed execution.
+- `rerun_execution` reruns an automated execution.
 - `list_schedule`, `read_schedule_detail`, `update_schedule_configuration`.
 
 Results and evidence
-- `find_test_results`, `read_test_result`, `read_execution`, `read_execution_test_results`.
+- `find_test_results` reads results by test result, by execution, or by a common or relative filter. `read_execution`.
 - `list_executions` (numeric TestOps IDs) and `list_execution_outputs` (TestCloud string IDs and artifact URLs).
 - `update_test_results` records a manual result or reviews an automated one.
 - `prepare_artifact_upload` and `confirm_artifact_upload` attach evidence up to 10 MiB.
 
-Quality insights
-- `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, `get_test_configuration_insights`.
-- `analyze_test_case_stability` (flaky, always failing, newly failing, slow) and `analyze_test_flakiness` (lookback window, minimum runs).
+Quality metrics
+- `fetch_requirement_metrics`, `fetch_defect_metrics`, `fetch_test_case_metrics`, `fetch_test_configuration_metrics`.
+- `fetch_test_stability_metrics` returns flaky, always failing, newly failing, and slow tests. It takes a lookback window. It has no minimum run count.
 
 Test Execution - Cloud assets and tunnels
 - `list_test_cloud_environments`, `list_test_cloud_agents`, `list_test_cloud_apps`.
@@ -137,33 +138,40 @@ Test Execution - Cloud assets and tunnels
 TrueTest
 - `list_truetest_auts`, `list_truetest_tracking_environments`, `search_truetest_sessions`, `get_truetest_session`.
 - `search_truetest_journey_maps`, `get_truetest_journey_map`, `create_truetest_journey_map`, `get_truetest_journey_map_request`.
-- `create_truetest_test_case_from_session` needs user approval and takes 1 to 25 sessions.
+- `create_truetest_test_case_from_session` takes 1 to 25 sessions. `create_truetest_test_case_from_flow` takes one journey-map flow. Both queue generation and need user approval. A flow that already has linked cases follows the backend regeneration behavior, so confirm before you run it there.
+
+Team memory (Kai)
+- `memory_list`, `memory_read`, `memory_read_page` read the conventions the team and the user taught Kai.
+- `memory_write` and `memory_forget` change that memory. Call them only when the user asks to remember or forget something. Memory is optional context. Every skill works when it is empty or unavailable.
 
 ## Not available through the MCP
 
 - Create requirements. Create them in Jira or Azure DevOps, then sync, find, and link.
 - Create a formal Test Plan entity. A named folder or suite gives an execution scope. It is no plan of record.
 - Guarantee that Run with AI finishes. The platform can block it or fail it.
-- Cancel Run with AI. You can only poll it.
-- Stop or terminate a running execution. `rerun_execution` works only on completed executions.
+- Stop a running automated execution (Studio, Katalon Test Execution - Local, or Test Execution - Cloud). `rerun_execution` starts a new one. To close a TestPak run, including a hosted Run with AI session, call `update_test_run` with END.
 - Inspect the live AUT. Use a browser tool or Playwright.
 - Look up another user to set an assignee.
+- Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, or project governance. Use the True Platform UI.
-- Self-healing, Time Capsule, and TrueTest regeneration. These are product features outside the MCP.
+- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
 ## Quirks every skill keeps
 
-- `delete_test_case` is unreliable. Prefer `update_test_case` or `move_test_case`.
-- A test case name accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A folder path can contain `/`.
+- `delete_test_case` removes a case. Ask for a yes that names the case. Read back after the delete.
+- A test case name starts with a letter or digit. It accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A `path` for a case starts with `Test Cases`. A folder path can contain `/`.
 - `create_test_case` with type AUTOMATED creates nothing. It returns guidance only.
+- `update_test_cases` with UPDATE_CONTENT replaces all steps. Send the complete step list and keep every Call Test Case step.
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
-- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`.
-- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run assigned to you. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode`. Ask the user. Never infer it.
-- `create_defect` needs the `alm_integration_id` from `find_alm_integration_projects`. It is not the Jira connection ID.
+- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
+- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
+- `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
+- `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
 
 ## Terminology
@@ -231,11 +239,12 @@ Read this when a Run with AI session or an automated run cannot reach the applic
 
 1. Ask whether the AUT is reachable from the public internet. If it is, no tunnel is needed. Check the environment URL with `read_auts` and stop here.
 2. Call `list_test_cloud_tunnels` with `project_id`. Note each active tunnel. A tunnel can be shared by other runs and other people in the project.
-3. If no tunnel is active, call `prepare_test_cloud_tunnel_start`. Set `test_type` to MANUAL or AUTOMATED. For a manual run, set `manual_execution_mode` to TESTPAK or RUN_WITH_AI. The tool returns commands for a tunnel client. Give the commands to the user. They run them on a machine that can reach the AUT. Run them yourself only when the user asks and that machine can reach the AUT.
-4. If a tunnel is active but the run still fails, check that the tunnel matches the run type. Then call `build_private_local_testing_config` with `mode` set to `tunnel` and `selected_tunnel`. Ask the user before you choose tunnel mode.
-5. If a tunnel cannot be used, `build_private_local_testing_config` also takes `mode` set to `whitelist`. The customer's network team must allow the addresses the tool reports. Do not invent addresses.
-6. If a tunnel is stale, ask the user. Call `stop_test_cloud_tunnel` only after a yes that names the tunnel. It stops a shared tunnel. Start a new one with step 3.
-7. A Run with AI session reuses the private network setup from `create_test_run` without change. Do not build a second one.
+3. If no tunnel is active and the user needs private access, the run is blocked. Call `prepare_test_cloud_tunnel_start`. Set `test_type` to MANUAL or AUTOMATED. For a manual run, set `manual_execution_mode` to RUN_WITH_AI for the full guide. TESTPAK or an unknown mode returns VPN guidance only. Give the commands to the user. They run them on a machine that can reach the AUT. Run them yourself only when the user asks and that machine can reach the AUT. After the user says the tunnel runs, call `list_test_cloud_tunnels` again. Do not go on until it lists an active tunnel.
+4. If a tunnel is active but the run still fails, check that the tunnel matches the run type. Ask the user which private access option to use. The labels are fixed: "No private access needed", "Use Katalon Tunnel", "Use IP Whitelisting". With no active tunnel the labels are "No private access needed" and "Yes, I need private access". Never choose for the user.
+5. For the tunnel option, ask a second question that lists each active tunnel and an auto-select option. Never pick a tunnel for the user, even when only one exists. Then call `build_private_local_testing_config` with `mode` set to `tunnel` and `selected_tunnel` set to the answer, or to null for auto-select.
+6. If a tunnel cannot be used, `build_private_local_testing_config` also takes `mode` set to `whitelist`. The customer's network team must allow the addresses the tool reports. Do not invent addresses.
+7. If a tunnel is stale, ask the user. Call `stop_test_cloud_tunnel` only after a yes that names the tunnel. It stops a shared tunnel. Start a new one with step 3.
+8. A Run with AI session takes its private network setup from `update_test_run`, through CONFIGURE or the configuration on START. A run that already has hosted AI cannot be reconfigured. Do not build a second setup for the same run.
 
 ## Report
 

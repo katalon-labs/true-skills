@@ -168,9 +168,9 @@ npx -y mcp-remote@0.14.3 https://platform.katalon.io/mcp --transport http-first
 
 Each skill names its limits up front, so the agent does not promise work the platform cannot do.
 
-**Through the MCP:** list projects and repositories, read requirements, create, update, and link test cases, manage suites and folders, create manual and automated runs, start Run with AI, poll AI sessions, rerun a completed execution, read and edit schedules, record manual results, upload evidence, read results and quality insights, use Test Execution - Cloud apps and tunnels, read TrueTest sessions, and file ALM-linked defects.
+**Through the MCP:** list projects and repositories, read requirements, search the Knowledge Base, create, update, and link test cases, manage suites and folders, create manual and automated runs, start, configure, and end a TestPak, start Run with AI, poll AI sessions, rerun an automated execution, read and edit schedules, record manual results, upload evidence, read results and quality metrics, use Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, read the team's Kai memory, and file ALM-linked defects.
 
-**Not through the MCP:** create requirements, create a formal Test Plan entity, cancel Run with AI, stop a running execution, look up assignees, edit suite collections, or inspect the live app UI without a browser tool. A named suite holds the execution scope in place of the Test Plan entity.
+**Not through the MCP:** create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, edit suite collections, or inspect the live app UI without a browser tool. A named suite holds the execution scope in place of the Test Plan entity.
 
 Some work lives in the product UI: object capture in Studio, custom fields, Git config and governance in the TestOps UI, self-healing, Time Capsule, and Live Monitor. The full list is in [`capability-boundaries.md`](skills/true-platform-testing/references/capability-boundaries.md).
 
@@ -199,10 +199,10 @@ AGENTS.md  docs/connect.md           agent index and per-client MCP page     (ge
 
 ## Changes in 0.5.0
 
-- Skills use the October 2026 Katalon MCP tool names. `create_test_run` with a `mode` replaces the manual and scheduled run tools, and the insights tools replace `fetch_*_data`.
+- Skills use the live Katalon MCP tool names, checked against the server on 2026-10-20. `create_test_run` with a `mode` replaces the manual and scheduled run tools. `update_test_run` configures, starts, and ends a TestPak. The `fetch_*_metrics` tools replace the insights and stability tools. `read_test_cases` and `update_test_cases` take lists.
 - Run with AI no longer starts on its own. The agent shows the suite, environment, mode, and schedule, and waits for a yes.
 - The build stops writing six old rule folders. Each agent reads a native skills folder, which removes about 1.6 MB of duplicate text.
-- New [`docs/connect.md`](docs/connect.md) gives the MCP snippet for 13 clients, and [`docs/mcp-tools.json`](docs/mcp-tools.json) holds the 71-tool contract that the validator checks.
+- New [`docs/connect.md`](docs/connect.md) gives the MCP snippet for 13 clients, and [`docs/mcp-tools.json`](docs/mcp-tools.json) holds the 74-tool contract that the validator checks.
 
 The full list is in [CHANGELOG.md](CHANGELOG.md).
 

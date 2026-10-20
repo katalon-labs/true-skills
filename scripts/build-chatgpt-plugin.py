@@ -76,16 +76,24 @@ CHATGPT_REWRITES: Dict[str, List[Tuple[str, str]]] = {
             "Before calling any tool, confirm this invocation came from `plugin.json`'s `extensions.com.openai.onboardingSkill` event immediately after the user installs or connects Katalon, or from an explicit user request to get started, set up Katalon, or pick/change their default project. If neither applies, stop without calling tools, including when a read tool reveals that no default project is stored.\n\nDuring an authorized invocation, choose a default project and show the first view with **at most two questions**.",
         ),
         (
-            '1. **Who is signed in.** Call `get_user_context`. Greet in one line with the organization and account name from the result, for example "You are connected to Katalon as Demo Shop." If the call fails with a sign-in error, hand off to `platform-setup` and stop.',
-            "1. **Who is signed in.** Call `katalon_profile`. Greet in one line with the organization and account name from `nickname`, for example \"You are connected to Katalon as Demo Shop.\" If `katalon_profile` is not listed, skip the greeting. If the call says the user is not signed in, tell them to sign in to Katalon from the connection prompt and stop.",
+            '1. **Connection and default project (question 1).** Call `list_projects`. No tool returns the signed-in user, so this call is the connection check. If it fails with a sign-in error, hand off to `platform-setup` and stop. On success, greet in one line, for example "You are connected to Katalon and can see 3 projects."',
+            "1. **Who is signed in.** Call `katalon_profile`. Greet in one line with the organization and account name from `nickname`, for example \"You are connected to Katalon as Demo Shop.\" If `katalon_profile` is not listed, skip the greeting. If the call says the user is not signed in, tell them to sign in to Katalon from the connection prompt and stop.\n2. **Default project (question 1).** Call `list_projects`. If it fails with a sign-in error, tell them to sign in to Katalon from the connection prompt and stop.",
         ),
         (
-            '3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` with `project_id`. Call `read_auts`.',
+            '2. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` with `project_id`. Call `read_auts` with the same `project_id`.',
             "3. **Repository and Run with AI target (question 2, only if needed).** Call `list_repositories` and `read_auts` for the chosen project.",
         ),
         (
-            "4. **Keep the choice.** State the project, repository, and environment that this conversation will use. Repeat their IDs on later calls. If the client lists a settings tool (the ChatGPT app has `settings_update`), save `default_project_id`, `default_repository_id`, and `default_aut_environment_id` with it. Leave out any value the user did not choose. Without a settings tool, offer to note the names, never secrets, in the agent's own memory or project instructions.",
+            "3. **Keep the choice.** State the project, repository, and environment that this conversation will use. Repeat their IDs on later calls. If the client lists a settings tool, save `default_project_id`, `default_repository_id`, and `default_aut_environment_id` with it. Leave out any value the user did not choose. Without a settings tool, offer to note the names, never secrets, in the agent's own memory or project instructions.",
             "4. **Save.** Call `settings_update` with `{\"set\": {\"default_project_id\": ..., \"default_repository_id\": ..., \"default_aut_environment_id\": ...}}`, leaving out any value that was not chosen. If `settings_update` is not listed, say which project and repository this conversation will use and skip saving.",
+        ),
+        (
+            "4. **First step.** If the client lists a Katalon home view, call it.",
+            "5. **First step.** If the client lists a Katalon home view (the ChatGPT app has `katalon_home`), call it.",
+        ),
+        (
+            "Stop after step 4. Do not start a run",
+            "Stop after step 5. Do not start a run",
         ),
     ],
 }

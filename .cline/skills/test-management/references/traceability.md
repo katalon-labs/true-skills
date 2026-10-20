@@ -16,7 +16,7 @@ Coverage percentage = requirements with at least one linked case, divided by in-
 
 1. `find_requirements`, or the keys the user supplied. This is the in-scope requirement set. Page through every result.
 2. `find_test_cases_by_requirement` per requirement. Pass exactly one identifier per call. Zero or several identifiers is a validation error.
-3. `get_requirement_insights` for the platform coverage status of the iteration. Reconcile it against your link map. Report any disagreement. Do not pick one silently.
+3. `find_iterations` to confirm the sprint or release exists, then `fetch_requirement_metrics` (`iteration_type` `SPRINT` or `RELEASE`, `iteration_name`) for the platform coverage status of the iteration. The tool takes no date range. Reconcile it against your link map. Report any disagreement. Do not pick one silently.
 4. `find_test_cases` by folder or feature. Surface cases that never appeared in step 2. These are the orphan cases.
 5. `find_test_suites`, then `read_test_suite` for suites that matter. Map each linked case to its suites.
 6. `find_test_suite_collections` when the user cares about release or cycle groupings. A collection groups suites. It is read-only.
@@ -36,7 +36,7 @@ Use one row per change. Every row has a basis.
 
 | # | Change | Target | Detail | Basis |
 |---|---|---|---|---|
-| 1 | link | TC-1099 to CEL-6 | Requirement key | Key read with `read_requirement` |
+| 1 | link | TC-1099 to CEL-6 | Requirement key | Key read with `read_requirement`; applied with `manage_requirement_test_case_linkages` |
 | 2 | unlink | TC-1042 from CEL-9 | Requirement key | Case steps cover login only, with no discount step |
 | 3 | move | TC-1050 to `Test Cases/Auth/Smoke` | Folder path | Folder found with `find_test_folders` |
 | 4 | folder create | `Test Cases/Auth/Smoke` | Path | No match in `find_test_folders` |
@@ -48,15 +48,16 @@ Keep a plan to about 40 rows. Split a larger set into batches. Confirm and execu
 
 Check these before you ask for confirmation.
 
-- Every case name contains only letters, numbers, spaces, and `( ) . , _ -`. A rename must keep to the same charset.
-- Every move target path starts with `Test Cases`. Every folder in a path exists or has an earlier create row.
+- Every case name starts with a letter or digit and contains only letters, numbers, spaces, and `( ) . , _ -`. A rename must keep to the same charset.
+- Every move target path starts with `Test Cases` or `Test Cases/`. Every folder in a path exists or has an earlier create row.
 - Every requirement ID in a link row was confirmed in this session.
 - Every suite keeps one type. A suite rejects a mix of MANUAL and AUTOMATED cases.
 - No row deletes a case, folder, or suite unless the user named that exact target and said yes.
-- Prefer `update_test_case` and `move_test_case` over `delete_test_case`. Delete has returned server errors.
-- Link and unlink calls can succeed in part. After execution, re-read the links for each changed requirement and report any gap.
+- Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Delete has returned server errors. A folder DELETE needs the exact folder `id` from `find_test_folders` by full `rawPath`, never an ancestor from `treePath`.
+- `manage_requirement_test_case_linkages` takes `requirement_ids` and `test_case_ids` and runs per requirement in parallel, so it can succeed in part. After execution, re-read the links with `find_test_cases_by_requirement` for each changed requirement and report any gap.
+- `unlink` is destructive for traceability. Ask for a yes that names the links.
 - Never fabricate a requirement to case link. Link confirmed IDs only.
 
 ## Read back
 
-For each changed requirement, call `find_test_cases_by_requirement` and compare with the plan. For each changed suite, call `read_test_suite`. For each moved case, call `read_test_case` and check the folder path when the result shows it. Report each row as done, skipped, or failed.
+For each changed requirement, call `find_test_cases_by_requirement` and compare with the plan. For each changed suite, call `read_test_suite`. For each moved case, call `read_test_cases` and check the folder path when the result shows it. Report each row as done, skipped, or failed.

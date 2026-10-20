@@ -1,6 +1,6 @@
 ---
 name: platform-setup
-description: Connects an AI agent to the Katalon True Platform (formerly TestOps) MCP server and verifies the connection, covering endpoint, sign-in, signed-in user, project and repository discovery, and tunnels for private apps. Use when the MCP tools are missing, a call fails with an auth or access error, or someone asks how to install or configure the server. Not for choosing a default project, which belongs to get-started, and not for designing or running tests.
+description: Connects an AI agent to the Katalon True Platform (formerly TestOps) MCP server and verifies the connection, covering endpoint, sign-in, project and repository discovery, and tunnels for private apps. Use when the MCP tools are missing, a call fails with an auth or access error, or someone asks how to install or configure the server. Not for choosing a default project, which belongs to get-started, and not for designing or running tests.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. The mcp-remote fallback also needs Node.js and npx.
 metadata:
@@ -49,11 +49,10 @@ Restart or reload the agent only when sign-in succeeded and the tools are still 
 
 Run these in order. Stop at the first failure.
 
-1. Find the Katalon tools with the agent's tool discovery.
-2. Call `get_user_context`. Report the account name and organization in one line. Do not repeat the email address.
-3. Call `list_projects`. If several projects return, list them and ask which one to use.
-4. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
-5. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
+1. Find the Katalon tools with the agent's tool discovery. The live server exposes 74 tools. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`.
+2. Call `list_projects`. It is the sign-in check, because no tool returns the signed-in user. If it succeeds, say "connected" and give the project count. Do not repeat the email address. If several projects return, list them and ask which one to use.
+3. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
+4. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
 
 Report one of these states:
 

@@ -26,17 +26,17 @@ If the request is two questions, write two reports or ask which one matters on t
 
 | Metric | Derived from | Claims | Does **not** claim |
 |---|---|---|---|
-| **Pass rate** | `find_test_results` over a date range. Passed divided by total. | how the suite behaved in that window | that the product is good, or that a failure is a product regression and not an infra or environment blip. A narrow suite passes easily. |
-| **Requirement coverage** | `get_requirement_insights` for the iteration. Covered divided by in-scope. Confirm a named gap with `find_test_cases_by_requirement`. | that a linked case exists | that the case is good or passed. A link is not evidence. |
-| **Uncovered critical requirements** | the uncovered set from `get_requirement_insights`, filtered by the requirement's own priority | the keys nobody tests | completeness, if requirement priority is not kept in the ALM |
-| **Open critical defects** | `get_defect_insights`, read for the period, filtered to critical and high | current standing risk | escape to production. No such field exists. |
-| **Flaky cases** | `analyze_test_case_stability`, and `analyze_test_flakiness` with a minimum run count of about 10 | that the platform's own signal flags them | a flake rate you computed. Report the platform's signal. Do not recompute it. |
+| **Pass rate** | `find_test_results` over a date range (COMMON filter, `query.where` on `startTime`). Passed divided by total. | how the suite behaved in that window | that the product is good, or that a failure is a product regression and not an infra or environment blip. A narrow suite passes easily. |
+| **Requirement coverage** | `fetch_requirement_metrics` for the iteration. Covered divided by in-scope. Confirm a named gap with `find_test_cases_by_requirement`. | that a linked case exists | that the case is good or passed. A link is not evidence. |
+| **Uncovered critical requirements** | the uncovered set from `fetch_requirement_metrics`, filtered by the requirement's own priority | the keys nobody tests | completeness, if requirement priority is not kept in the ALM |
+| **Open critical defects** | `fetch_defect_metrics`, read for the period with the default `UNRESOLVED` state, filtered to critical and high | current standing risk | escape to production. No such field exists. A question about all defects needs a second call with `RESOLVED`. |
+| **Flaky cases** | `fetch_test_stability_metrics` with `return_tests: ["FLAKY"]` and a `from_date` and `to_date` window | that the platform's own signal flags them | a flake rate you computed. Report the platform's signal. Do not recompute it. The tool has no minimum-run parameter. Count runs per case with `find_test_results` and use a floor of about 10. |
 | **Erratic history** | `find_test_results` per case across periods. Alternating outcomes with no code change. | a case whose result is not information | a cause. Hand it to `test-maintenance`. |
-| **Configuration coverage** | `get_test_configuration_insights` against a target matrix the user supplies | which combinations ran | which combinations matter. The target matrix is an input, not a platform fact. |
-| **Triage share** | failures from `find_test_results` that have a linked defect | how much of the red is understood | that the untriaged remainder is harmless |
+| **Configuration coverage** | `fetch_test_configuration_metrics` against a target matrix the user supplies | which combinations ran | which combinations matter. The target matrix is an input, not a platform fact. |
+| **Triage share** | failed results from `find_test_results` (filter_type `EXECUTION`, `status` `FAILED`), then `fetch_defects` for the same execution. A result with an empty `defects` list has no linked defect. | how much of the red is understood | that the untriaged remainder is harmless, or that a linked defect is still open |
 | **Concentration** | any metric above, grouped by suite with `read_test_suite` or by folder with `find_test_folders` | where the problem lives | a root cause |
 
-Triage share needs a per-failure defect link. The docs do not show a tool that lists those links for a project. Ask the user for the defect list from the ALM, or read a sample of failures with `read_test_result` and check whether the record shows a linked defect. Verify this in your session before you report a share.
+Triage share needs a per-failure defect link, and `fetch_defects` gives it per result, case, or execution. Page the failed results to the end before you report a share, and report the denominator.
 
 ## Anti-patterns
 
@@ -47,7 +47,7 @@ Each of these has appeared in a real QA status report.
 - **Pass rate with no scope.** A pass rate over "all results" mixes a smoke run with a full regression.
 - **A coverage percentage with no uncovered list.** The names are the report. The percentage is the least useful part.
 - **Defect counts with no severity split.** Twenty cosmetic defects and three criticals do not compare, and a sum hides the three.
-- **Any metric with no date.** Insights are read at report time, not at period end. Say when.
+- **Any metric with no date.** Metrics are read at report time, not at period end. Say when.
 - **A trend line with no named cause.** If you cannot name the cause, report the number as unexplained.
 - **A single-run pass rate for an AI feature.** Outputs vary between runs. Report the pass proportion over repeated runs, and name the data set. If the team has no repeat runs, say the number is a single sample.
 

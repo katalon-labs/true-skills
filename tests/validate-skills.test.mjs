@@ -110,9 +110,9 @@ test("the real docs/mcp-tools.json is internally consistent", () => {
   for (const t of REAL_TOOLS.tools) assert.match(t.class, /^(read|write|destructive)$/);
   for (const [old, use] of Object.entries(REAL_TOOLS.retired)) {
     assert.ok(!names.includes(old));
-    assert.ok(names.some((n) => use.includes(n)), `${old} maps to ${use}`);
+    assert.ok(use.startsWith("none") || names.some((n) => use.includes(n)), `${old} maps to ${use}`);
   }
-  for (const n of ["create_test_run", "update_test_results", "rerun_execution", "get_user_context", "analyze_test_flakiness"]) {
+  for (const n of ["create_test_run", "update_test_results", "rerun_execution", "update_test_run", "fetch_test_stability_metrics"]) {
     assert.ok(names.includes(n), n);
   }
 });
@@ -303,18 +303,18 @@ test("tools: a retired name fails anywhere, backticked or not, outside docs/mcp-
     const { errors } = run(root);
     assert.ok(has(errors, "retired tool 'create_manual_test_run' (use create_test_run with mode manual)"));
     assert.ok(has(errors, "retired tool 'schedule_test_run'"));
-    assert.ok(has(errors, "retired tool 'fetch_defect_data' (use get_defect_insights): README.md"));
+    assert.ok(has(errors, "retired tool 'fetch_defect_data' (use fetch_defect_metrics): README.md"));
   }));
 
 test("tools: an unknown tool-shaped name fails; contract names, call syntax and nonTools pass", () =>
   withRepo((root) => {
-    const ok = "`create_test_run(mode=\"manual\")`, `list_projects`, `find_test_cases, read_test_case`, `read_secrets` and `project_id`.\n";
+    const ok = "`create_test_run(mode=\"manual\")`, `list_projects`, `find_test_cases, read_test_cases`, `read_secrets` and `project_id`.\n";
     writeFileSync(join(root, "skills/gamma/SKILL.md"), skillMd("gamma", { body: ok }));
     assert.deepEqual(run(root).errors, []);
-    writeFileSync(join(root, "skills/gamma/SKILL.md"), skillMd("gamma", { body: "Call `find_widgets` and `read_test_cases`.\n" }));
+    writeFileSync(join(root, "skills/gamma/SKILL.md"), skillMd("gamma", { body: "Call `find_widgets` and `read_test_case`.\n" }));
     const { errors } = run(root);
     assert.ok(has(errors, "tool-shaped name 'find_widgets' is not in docs/mcp-tools.json"));
-    assert.ok(has(errors, "tool 'read_test_cases' is not in the October 2026 docs contract"));
+    assert.ok(has(errors, "retired tool 'read_test_case'"));
   }));
 
 test("tools: ChatGPT-only tools are allowed under chatgpt/ only", () =>
@@ -342,7 +342,7 @@ test("tools: contract file errors are reported", () =>
     bad.tools.push({ ...bad.tools[0] });
     bad.retired.old_tool = "nothing real";
     const { errors } = run(root, bad);
-    assert.ok(has(errors, "duplicate tool 'list_projects'"));
+    assert.ok(has(errors, "duplicate tool 'build_private_local_testing_config'"));
     assert.ok(has(errors, "retired 'old_tool' maps to 'nothing real', which names no contract tool"));
     assert.ok(has(run(root, null).errors, "docs/mcp-tools.json is missing"));
   }));
@@ -401,13 +401,14 @@ test("check-mcp-live: missing, new, retired and annotation conflicts", () => {
   const live = REAL_TOOLS.tools
     .filter((t) => t.name !== "rerun_execution")
     .map((t) => ({ name: t.name }));
-  live.push({ name: "create_manual_test_run" }, { name: "read_test_cases" }, { name: "brand_new_tool" });
+  live.push({ name: "create_manual_test_run" }, { name: "ghost_tool" }, { name: "brand_new_tool" });
   live.find((t) => t.name === "create_test_run").annotations = { readOnlyHint: true };
-  const d = diffContract(live, REAL_TOOLS);
+  const contract = { ...REAL_TOOLS, unconfirmed: { ghost_tool: "seen in an earlier capture" } };
+  const d = diffContract(live, contract);
   assert.deepEqual(d.missing, ["rerun_execution"]);
   assert.deepEqual(d.retiredLive.map((r) => r.name), ["create_manual_test_run"]);
-  assert.deepEqual(d.fresh.map((f) => f.name), ["brand_new_tool", "read_test_cases"]);
-  assert.ok(d.fresh.find((f) => f.name === "read_test_cases").note);
+  assert.deepEqual(d.fresh.map((f) => f.name), ["brand_new_tool", "ghost_tool"]);
+  assert.ok(d.fresh.find((f) => f.name === "ghost_tool").note);
   assert.equal(d.conflicts.length, 1);
   assert.match(d.conflicts[0], /create_test_run: live says readOnlyHint true/);
   assert.equal(d.stats.withAnnotations, 1);

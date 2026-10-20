@@ -14,7 +14,7 @@ This skill covers the review stage. It inspects coverage, case quality, and reli
 
 Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-- **Available.** Coverage: `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights`. Quality: `get_test_case_insights`, `read_test_case`. Reliability: `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results`. Environment readiness: `read_auts`. Suite contents: `read_test_suite`.
+- **Available.** Coverage: `fetch_requirement_metrics`, `find_test_cases_by_requirement`, `fetch_test_configuration_metrics`. Quality: `fetch_test_case_metrics`, `read_test_cases`, `search`. Reliability: `fetch_test_stability_metrics`, `find_test_results`. Environment readiness: `read_auts`. Suite contents: `read_test_suite`. Team conventions: `memory_list` and `memory_read`.
 - **Not available.** No tool reviews script code, locators, or the Studio object repository. Those are Studio-side. For the code lane, use `test-case-to-playwright` and `playwright-execute`. No tool checks accessibility. Use a browser or Playwright check when the user asks.
 - **Not a run.** Review does not start a run. A suite that looks good still needs `execute-test`.
 
@@ -28,11 +28,11 @@ Coverage review -> Quality review -> Reliability review -> Environment check -> 
 
 ## Steps
 
-1. **Read the suite.** Call `list_projects`, `list_repositories`, then `read_test_suite`. Note the case count, the lane (manual or automated), and whether the page is complete. Do not report a partial page as a total.
-2. **Coverage review.** Call `get_requirement_insights` and `find_test_cases_by_requirement` for requirement coverage. Call `get_test_configuration_insights` for browser and platform coverage. Flag orphan requirements and under-covered configurations. A link shows that a case exists. It does not show that the case passed.
-3. **Quality review.** Call `get_test_case_insights` for design signals. Read the cases behind any ambiguous signal with `read_test_case`. Apply the heuristics in `references/review-rubric.md`. Check each case for one behavior with a strong oracle, clear test data, and an observable expected result.
-4. **Reliability review.** Call `analyze_test_case_stability` for flaky, always failing, newly failing, and slow cases. Call `analyze_test_flakiness` with a minimum run count of about 10. Call `find_test_results` for recent history. Label a signal from fewer than about 10 runs as unconfirmed.
-5. **Environment readiness.** Call `read_auts` to confirm that an executable AUT exists for the suite.
+1. **Read the suite.** Call `list_projects`, `list_repositories`, then `read_test_suite`. Note the case count, the lane (manual or automated), and whether the page is complete. Do not report a partial page as a total. Call `memory_list` once. Read the records that match review, naming, or suite rules with `memory_read`, and quote them in the fix list. If `available` is false, say memory is unavailable. Do not infer that the team has no conventions.
+2. **Coverage review.** Call `fetch_requirement_metrics` (`iteration_type`, `iteration_name`) and `find_test_cases_by_requirement` for requirement coverage. Call `fetch_test_configuration_metrics` (a `filter` and `configuration_type` `OS` or `BROWSER`) for browser and platform coverage. State the `coverage_threshold` and `pass_threshold` you used. Flag orphan requirements and under-covered configurations. A link shows that a case exists. It does not show that the case passed. A `search` hit on a requirement is context. It is not a coverage link.
+3. **Quality review.** Call `fetch_test_case_metrics` (a `filter` with `filter_type` `ITERATION`, `DATE_RANGE`, or `DEFAULT`) for design signals. Read the cases behind any ambiguous signal with `read_test_cases` and `content_type` `FLOW` for the steps. Call `search` with `types` `["test_case"]` and `include_documents` false to look for duplicate coverage. A strong or exact hit decides "duplicate". A response with `incomplete=true` or a keyword fallback never proves that no duplicate exists. Apply the heuristics in `references/review-rubric.md`. Check each case for one behavior with a strong oracle, clear test data, and an observable expected result.
+4. **Reliability review.** Call `fetch_test_stability_metrics` with `filter_type` `EXECUTION` or `ITERATION`, and set `return_tests` to name the flaky, always failing, newly failing, and slow cases. Add `from_date` and `to_date` for a lookback window. The tool lists three cases per category unless you raise `limit_tests`. It has no minimum-run parameter. Call `find_test_results` for recent history and count the runs per case yourself. Label a signal from fewer than about 10 runs as unconfirmed.
+5. **Environment readiness.** Call `read_auts` to confirm that an executable AUT exists for the suite. It returns each AUT with its environments and client code.
 6. **Verdict.** Give one of **Approve**, **Approve with fixes**, or **Reject for pipeline**. List the cases to fix and why. State the risk of approving with known gaps.
 
 ## Verdicts
@@ -115,11 +115,11 @@ Exploratory testing and red teaming
 
 ## Checklist B: a model drafted the cases (CT-GenAI 1.1)
 
-- Every expected result was checked against the requirement text by a person. A model can state an invented rule with confidence. Read the requirement with `read_requirement` and compare line by line.
+- Every expected result was checked against the requirement text by a person. A model can state an invented rule with confidence. Read the requirement with `read_requirement` (check `customFields` for acceptance criteria) and compare line by line.
 - The cases are not near-duplicates. Models repeat the common path and skip rare paths. Look for missing negative and boundary cases.
 - No customer or personal data went into the prompt, and none sits in the case data.
 - The case records that a model drafted it. Look for a note in the description, or a tag where the project has tags. Reviewers need to know.
-- The case names use only letters, digits, spaces, and `( ) . , _ -`. A model often adds `:` or `/`, which the platform rejects.
+- The case names start with a letter or a digit and use only letters, digits, spaces, and `( ) . , _ -`. A model often adds `:` or `/`, which the platform rejects.
 - The team's own rules for AI-generated work are met. Ask the user for them. Do not assume them.
 - A person reviewed all drafted cases. Skimming a sample is not a review.
 
@@ -149,9 +149,9 @@ Read this before you issue a verdict.
 
 | Lens | Tools | What to flag |
 |---|---|---|
-| Coverage | `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights` | orphan requirements; under-covered browsers, platforms, and operating systems |
-| Quality | `get_test_case_insights`, `read_test_case` | cases that fail the atomicity heuristic; missing negative or boundary variants; vague or non-observable expected results; duplicate coverage |
-| Reliability | `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results` | flaky cases; cases with erratic recent history; long-broken cases; suites with zero failures across their whole history, which gives no proof they can fail |
+| Coverage | `fetch_requirement_metrics`, `find_test_cases_by_requirement`, `fetch_test_configuration_metrics` | orphan requirements; under-covered browsers, platforms, and operating systems |
+| Quality | `fetch_test_case_metrics`, `read_test_cases`, `search` | cases that fail the atomicity heuristic; missing negative or boundary variants; vague or non-observable expected results; duplicate coverage |
+| Reliability | `fetch_test_stability_metrics`, `find_test_results` | flaky cases; cases with erratic recent history; long-broken cases; suites with zero failures across their whole history, which gives no proof they can fail |
 
 ## Atomicity heuristic
 
@@ -162,7 +162,7 @@ Ask these questions of each case:
 1. **One behavior.** Can the case fail for two unrelated business rules? If yes, split it. Example: one case that checks both the discount rule and the tax rule.
 2. **Independent failure.** If the first step fails, does the case still tell you something about the later steps? A case whose later steps can never run is a chain, not a unit. Consider a precondition instead.
 3. **Strong oracle.** Does the expected result name an observable outcome (a value, a state, a message)? "Works correctly" and "page loads" are weak.
-4. **Clear test data.** Does the case name its data, or does it depend on a record that may not exist? Hand data gaps to `test-data`.
+4. **Clear test data.** Does the case name its data, or does it depend on a record that may not exist? Hand data gaps to `test-data`. Read the steps with `read_test_cases` and `content_type` `FLOW`. The default `NONE` returns metadata only.
 5. **Needed observations only.** Extra assertions on unrelated page details make a case brittle. Several assertions on one outcome do not.
 
 Do not flag a case for having many assertions alone. Flag it for failing one of the questions above, and say which.
@@ -171,9 +171,9 @@ Check for missing variants too: one negative case and one boundary case for each
 
 ## Run-count floor
 
-Give a stability signal a floor before it drives a verdict. Label one or two failures over fewer than about 10 recent runs as **unconfirmed** and say so in the fix list. `analyze_test_flakiness` takes a lookback window and a minimum run count. Set the minimum to 10 unless the team states another floor.
+Give a stability signal a floor before it drives a verdict. Label one or two failures over fewer than about 10 recent runs as **unconfirmed** and say so in the fix list. `fetch_test_stability_metrics` takes a lookback window (`from_date`, `to_date`) and has no minimum-run parameter. Count the runs per case with `find_test_results` and apply a floor of 10 unless the team states another floor.
 
-If a stability tool returns zero flaky cases for a suite that has recorded failures, cross-check with `find_test_results` before you trust the zero. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
+If a stability tool returns zero flaky cases for a suite that has recorded failures, cross-check with `find_test_results` before you trust the zero. Raise `limit_tests` if you need more than three cases per category. An earlier version of this tool returned all zeros on one project (observed 2026-08-03).
 
 ## Verdict decision table
 
@@ -191,7 +191,8 @@ If a stability tool returns zero flaky cases for a suite that has recorded failu
 Verdict:        Approve | Approve with fixes | Reject for pipeline
 Coverage:       requirements covered X/Y; configurations covered A/B; orphans: <list>
 Quality flags:  <case: which heuristic question it fails>
-Reliability:    flaky: <case: stability signal, run count, confirmed or unconfirmed>
+Reliability:    flaky: <case: stability signal, window, run count, confirmed or unconfirmed>
+Conventions:    <team memory records applied, or "memory unavailable">
 Fix list:       <case -> action -> owner hint>
 Risk if run as-is: <one line>
 ```
@@ -199,5 +200,5 @@ Risk if run as-is: <one line>
 ## Boundaries
 
 - Case code, locators, and object maintainability are Studio-side. Say so. Do not claim to have reviewed script internals through the MCP.
-- Flakiness is a platform signal read through `analyze_test_case_stability` and `analyze_test_flakiness`. Report it. Do not recompute it.
+- Flakiness is a platform signal read through `fetch_test_stability_metrics`. Report it. Do not recompute it.
 - Accessibility has no MCP tool. If the suite covers a user interface, say whether any case asserts accessibility. If none does, flag the gap. An axe-core check through Playwright is one way to close it on a local run.

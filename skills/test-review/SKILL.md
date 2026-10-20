@@ -16,7 +16,7 @@ This skill covers the review stage. It inspects coverage, case quality, and reli
 
 Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-- **Available.** Coverage: `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights`. Quality: `get_test_case_insights`, `read_test_case`. Reliability: `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results`. Environment readiness: `read_auts`. Suite contents: `read_test_suite`.
+- **Available.** Coverage: `fetch_requirement_metrics`, `find_test_cases_by_requirement`, `fetch_test_configuration_metrics`. Quality: `fetch_test_case_metrics`, `read_test_cases`, `search`. Reliability: `fetch_test_stability_metrics`, `find_test_results`. Environment readiness: `read_auts`. Suite contents: `read_test_suite`. Team conventions: `memory_list` and `memory_read`.
 - **Not available.** No tool reviews script code, locators, or the Studio object repository. Those are Studio-side. For the code lane, use `test-case-to-playwright` and `playwright-execute`. No tool checks accessibility. Use a browser or Playwright check when the user asks.
 - **Not a run.** Review does not start a run. A suite that looks good still needs `execute-test`.
 
@@ -30,11 +30,11 @@ Coverage review -> Quality review -> Reliability review -> Environment check -> 
 
 ## Steps
 
-1. **Read the suite.** Call `list_projects`, `list_repositories`, then `read_test_suite`. Note the case count, the lane (manual or automated), and whether the page is complete. Do not report a partial page as a total.
-2. **Coverage review.** Call `get_requirement_insights` and `find_test_cases_by_requirement` for requirement coverage. Call `get_test_configuration_insights` for browser and platform coverage. Flag orphan requirements and under-covered configurations. A link shows that a case exists. It does not show that the case passed.
-3. **Quality review.** Call `get_test_case_insights` for design signals. Read the cases behind any ambiguous signal with `read_test_case`. Apply the heuristics in `references/review-rubric.md`. Check each case for one behavior with a strong oracle, clear test data, and an observable expected result.
-4. **Reliability review.** Call `analyze_test_case_stability` for flaky, always failing, newly failing, and slow cases. Call `analyze_test_flakiness` with a minimum run count of about 10. Call `find_test_results` for recent history. Label a signal from fewer than about 10 runs as unconfirmed.
-5. **Environment readiness.** Call `read_auts` to confirm that an executable AUT exists for the suite.
+1. **Read the suite.** Call `list_projects`, `list_repositories`, then `read_test_suite`. Note the case count, the lane (manual or automated), and whether the page is complete. Do not report a partial page as a total. Call `memory_list` once. Read the records that match review, naming, or suite rules with `memory_read`, and quote them in the fix list. If `available` is false, say memory is unavailable. Do not infer that the team has no conventions.
+2. **Coverage review.** Call `fetch_requirement_metrics` (`iteration_type`, `iteration_name`) and `find_test_cases_by_requirement` for requirement coverage. Call `fetch_test_configuration_metrics` (a `filter` and `configuration_type` `OS` or `BROWSER`) for browser and platform coverage. State the `coverage_threshold` and `pass_threshold` you used. Flag orphan requirements and under-covered configurations. A link shows that a case exists. It does not show that the case passed. A `search` hit on a requirement is context. It is not a coverage link.
+3. **Quality review.** Call `fetch_test_case_metrics` (a `filter` with `filter_type` `ITERATION`, `DATE_RANGE`, or `DEFAULT`) for design signals. Read the cases behind any ambiguous signal with `read_test_cases` and `content_type` `FLOW` for the steps. Call `search` with `types` `["test_case"]` and `include_documents` false to look for duplicate coverage. A strong or exact hit decides "duplicate". A response with `incomplete=true` or a keyword fallback never proves that no duplicate exists. Apply the heuristics in `references/review-rubric.md`. Check each case for one behavior with a strong oracle, clear test data, and an observable expected result.
+4. **Reliability review.** Call `fetch_test_stability_metrics` with `filter_type` `EXECUTION` or `ITERATION`, and set `return_tests` to name the flaky, always failing, newly failing, and slow cases. Add `from_date` and `to_date` for a lookback window. The tool lists three cases per category unless you raise `limit_tests`. It has no minimum-run parameter. Call `find_test_results` for recent history and count the runs per case yourself. Label a signal from fewer than about 10 runs as unconfirmed.
+5. **Environment readiness.** Call `read_auts` to confirm that an executable AUT exists for the suite. It returns each AUT with its environments and client code.
 6. **Verdict.** Give one of **Approve**, **Approve with fixes**, or **Reject for pipeline**. List the cases to fix and why. State the risk of approving with known gaps.
 
 ## Verdicts

@@ -18,24 +18,29 @@ Katalon True Platform (formerly TestOps) holds the results. Katalon Test Executi
 
 | Need | Tool |
 |---|---|
-| Find recent or specific results | `find_test_results`, `list_executions` |
-| Read one execution or one result | `read_execution`, `read_execution_test_results`, `read_test_result` |
-| Run history for flaky and trend signals | `analyze_test_case_stability`, `analyze_test_flakiness` |
-| Existing defect context | `get_defect_insights` |
+| Find recent or specific results | `find_test_results` (filter_type COMMON or RELATIVE), `list_executions` |
+| Read one result with error detail | `find_test_results` with filter_type `TEST_RESULT` and `include_details: true` |
+| Read the failed results of one execution | `read_execution`, then `find_test_results` with filter_type `EXECUTION` and `status` |
+| Run history for flaky and trend signals | `fetch_test_stability_metrics` |
+| Defects already linked to a result, case, or execution | `fetch_defects` |
+| Defect distribution for an iteration or date range | `fetch_defect_metrics` |
 | Artifacts of a cloud execution | `list_execution_outputs` |
 | Run with AI session detail | `read_manual_ai_session` |
-| Rerun a completed execution | `rerun_execution` |
+| Rerun a completed automated execution | `rerun_execution` |
 | Attach evidence | `prepare_artifact_upload`, `confirm_artifact_upload` |
-| File a defect | `find_alm_integration_projects`, `create_defect` |
+| File a defect | `list_alm_integrations`, `create_defect` |
 
-Read each tool schema before the first call. This skill does not repeat parameters.
+Read each tool schema before the first call. This skill names only the parameters that change the answer.
 
 Limits to state up front:
 
 - AI root-cause summaries and automation error-pattern analytics are product features in the web app. They are not MCP calls. Do not claim to call them.
-- `create_defect` needs a failed test result ID and the ALM integration details. Defect creation without an ID does not exist.
+- `create_defect` needs a failed test result ID, an ALM integration ID, and an ALM connection ID. It files a real Jira or Azure DevOps bug. Defect creation without a result ID does not exist.
 - Two ID spaces both use the word "execution". `read_execution` and `list_executions` use the numeric True Platform ID. `list_execution_outputs` uses the Test Execution - Cloud string ID. No tool converts one to the other. Never swap the two list tools.
-- `rerun_execution` works only on a completed execution.
+- `rerun_execution` reruns an automated Studio, KRE, or Test Execution - Cloud execution only. A manual TestPak (a run with `MANUAL` as its executionType, used for human testing and for Run with AI) restarts through `update_test_run` in `execute-test`.
+- `fetch_test_stability_metrics` has no minimum-run parameter. It takes a window (`from_date`, `to_date`) or an execution or iteration. Count the runs yourself with `find_test_results` before you trust a signal.
+- `find_test_results` with `include_details` returns error detail and failed assertions. It returns no log content. Read logs from the artifacts or the web app.
+- No tool returns the signed-in user. Take the user from the client session. `create_defect` needs no assignee.
 - MCP is stateless. Ask in chat for any missing input and carry IDs from call to call.
 
 ## Workflow
@@ -47,20 +52,20 @@ Limits to state up front:
 +----------------+   +----------------+   +----------------+   +----------------+
 ```
 
-1. **Collect the failures.** Use `find_test_results` for recent or targeted results, or `read_execution_test_results` for one run. Use `read_test_result` for detail on each failed case. If the user gives no scope, ask for an execution ID, a suite, or a date range.
-2. **Set aside results with no verdict.** Blocked, not executed, and Run with AI sessions stuck in TODO or IN_TESTING are not failures. List them apart. Do not force them into a bucket.
-3. **Read run history first.** Call `analyze_test_case_stability` for the cases in scope. Use `analyze_test_flakiness` for a lookback window with a minimum run count. A case is flaky when the same test on the same build gave different results. Never label a case flaky from one read of its code. A model may explain a root-cause category after history shows the pattern.
-4. **Read the evidence.** Call `list_execution_outputs` with the cloud execution ID for artifact links. For Playwright results, open the trace and the error context (see the reference). For a Run with AI result, read the session with `read_manual_ai_session` and check whether the agent misread the step.
+1. **Collect the failures.** Use `find_test_results` with a COMMON or RELATIVE filter for recent or targeted results. For one run, call `read_execution`, then `find_test_results` with filter_type `EXECUTION` and `status` set to `FAILED` or `ERROR`. The page parameters walk the execution's jobs, not single results, so keep paging until nothing is left. An execution without jobs returns results directly (manual results carry `jobId: null`). Read each failed case with filter_type `TEST_RESULT` and `include_details: true`. If the user gives no scope, ask for an execution ID, a suite, or a date range.
+2. **Set aside results with no verdict.** Blocked, not executed, `INCOMPLETE`, and Run with AI sessions stuck in TODO or IN_TESTING are not failures. List them apart. Do not force them into a bucket.
+3. **Read run history first.** Call `fetch_test_stability_metrics` with `filter_type` `EXECUTION` and `execution_id`, or `ITERATION` with `iteration_type` and `iteration_name`. Add `from_date` and `to_date` for a lookback window. Set `return_tests` to name the cases you need (`FLAKY`, `ALWAYS_FAIL`, `NEW_FAILURE`, `SLOW`, or `ALL`). Omit it and the call returns metrics only. The call returns three cases per category unless you raise `limit_tests`. A case is flaky when the same test on the same build gave different results. Never label a case flaky from one read of its code. A model may explain a root-cause category after history shows the pattern.
+4. **Read the evidence.** Call `list_execution_outputs` with the cloud execution ID for artifact links. Enumerate every output it returns and do not alter the presigned URLs. For Playwright results, open the trace and the error context (see the reference). For a Run with AI result, read the session with `read_manual_ai_session` and check whether the agent misread the step.
 5. **Classify each failure** into one bucket:
    - **Product defect.** The application behaved wrong and the failure repeats.
    - **Automation defect.** The test is wrong: locator, wait, stale data, or a step that no longer matches the UI.
    - **Environment or data.** Infrastructure, account, network, fixture, or AUT state.
    A case that passed 8 or more of its last 10 runs needs a rerun or stability evidence before you call its failure a product defect.
 6. **Cluster by signature.** Group failures with the same step, error message, and object. One cluster is one candidate root cause and at most one defect.
-7. **Rerun only to learn something.** `rerun_execution` costs Test Execution - Cloud minutes and can change AUT data. Ask the user first. A pass on an unchanged rerun is flaky evidence. It does not clear the failure. Do not loop reruns until green.
-8. **Check for existing defects.** Call `get_defect_insights` for the iteration or date range. If it cannot show a defect for the signature, ask the user to search the ALM tracker before you file.
-9. **File defects only when asked, and only for product defects.** Follow `references/write-policy.md`: preview each defect (summary, description, failed result ID), get one confirmation, call `find_alm_integration_projects` if the integration is unknown, call `create_defect`, then report the key or link the call returns. If the call returns no key, say so.
-10. **Attach evidence only when asked.** Use `prepare_artifact_upload` and then `confirm_artifact_upload`. Files up to 10 MiB. See the tool schema for what the artifact attaches to.
+7. **Rerun only to learn something.** `rerun_execution` costs Test Execution - Cloud minutes and can change AUT data. Call `read_execution` first to confirm the execution type, and ask the user before you rerun. An execution ID alone is no authorization. A pass on an unchanged rerun is flaky evidence. It does not clear the failure. Do not loop reruns until green.
+8. **Check for existing defects.** Call `fetch_defects` with `filter: {"filter_type": "TEST_RESULT", "test_result_ids": [<failed result IDs>]}`, or `filter: {"filter_type": "EXECUTION", "execution_id": <execution ID>}`. A result with an empty `defects` list has no linked defect. A linked defect on a sibling case of the same cluster means the cluster already has an owner. Call `fetch_defect_metrics` when the question is the standing defect load for an iteration or date range. Use `filter_type` `ITERATION`, `DATE_RANGE`, or `DEFAULT`. The default `resolution_state` is `UNRESOLVED`, so a question about all defects needs a second call with `RESOLVED`. The metrics call shows distributions, not keys. If a known defect for the signature lives in the tracker only and is not linked to the result, ask the user to search the tracker before you file.
+9. **File defects only when asked, and only for product defects.** Follow `references/write-policy.md`: preview each defect (summary, description, failed result ID), get one confirmation, call `list_alm_integrations` if the integration is unknown, call `create_defect`, then report the key or link the call returns. If the summary is missing, ask the user for it. Suggest the failed case name, or "Defect for {test case name}". If the call returns no key, say so. Read the result back with `fetch_defects`.
+10. **Attach evidence only when asked.** Follow `references/write-policy.md`: preview each file (filename, exact byte size, mime type, and that project members can see it) and get one confirmation before any upload call. Measure the exact byte size of the file (1 to 10,485,760). Call `prepare_artifact_upload`, upload the raw bytes without Platform credentials, then call `confirm_artifact_upload`. See the tool schema for what the artifact attaches to.
 11. **Report** per cluster: classification, likely cause, affected cases, evidence, and action (file, repair, or rerun after a fix).
 
 Never invent a stack trace, a defect key, or an ALM project. If an input is missing, report blocked and name the input.
@@ -107,8 +112,8 @@ Reproducibility is the strongest signal. A failure that repeats across environme
 
 A flaky case gives different results for the same test on the same build. Decide this from run history. A read of the code cannot decide it.
 
-1. Call `analyze_test_case_stability` for the cases in scope. It reports flaky, consistently failing, newly failing, and slow tests.
-2. Call `analyze_test_flakiness` for a lookback window and a minimum number of runs. Say the window and the minimum in the report.
+1. Call `fetch_test_stability_metrics` for the execution or iteration in scope. Pass `return_tests` with `FLAKY`, `ALWAYS_FAIL`, `NEW_FAILURE`, `SLOW`, or `ALL`. Without `return_tests` the call returns metrics only. It lists three cases per category unless you raise `limit_tests`.
+2. For a lookback window, pass `from_date` and `to_date` with `return_tests: ["FLAKY"]`. The tool has no minimum-run parameter. Count the runs per case with `find_test_results` (filter_type COMMON, `testCaseId`) and say the window and the run count in the report.
 3. Treat a case as flaky only when history shows mixed results on the same build. A case that began failing after a build change is newly failing. Report it under that name.
 4. Ask a model to explain the likely cause (timing, shared state, data, environment) only after history shows the pattern. Studies of general-purpose models that read test code once found inconsistent flaky labels.
 5. A flaky label that will drive a quarantine needs two independent reads that agree. Use two evidence sources, for example run history and the failure artifacts. Hand the quarantine itself to `test-maintenance`.
@@ -119,11 +124,12 @@ One check on the data: a stability result with all zeros while results show fail
 
 | Source | How to read it |
 |---|---|
-| Test Execution - Cloud artifacts | Call `list_execution_outputs` with the cloud (string) execution ID. The numeric True Platform ID does not work here. |
+| Test Execution - Cloud artifacts | Call `list_execution_outputs` with the cloud (string) execution ID. The numeric True Platform ID does not work here. Without an `execution_id` the tool lists the five most recent cloud executions of the last 24 hours. Enumerate every output. Do not alter a presigned URL. The tool presigns one artifact per call. |
 | Playwright trace | Run `npx playwright trace` on the trace file (Playwright 1.59 or later, checked October 2026). Read the failing step, the network calls, and the page state before it. |
 | Playwright error context | Playwright 1.60 added aria snapshots of the receiving element to `errorContext`. Read it to see what the page showed at the failing assertion. |
 | Uploaded JUnit from Playwright | From Playwright 1.59 the JUnit reporter writes an error element for some failures that used to be failure elements. Compare the failed count in True Platform with the source report before you triage. |
-| Run with AI result | Call `read_manual_ai_session`. Check whether the agent misread the step or clicked the wrong control. A misread step is a test-side defect. |
+| Run with AI result | Call `read_manual_ai_session` with the `manual_execution_id` and `session_id`. Pass `test_case_id` for step detail (`stepDetails` can be null). Check whether the agent misread the step or clicked the wrong control. A misread step is a test-side defect. Polling does not launch a session. |
+| Result error detail | Call `find_test_results` with filter_type `TEST_RESULT` and `include_details: true`. It adds the profile, browser, OS, device, error detail, and failed assertions. It returns no log content. |
 
 If an artifact link does not open, report the link as unreadable. Do not guess its content.
 
@@ -133,19 +139,22 @@ Group by the tuple (failing step, error message, object or locator). One cluster
 
 ## Rerun rules
 
-- `rerun_execution` works only on a completed execution.
+- `rerun_execution` reruns an automated Studio, KRE, or Test Execution - Cloud execution. For a manual TestPak or a Run with AI run, a new START goes through `update_test_run` in `execute-test`.
+- Call `read_execution` first to confirm the execution type. An execution ID alone does not authorize a rerun.
 - It consumes Test Execution - Cloud minutes and can change AUT data. Ask for consent before each call.
 - Use a rerun to test a hypothesis (flaky or environment). State the hypothesis first.
 - A pass on an unchanged rerun marks the case a flaky candidate. The failure stays on the record and the run does not turn green.
-- Rerun one representative per cluster. Do not rerun in a loop.
+- Rerun one representative per cluster. To rerun only that case, `job_targets` maps a job ID to the test case path and name. See the tool schema. Do not rerun in a loop.
 
 ## Defect filing rules
 
 - File only for product defects, and only when the user asked or pre-approved filing.
-- A failed test result ID is required. Get it from `read_test_result` or `read_execution_test_results`.
-- Call `find_alm_integration_projects` first when the ALM integration is unknown.
-- Call `get_defect_insights` to look for an existing defect. If it cannot answer for this signature, ask the user to check the ALM tracker.
-- Preview the defect text, get one confirmation, then call `create_defect`, as the write policy in the skill body requires.
+- A failed test result ID is required. Get it from `find_test_results` (filter_type `TEST_RESULT` or `EXECUTION`).
+- Call `fetch_defects` before you file. A result whose `defects` list is empty has no linked defect. Group the failed results of one cluster in one call.
+- Call `list_alm_integrations` when the ALM integration is unknown. It returns the integration ID and the connection ID. `create_defect` needs both. Jira integrations also return the saved defect field mappings.
+- Ask the user for the summary when it is missing. Suggest the failed case name or "Defect for {test case name}". The description falls back to the result error message.
+- Preview the defect text, get one confirmation, then call `create_defect`, as the write policy in the skill body requires. It files a real Jira or Azure DevOps bug.
+- Read the link back with `fetch_defects` and report the tracker URL the call returned.
 - Never invent a stack trace, a defect key, or an ALM project. If the ID or the integration is missing, report blocked and name the missing input.
 
 ## Report template
@@ -176,11 +185,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -188,7 +213,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

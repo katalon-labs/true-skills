@@ -57,7 +57,7 @@ Resolve context in this order before any write:
 2. Call `list_repositories` with `project_id`. Treat repository and Test Project as one target. If the user says "Katalon Cloud", prefer a repository with that name. Do not scan all repositories to avoid a choice.
 3. Name the project and repository to the user in one line.
 
-Then pass the resolved values to the next skill. Do not resolve again. Repeat `project_id` and `repository_id` on every call that takes them, because the MCP keeps no session. Carry IDs between calls yourself: requirement keys, suite IDs, `manualExecutionId`, and execution IDs.
+Then pass the resolved values to the next skill. Do not resolve again. Repeat `project_id` and `repository_id` on every call that takes them, because the MCP keeps no session. Carry IDs between calls yourself: requirement keys, suite IDs, `manualExecutionId`, `session_id`, and execution IDs.
 
 Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud uses a string. Never pass one where the other belongs.
 
@@ -68,7 +68,7 @@ The full rules are in `references/write-policy.md`. In short:
 - Reads need no confirmation.
 - Before a write, preview the whole mutation set, get one confirmation, run it, then read back.
 - A destructive tool needs a yes that names the target.
-- Before `create_test_run`, `create_manual_ai_session`, or `rerun_execution`, confirm. These use cloud minutes and can change AUT data. A confirmation covers one run.
+- Before `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`, confirm. These use cloud minutes, launch a hosted browser, or can change AUT data. A confirmation covers one run.
 - Never rely on a server prompt or on sampling. Ask in chat.
 
 A user who asks for a full flow has not confirmed each write. Preview at each stage boundary, or once for the whole chain when the chain is short and the user agrees.
@@ -90,7 +90,9 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 ## Capability Boundary
 
-State the boundary before you promise a workflow. The MCP can run both manual and automated runs, rerun a completed execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, and work with TrueTest sessions. It cannot create requirements, create a formal Test Plan entity, cancel Run with AI, stop a running execution, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+
+When the work authors or names things, call `memory_list` once and read the headlines that match. Treat the bodies as the team's decisions, quote them, and never restate them as platform facts. If memory is unavailable, say so. Memory is optional. Call `memory_write` or `memory_forget` only when the user asks.
 
 ## References
 

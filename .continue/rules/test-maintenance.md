@@ -18,23 +18,29 @@ Katalon True Platform (formerly TestOps) holds the cases and the results. Client
 
 | Need | Tool |
 |---|---|
-| Stability and flaky history | `analyze_test_case_stability`, `analyze_test_flakiness` |
-| Results and executions | `find_test_results`, `read_test_result`, `read_execution`, `list_executions` |
+| Stability and flaky history | `fetch_test_stability_metrics` |
+| Results and executions | `find_test_results`, `read_execution`, `list_executions` |
 | Impact of a requirement change | `find_requirements`, `find_test_cases_by_requirement` |
-| Coverage after the change | `get_requirement_insights`, `get_test_case_insights` |
-| Read and repair cases | `find_test_cases`, `read_test_case`, `update_test_case`, `move_test_case`, `duplicate_test_case` |
+| Coverage after the change | `fetch_requirement_metrics`, `fetch_test_case_metrics` |
+| Find a similar or duplicate case | `search` |
+| Read and repair cases | `find_test_cases`, `read_test_cases`, `update_test_cases`, `move_test_case`, `duplicate_test_case` |
+| Re-link requirements | `manage_requirement_test_case_linkages` |
 | Reorganize | `manage_test_folder`, `manage_test_suite` |
-| Confirm a repair | `rerun_execution` (consent needed), or a new run through `execute-test` |
+| Confirm a repair | `rerun_execution` (automated only, consent needed), or a new run through `execute-test` |
 
-Read each tool schema before the first call. This skill does not repeat parameters.
+Read each tool schema before the first call. This skill names only the parameters that change the answer.
 
 Limits to state up front:
 
-- MCP repairs are case-level content edits (title, steps, expected results, data, links, location). They are not object or script healing.
+- MCP repairs are case-level content edits (title, steps, expected results, data, links, location, status). They are not object or script healing.
 - Self-healing tests, Time Capsule, Studio Tracer, object refactoring, and StudioAssist Agent-mode edits are Katalon Studio desktop features. Code healing for Playwright happens in the user's repository, not through MCP.
-- `delete_test_case` is unreliable. Prefer `update_test_case` or `move_test_case`.
-- A case name accepts letters, digits, spaces, and `( ) . , _ -`. Other characters fail or get renamed.
-- `rerun_execution` works only on a completed execution. The platform docs do not say whether a rerun picks up edits to case content. Check the new result against the repaired case. If unsure, start a fresh run through `execute-test`.
+- `update_test_cases` takes `repository_id` and an ordered `updates` list. Each item holds one action (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, or `UPDATE_CONTENT`) and a `test_case_data` object with the case `id`. Actions run in order. Put every change to one case in one call.
+- `UPDATE_CONTENT` replaces all steps. Send the complete step list. Keep every Call Test Case step. A replacement that would silently drop a call is rejected.
+- A case name starts with a letter or a digit and accepts letters, digits, spaces, and `( ) . , _ -`. Other characters fail.
+- `delete_test_case` is destructive and permanent. Prefer `UPDATE_STATUS` with `INACTIVE`, or `move_test_case`. Delete only with a yes that names the case.
+- `fetch_test_stability_metrics` has no minimum-run parameter. Count the runs per case with `find_test_results` before you trust a flaky signal.
+- `rerun_execution` works only on an automated execution, and only after `read_execution` confirms the type. The platform docs do not say whether a rerun picks up edits to case content. Check the new result against the repaired case. If unsure, start a fresh run through `execute-test`. A manual TestPak never reruns this way.
+- `search` finds cases by meaning. A hit carries a title and a reference only, so read the case with `read_test_cases` before you act on it. Cases created in the last few minutes can be missing, and a search with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that a case does not exist.
 - MCP is stateless. Ask in chat for missing input and carry IDs from call to call.
 
 ## Workflow
@@ -47,15 +53,15 @@ Limits to state up front:
 +---------------+   +---------------+   +---------------+   +---------------+
 ```
 
-1. **Detect impact.** Call `analyze_test_case_stability` and `analyze_test_flakiness` (state the lookback window and the minimum runs). Use `find_test_results` and `read_execution` to see what changed across recent runs. After a requirement change, call `find_requirements` for the changed items and `find_test_cases_by_requirement` for the cases they link to. Check those cases first. Build one list of broken, flaky, and degraded cases.
+1. **Detect impact.** Call `fetch_test_stability_metrics` with `filter_type` `ITERATION` (and `iteration_type`, `iteration_name`) or `EXECUTION` (and `execution_id`). Add `from_date` and `to_date` for the lookback window. Set `return_tests` to `["FLAKY", "ALWAYS_FAIL", "NEW_FAILURE", "SLOW"]` to get case lists. The default is three per category, so raise `limit_tests` for a long list. State the window and the run count per case. Use `find_test_results` and `read_execution` to see what changed across recent runs. After a requirement change, call `find_requirements` for the changed items and `find_test_cases_by_requirement` for the cases they link to. Check those cases first. Build one list of broken, flaky, and degraded cases.
 2. **Label flaky from history.** A flaky case gave different results for the same test on the same build. Never label a case flaky from one read of its code. A flaky label that drives a quarantine needs two independent evidence sources that agree, for example run history and failure artifacts.
-3. **Diagnose each case.** Pick one:
-   - **Repair.** The case is salvageable. Fix data, steps, or expected results with `update_test_case`. Reorganize with `move_test_case`. Branch a variant with `duplicate_test_case`.
+3. **Diagnose each case.** Read the case first with `read_test_cases` and `content_type` `FLOW` for the steps. Pick one:
+   - **Repair.** The case is salvageable. Fix data, steps, or expected results with `update_test_cases`. Reorganize with `move_test_case`. Branch a variant with `duplicate_test_case`.
    - **Regenerate.** The behavior changed enough that the case needs re-derivation. Hand it to `create-test-cases`, which can also draft cases from captured TrueTest sessions.
-   - **Retire.** The behavior is gone. Name the cases and get an explicit yes. Prefer a status change or a move to a retired folder over `delete_test_case`.
-4. **Repair under the healing guardrails** (next section). Follow `references/write-policy.md` for every write: preview the set, get one confirmation, execute, read back.
-5. **Validate.** Confirm the repair through `rerun_execution` or a new run. A green result alone is not confirmation. Compare the new result with the `read_test_result` that triggered the repair and check that the case still exercises the original failure path.
-6. **Feed back.** Send the refreshed gap list to `test-plan`. Call `get_requirement_insights` and `get_test_case_insights` to measure the gaps. Maintenance that stops at green has not closed the loop.
+   - **Retire.** The behavior is gone. Name the cases and get an explicit yes. Prefer `UPDATE_STATUS` with `INACTIVE`, or a move to a retired folder, over `delete_test_case`.
+4. **Repair under the healing guardrails** (next section). Follow `references/write-policy.md` for every write: preview the set, get one confirmation, execute, read back with `read_test_cases`.
+5. **Validate.** Confirm the repair through a new run (`execute-test`) or, for an automated execution, `rerun_execution`. A green result alone is not confirmation. Compare the new result with the `find_test_results` record (filter_type `TEST_RESULT`, `include_details: true`) that triggered the repair and check that the case still exercises the original failure path.
+6. **Feed back.** Send the refreshed gap list to `test-plan`. Call `fetch_requirement_metrics` (give `iteration_type` and `iteration_name`, and check the iteration exists with `find_iterations`) and `fetch_test_case_metrics` (give a `filter` with `filter_type` `ITERATION`, `DATE_RANGE`, or `DEFAULT`) to measure the gaps. When a requirement link broke, repair it with `manage_requirement_test_case_linkages`, which links or unlinks many cases and requirements in one call. Read the links back with `find_test_cases_by_requirement`. Maintenance that stops at green has not closed the loop.
 
 ## Healing guardrails
 
@@ -118,19 +124,20 @@ stability and history -> per-case decision -> reviewed edit -> rerun -> gap list
 
 | Signal | Decision | MCP action |
 |---|---|---|
-| Mixed results on the same build (history) | Flaky. Stabilize. | `update_test_case` for waits or data. Flag for a Studio object review if the case is a Studio test. |
+| Mixed results on the same build (history) | Flaky. Stabilize. | `update_test_cases` with `UPDATE_CONTENT` for waits or data. Flag for a Studio object review if the case is a Studio test. |
 | Consistent failure after an app behavior change | Regenerate | Hand to `create-test-cases`. It can draft from captured TrueTest sessions. |
-| Step or element gone from the app | Repair or retire | `update_test_case` to match the new flow. Retire with approval. |
-| Near-duplicate drift | Consolidate | `duplicate_test_case` for a base, `move_test_case`, keep one canonical case. |
+| Step or element gone from the app | Repair or retire | `update_test_cases` to match the new flow. Retire with approval through `UPDATE_STATUS` set to `INACTIVE`. |
+| Near-duplicate drift | Consolidate | `search` to find the near-duplicates, `duplicate_test_case` for a base, `move_test_case`, keep one canonical case. |
 | Wrong folder or suite after a refactor | Reorganize | `move_test_case`, `manage_test_folder`, `manage_test_suite`. |
-| Always passes across the whole stability history | Review for saturation | Confirm with `analyze_test_case_stability` that it still exercises the risk path. Strengthen it with `update_test_case`, or consolidate. |
-| Linked requirement changed | Check the case first | `find_test_cases_by_requirement`, then read each case against the new requirement text. |
+| Always passes across the whole stability history | Review for saturation | Confirm with `fetch_test_stability_metrics` that it still exercises the risk path. Strengthen it with `update_test_cases`, or consolidate. |
+| Linked requirement changed | Check the case first | `find_test_cases_by_requirement`, then read each case (`read_test_cases`, `content_type` `FLOW`) against the new requirement text. |
+| Link between a case and a requirement is wrong or missing | Re-link | `manage_requirement_test_case_linkages` with `link` or `unlink`. Unlink needs a yes that names the links. Read back with `find_test_cases_by_requirement`. |
 
 ## Flaky labels
 
-- Source: run history for the same test on the same build (`analyze_test_case_stability`, `analyze_test_flakiness`). Report the lookback window and the minimum runs.
+- Source: run history for the same test on the same build (`fetch_test_stability_metrics` with `return_tests: ["FLAKY"]` and `from_date` and `to_date`). The tool has no minimum-run parameter. Count the runs with `find_test_results` and report the lookback window and the run count.
 - A model may suggest a root-cause category (timing, shared state, data, environment). The label itself comes from history.
-- A label that drives a quarantine needs two independent evidence sources that agree. Quarantine means a status change or a move to a quarantine folder, after approval. See the tool schema for the fields `update_test_case` accepts.
+- A label that drives a quarantine needs two independent evidence sources that agree. Quarantine means `UPDATE_STATUS` set to `INACTIVE`, or a move to a quarantine folder, after approval. `UPDATE_AUTOMATION_STATUS` is a separate field. Do not use it as a lifecycle status, and do not use `testType` as a substitute for either.
 - A quarantined case stays on the gap list until a person fixes or retires it.
 
 ## Healing levels
@@ -178,10 +185,12 @@ Guardrails:   <assertion-count diff result, healing level used>
 
 ## Safe-mutation rules
 
-- Prefer `update_test_case` and `move_test_case` over `delete_test_case`.
-- Put every intended edit for one case into a single `update_test_case` call.
+- Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Deleting a case is permanent and needs a yes that names the case.
+- Put every intended edit for one case into a single `update_test_cases` call. Actions run in order, so separate calls for one case can race.
+- `UPDATE_CONTENT` replaces every step. Send the complete step list, keep Call Test Case actions, and omit `context` or include `expectedResult` (never `context: {}`).
+- `repository_id` is required. Resolve it with `list_repositories` and carry it into every call.
 - Preview bulk changes, and get one confirmation for the set. Name every retire or delete target in that confirmation.
-- Read the case back after each write and compare it with the preview.
+- Read the case back with `read_test_cases` after each write and compare it with the preview. Count only applied and unchanged outcomes as success. If a batch fails part way, stop and report which cases changed.
 
 ### references/write-policy.md
 
@@ -198,11 +207,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -210,7 +235,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

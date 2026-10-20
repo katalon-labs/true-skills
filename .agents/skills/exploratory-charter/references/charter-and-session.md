@@ -92,7 +92,7 @@ A finding becomes a scripted case when **all three** hold:
 
 1. It is **reproducible**, with steps that work from a stated starting state.
 2. It maps to a **rule someone will defend**, an oracle a product owner would stand behind.
-3. It **would not be caught by existing coverage**, checked with `find_test_cases` before proposing it.
+3. It **would not be caught by existing coverage**, checked with `find_test_cases` or `search` before proposing it. For `search`, an exact or strong tier hit means the case exists. No hit proves nothing when the response says `incomplete=true`, `retrieval_mode="keyword_fallback"` or carries a warning.
 
 Otherwise it stays where it is:
 

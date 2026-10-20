@@ -14,7 +14,7 @@ This skill covers test design and import: read a requirement, design cases, chec
 
 ## What the MCP can and cannot do
 
-- **Can:** list projects and repositories, find and read requirements, find/read/create/update/move/duplicate test cases, manage folders and suites, read suite collections, link and unlink requirements, and generate cases from TrueTest sessions.
+- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases, manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
 - **Cannot:** create requirements (they sync from Jira or Azure DevOps), create a formal Test Plan entity, or inspect the live application.
 - **Test plan workaround:** create or reuse a named folder and suite as the executable planning structure.
 
@@ -29,14 +29,15 @@ Before any write:
 3. If exactly one repository exists, use it. If several are equally likely, ask the user to choose.
 4. If the user says "Katalon Cloud" or "cloud repo", prefer a repository named `Katalon Cloud`.
 5. Do not scan every repository to avoid asking.
+6. Call `memory_list` once. It returns the team's saved naming, folder, and step conventions plus the project policy page. Call `memory_read` on headlines that match this job. Follow a convention when it applies and quote it. Never present it as a platform fact. If `available` is false, say memory is unavailable and do not conclude that the team has no conventions. Memory is optional: carry on when it is empty. Never call `memory_write` or `memory_forget` on your own. Use them only when the user asks you to remember or forget something.
 
 ## Pick the source
 
 | The user has | Start here |
 |---|---|
-| A requirement key | `find_requirements` or `read_requirement`, then "Analyze the requirement" below |
+| A requirement key | `find_requirements` or `read_requirement`, then "Analyze the requirement" below. Read `customFields` too: acceptance criteria often live there. |
 | Free text or a pasted spec | Analyze it locally. Link only when a real requirement ID is known. |
-| Captured user sessions or a journey map | `references/from-truetest-sessions.md` |
+| Captured user sessions, a journey map, or one journey-map flow | `references/from-truetest-sessions.md` |
 
 ## Analyze the requirement
 
@@ -46,7 +47,7 @@ Track these points: intent, personas, main flow, alternate and negative flows, d
 
 Rank first, then apply techniques.
 
-1. **Rank by risk.** Score each requirement line by impact and likelihood of failure. Use defect history when it helps (`get_defect_insights`). Put the most cases where the risk is highest.
+1. **Rank by risk.** Score each requirement line by impact and likelihood of failure. Use defect history when it helps (`fetch_defect_metrics` with `filter_type` `DATE_RANGE` or `ITERATION`). Check `fetch_defects` for defects already linked to the cases you reuse. Put the most cases where the risk is highest.
 2. **Apply techniques as tools.** ISTQB techniques (equivalence partitioning, boundary values, decision tables, state transitions, use-case scenarios, error guessing, pairwise) help you find cases. They do not prove coverage is complete. Model-based views such as a state diagram or a journey map are equal tools.
 3. **State the gap.** Report what the design leaves uncovered and why. Never imply full coverage.
 
@@ -66,11 +67,13 @@ Each case targets one validation condition (one acceptance line). It must still 
 ## Platform constraints
 
 - Test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Keep `@`, `:`, and `/` out of titles. Put them in descriptions or steps. Folder paths may use `/`.
-- Prefer `update_test_case` over delete and recreate. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
-- `create_test_case` with the AUTOMATED type creates nothing. It returns guidance. Create manual cases only.
+- Test case names start with a letter or digit. `path` starts with `Test Cases` or `Test Cases/`.
+- Prefer `update_test_cases` over delete and recreate. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
+- `create_test_case` with `test_case_type` `AUTOMATED` creates nothing. It returns the next action for script generation. Create manual cases only.
 - Suites reject a mix of MANUAL and AUTOMATED cases.
-- No tool looks up assignees. Leave the assignee empty unless the user supplies a valid ID.
-- When an update replaces the step list, send the full list. Check the tool schema.
+- No tool looks up assignees or the signed-in user. Leave the assignee empty unless the user supplies a valid UUID.
+- A step that calls another case uses the step `action` object (`type` `call`, `test_case_id`, `version`). Never write it as a plain step named "Call test case 12".
+- `update_test_cases` with `UPDATE_CONTENT` replaces all steps. Send the complete step list and keep Call Test Case steps. Omit `context` or include `expectedResult`. Never send `context: {}`.
 
 ## Check existing cases
 
@@ -78,9 +81,10 @@ This step is mandatory before every create, including retries after a partial fa
 
 1. If requirement IDs are known, call `find_test_cases_by_requirement`. Pass exactly one of the requirement identifiers it accepts.
 2. Search with `find_test_cases` by requirement key, title keywords, feature area, and target folder.
-3. Read likely matches with `read_test_case` when the title alone cannot settle coverage.
-4. Reuse, update, move, or link existing cases that already cover the behavior.
-5. Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete cases.
+3. Run `search` with `types: ["test_case"]` and `include_documents: false` for the same wording. It finds cases that keyword filters miss. Judge "exists" by the result tier (exact or strong), never by score alone. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that a case is absent. Cases created in the last few minutes may not be searchable yet, so hedge any absence claim.
+4. Read likely matches with `read_test_cases` (`content_type` `FLOW` for steps) when the title alone cannot settle coverage. A `search` hit gives a title and ref only.
+5. Reuse, update, move, or link existing cases that already cover the behavior.
+6. Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete cases.
 
 Never create a duplicate because an earlier create call failed. Search again first.
 
@@ -92,10 +96,10 @@ Follow `references/write-policy.md`. One write set gets one confirmation. For mo
 2. **Validate.** Check the plan before any write: name charset, duplicate titles inside the plan and against existing cases, folder exists or is in the plan, requirement IDs are real, suite members share one type. Fix the plan before you touch the platform.
 3. **Execute.** Show the plan summary. Get one confirmation. Then write in this order.
    1. `create_test_case` for uncovered manual cases only.
-   2. `update_test_case` for revisions, one call per case with every intended change.
-   3. `link_requirements_to_test_case` only after the requirement IDs are known.
+   2. `update_test_cases` for revisions. Put every change to one case in one call: actions run in order, so separate calls for one case race. Each item is `{action, test_case_data: {id, ...}}` with one action per field (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, `UPDATE_CONTENT`). `repository_id` is required.
+   3. `manage_requirement_test_case_linkages` with `action` `link`, `requirement_ids`, `test_case_ids`, and `project_id`, only after the requirement IDs are known. The call is many-to-many and runs per requirement in parallel. A partial failure leaves some requirements updated, so read back with `find_test_cases_by_requirement`.
    4. `manage_test_folder` or `move_test_case` when organization was requested or is clearly needed.
-4. **Read back.** Call `read_test_case` for created and updated cases. Compare the result with the plan. Report any mismatch.
+4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Compare the result with the plan. Report any mismatch.
 
 Case shape: title, description, pre-condition, steps, expected results, test data, priority, requirement links.
 

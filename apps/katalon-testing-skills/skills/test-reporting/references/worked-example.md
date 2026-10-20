@@ -35,12 +35,12 @@ Four periods give a direction.
 ## Pull per period
 
 ```text
-find_test_results(repo 8891, 2026-05-19..2026-06-01) -> 214 results, 176 passed, 38 failed
-find_test_results(repo 8891, 2026-06-02..2026-06-15) -> 221 results, 189 passed, 32 failed
-find_test_results(repo 8891, 2026-06-16..2026-06-29) -> 218 results, 194 passed, 24 failed
-find_test_results(repo 8891, 2026-06-30..2026-07-13) -> 226 results, 208 passed, 18 failed
-get_defect_insights(repo 8891, read 2026-07-14)       -> open 14, critical 3, high 6, reopened 2
-analyze_test_case_stability(repo 8891, read 2026-07-14) -> 9 unstable cases
+find_test_results(COMMON, startTime 2026-05-19..2026-06-01) -> 214 results, 176 passed, 38 failed
+find_test_results(COMMON, startTime 2026-06-02..2026-06-15) -> 221 results, 189 passed, 32 failed
+find_test_results(COMMON, startTime 2026-06-16..2026-06-29) -> 218 results, 194 passed, 24 failed
+find_test_results(COMMON, startTime 2026-06-30..2026-07-13) -> 226 results, 208 passed, 18 failed
+fetch_defect_metrics(DEFAULT, UNRESOLVED, read 2026-07-14)  -> unresolved 14, critical 3, high 6
+fetch_test_stability_metrics(ITERATION Sprint 15, read 2026-07-14) -> 9 unstable cases
 ```
 
 The defect and stability reads carry the label "as of 2026-07-14". The tool returned counts without keys, so the report asks the user for the three open critical keys from Jira. The user supplies CEL-241, CEL-258, and CEL-263.

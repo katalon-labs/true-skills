@@ -28,8 +28,9 @@ Produce:
 ## Katalon Requirement Handling
 
 - Use `find_requirements` to search synced Jira or Azure DevOps requirements.
-- Use `read_requirement` for one requirement by source key or internal ID.
-- Use `find_test_cases_by_requirement` to see existing coverage. Pass exactly one identifier. Zero or several identifiers return a validation error.
-- Use `link_requirements_to_test_case` after the cases exist.
-- Use `get_requirement_insights` for coverage status of a sprint or release.
+- Use `read_requirement` for one requirement by source key or internal ID. Read `customFields` before you call a requirement thin. Acceptance criteria and steps to reproduce often live there, not in the description.
+- Use `find_test_cases_by_requirement` to see existing coverage. Pass exactly one of `requirement_id`, `key`, or `requirement_external_id`. Zero or several identifiers return a validation error.
+- Use `search` for domain context. Set `types` to `["requirement"]` for requirements. Leave `include_documents` on to include uploaded specification documents. A requirement hit is context. It is no coverage link.
+- Use `manage_requirement_test_case_linkages` with `action` set to `link` after the cases exist.
+- Use `fetch_requirement_metrics` for coverage status of a sprint or release. Check that the iteration exists with `find_iterations` first.
 - The MCP cannot create requirements. It can find, read, and link synced ones.

@@ -19,9 +19,9 @@ State the boundary before you promise automation. It has three parts.
 **Available through Katalon MCP**
 
 - Resolve context with `list_projects` and `list_repositories`.
-- Read the source case with `find_test_cases` and `read_test_case`. Resolve a requirement key with `find_requirements`, `read_requirement`, and `find_test_cases_by_requirement`.
+- Read the source case with `find_test_cases` and `read_test_cases` (`content_type` `FLOW` for the steps). Resolve a requirement key with `find_requirements`, `read_requirement`, and `find_test_cases_by_requirement`.
 - Read platform-side suites with `find_test_suites` and `read_test_suite`.
-- Write the generated Studio path onto the platform case with `update_test_case`, for traceability. This is a write. Show the proposed change, get one confirmation, run it, then read the case back.
+- Write the generated Studio path onto the platform case with `update_test_cases`, for traceability. Use the `UPDATE_DESCRIPTION` action with the existing description kept and the path appended. Add `UPDATE_AUTOMATION_STATUS` only when the user asks and the Studio case is complete. Batch both actions in one call. This is a write. Show the proposed change, get one confirmation, run it, then read the case back with `read_test_cases`.
 
 **Not available through Katalon MCP**
 
@@ -31,7 +31,7 @@ State the boundary before you promise automation. It has three parts.
 - No MCP tool runs a Studio suite. `katalonc` is a local command.
 - No MCP tool uploads a Studio report. That is `upload-report`.
 - No MCP tool parses or validates a generated `.tc`, `.ts`, or `.rs`. Studio is the only parser. This skill checks XML well-formedness and GUID consistency, and it names what stays unverified.
-- `create_test_case` with an AUTOMATED type creates nothing and returns guidance only. Do not use it to register the Studio case.
+- `create_test_case` with `test_case_type` `AUTOMATED` creates nothing and returns the next action for script generation. Do not use it to register the Studio case.
 
 **Command-line execution needs a separate licence**
 
@@ -59,11 +59,11 @@ The report flag depends on the Studio version. `-report.folderPath` is available
 
 Resolve the Katalon context before you write files.
 
-- Call `list_projects` and `list_repositories`, then `find_test_suites`, `find_test_cases`, and `read_test_case` for each selected case. See the tool schema for filter shapes.
+- Call `list_projects` and `list_repositories`, then `find_test_suites`, `find_test_cases`, and one `read_test_cases` call with `content_type` `FLOW` for the selected cases. `find_test_cases` needs `repository_id` and a `filter` with `filter_type` `COMMON`, `RELATIVE`, or `ITERATION`. Pages start at 0: copy `next_page_token` into `page_number`. `search` with `types: ["test_case"]` and `include_documents: false` finds cases by meaning.
 - For a suite, call `read_test_suite` and read every included case before you generate anything.
 - For requirement keys, find the linked cases first with `find_test_cases_by_requirement`.
 - If MCP is unavailable or authentication fails, ask for exported cases, case URLs, case keys, or the case text.
-- Keep traceability in both directions. Put the platform case key in the `.tc` `<description>` and `<tag>`. Write the generated `Test Cases/...` path back with `update_test_case`. Keep the case name within the characters the platform accepts, and read the case back to confirm.
+- Keep traceability in both directions. Put the platform case key in the `.tc` `<description>` and `<tag>`. Write the generated `Test Cases/...` path back with `update_test_cases` (`UPDATE_DESCRIPTION`). Keep the case name within the characters the platform accepts (a letter or digit first, then letters, digits, spaces, and `( ) . , _ -`), and read the case back to confirm.
 
 Extract for each case: title, priority, requirement links, folder, preconditions, test data, manual steps, expected results, AUT URL, roles and accounts, environment, browser or device assumptions, and cleanup. Flag selectors and business data that need human input.
 
@@ -124,7 +124,7 @@ Studio has no page-object classes. `Object Repository/` is the equivalent layer,
 
 ## Worked Example
 
-Input, read with `read_test_case`:
+Input, read with `read_test_cases` (`content_type` `FLOW`):
 
 ```text
 Key:         TC-1042

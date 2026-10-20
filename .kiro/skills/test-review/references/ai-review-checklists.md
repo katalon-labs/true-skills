@@ -39,11 +39,11 @@ Exploratory testing and red teaming
 
 ## Checklist B: a model drafted the cases (CT-GenAI 1.1)
 
-- Every expected result was checked against the requirement text by a person. A model can state an invented rule with confidence. Read the requirement with `read_requirement` and compare line by line.
+- Every expected result was checked against the requirement text by a person. A model can state an invented rule with confidence. Read the requirement with `read_requirement` (check `customFields` for acceptance criteria) and compare line by line.
 - The cases are not near-duplicates. Models repeat the common path and skip rare paths. Look for missing negative and boundary cases.
 - No customer or personal data went into the prompt, and none sits in the case data.
 - The case records that a model drafted it. Look for a note in the description, or a tag where the project has tags. Reviewers need to know.
-- The case names use only letters, digits, spaces, and `( ) . , _ -`. A model often adds `:` or `/`, which the platform rejects.
+- The case names start with a letter or a digit and use only letters, digits, spaces, and `( ) . , _ -`. A model often adds `:` or `/`, which the platform rejects.
 - The team's own rules for AI-generated work are met. Ask the user for them. Do not assume them.
 - A person reviewed all drafted cases. Skimming a sample is not a review.
 

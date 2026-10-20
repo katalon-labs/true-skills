@@ -34,7 +34,7 @@
 
 - [combination-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/combination-recipes.md): multi-skill playbooks (requirement-to-ship, coverage rescue, flaky cleanup, manual-to-automation, cross-lane trust check, traceability audit).
 - [prompt-recipes](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/prompt-recipes.md): copy-paste prompts plus cross-model and cross-agent execution notes.
-- [mcp-tool-index](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/mcp-tool-index.md): every Katalon MCP tool, one line, tagged by lifecycle stage.
+- [mcp-tool-index](https://github.com/katalon-labs/true-skills/blob/main/skills/true-platform-testing/references/mcp-tool-index.md): all 74 live Katalon MCP tools, one line each, tagged by lifecycle stage.
 
 ## Install
 

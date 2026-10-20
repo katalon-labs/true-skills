@@ -12,19 +12,20 @@ stability and history -> per-case decision -> reviewed edit -> rerun -> gap list
 
 | Signal | Decision | MCP action |
 |---|---|---|
-| Mixed results on the same build (history) | Flaky. Stabilize. | `update_test_case` for waits or data. Flag for a Studio object review if the case is a Studio test. |
+| Mixed results on the same build (history) | Flaky. Stabilize. | `update_test_cases` with `UPDATE_CONTENT` for waits or data. Flag for a Studio object review if the case is a Studio test. |
 | Consistent failure after an app behavior change | Regenerate | Hand to `create-test-cases`. It can draft from captured TrueTest sessions. |
-| Step or element gone from the app | Repair or retire | `update_test_case` to match the new flow. Retire with approval. |
-| Near-duplicate drift | Consolidate | `duplicate_test_case` for a base, `move_test_case`, keep one canonical case. |
+| Step or element gone from the app | Repair or retire | `update_test_cases` to match the new flow. Retire with approval through `UPDATE_STATUS` set to `INACTIVE`. |
+| Near-duplicate drift | Consolidate | `search` to find the near-duplicates, `duplicate_test_case` for a base, `move_test_case`, keep one canonical case. |
 | Wrong folder or suite after a refactor | Reorganize | `move_test_case`, `manage_test_folder`, `manage_test_suite`. |
-| Always passes across the whole stability history | Review for saturation | Confirm with `analyze_test_case_stability` that it still exercises the risk path. Strengthen it with `update_test_case`, or consolidate. |
-| Linked requirement changed | Check the case first | `find_test_cases_by_requirement`, then read each case against the new requirement text. |
+| Always passes across the whole stability history | Review for saturation | Confirm with `fetch_test_stability_metrics` that it still exercises the risk path. Strengthen it with `update_test_cases`, or consolidate. |
+| Linked requirement changed | Check the case first | `find_test_cases_by_requirement`, then read each case (`read_test_cases`, `content_type` `FLOW`) against the new requirement text. |
+| Link between a case and a requirement is wrong or missing | Re-link | `manage_requirement_test_case_linkages` with `link` or `unlink`. Unlink needs a yes that names the links. Read back with `find_test_cases_by_requirement`. |
 
 ## Flaky labels
 
-- Source: run history for the same test on the same build (`analyze_test_case_stability`, `analyze_test_flakiness`). Report the lookback window and the minimum runs.
+- Source: run history for the same test on the same build (`fetch_test_stability_metrics` with `return_tests: ["FLAKY"]` and `from_date` and `to_date`). The tool has no minimum-run parameter. Count the runs with `find_test_results` and report the lookback window and the run count.
 - A model may suggest a root-cause category (timing, shared state, data, environment). The label itself comes from history.
-- A label that drives a quarantine needs two independent evidence sources that agree. Quarantine means a status change or a move to a quarantine folder, after approval. See the tool schema for the fields `update_test_case` accepts.
+- A label that drives a quarantine needs two independent evidence sources that agree. Quarantine means `UPDATE_STATUS` set to `INACTIVE`, or a move to a quarantine folder, after approval. `UPDATE_AUTOMATION_STATUS` is a separate field. Do not use it as a lifecycle status, and do not use `testType` as a substitute for either.
 - A quarantined case stays on the gap list until a person fixes or retires it.
 
 ## Healing levels
@@ -72,7 +73,9 @@ Guardrails:   <assertion-count diff result, healing level used>
 
 ## Safe-mutation rules
 
-- Prefer `update_test_case` and `move_test_case` over `delete_test_case`.
-- Put every intended edit for one case into a single `update_test_case` call.
+- Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Deleting a case is permanent and needs a yes that names the case.
+- Put every intended edit for one case into a single `update_test_cases` call. Actions run in order, so separate calls for one case can race.
+- `UPDATE_CONTENT` replaces every step. Send the complete step list, keep Call Test Case actions, and omit `context` or include `expectedResult` (never `context: {}`).
+- `repository_id` is required. Resolve it with `list_repositories` and carry it into every call.
 - Preview bulk changes, and get one confirmation for the set. Name every retire or delete target in that confirmation.
-- Read the case back after each write and compare it with the preview.
+- Read the case back with `read_test_cases` after each write and compare it with the preview. Count only applied and unchanged outcomes as success. If a batch fails part way, stop and report which cases changed.

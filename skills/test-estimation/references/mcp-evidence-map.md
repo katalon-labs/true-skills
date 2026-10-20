@@ -6,22 +6,22 @@ Every figure in an estimate is a platform fact or a human input. This file draws
 
 | Estimation input | Tool | What it gives you | Trap |
 |---|---|---|---|
-| Cycle window | `find_iterations` | sprint or iteration name, start, and end | Calendar days, not working days. Subtract holidays yourself. |
-| Uncovered requirements | `get_requirement_insights` | requirement coverage for an iteration | "Covered" means linked, not passing. A linked case that never ran still costs execution time. |
-| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. |
-| Automated and manual split | `get_test_case_insights` | case quality signals, and the split when exposed | Not guaranteed. If absent, ask and tag it team-supplied. |
-| Failure and flake burden | `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results` | flaky, always failing, newly failing, and slow cases; flakiness over a lookback window with a minimum run count; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. A signal from fewer than about 10 runs is unconfirmed. |
-| Configuration matrix | `get_test_configuration_insights` | which environments, browsers, and devices are covered against the target set | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
+| Cycle window | `find_iterations` | sprint or release name, start, and end (set `detail_level` to `FULL` for dates) | Calendar days, not working days. Subtract holidays yourself. |
+| Uncovered requirements | `fetch_requirement_metrics` | requirement coverage for a sprint or release | "Covered" means linked, not passing. A linked case that never ran still costs execution time. It takes no date range. |
+| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. Folder-scoped search resolves at most 200 folders and fails rather than truncating. |
+| Automated and manual split | `fetch_test_case_metrics`, or `find_test_cases` with a `testType` or `automationStatus` query | execution statistics, automation status, and case records | `automationStatus` is not `testType`. Do not substitute one for the other. If neither answers, ask and tag it team-supplied. |
+| Failure and flake burden | `fetch_test_stability_metrics`, `find_test_results` | flaky, always failing, newly failing, and slow cases (set `return_tests`); flakiness over a `from_date` and `to_date` window; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. The stability tool has no minimum-run parameter. Count runs with `find_test_results`. A signal from fewer than about 10 runs is unconfirmed. |
+| Configuration matrix | `fetch_test_configuration_metrics` | which OS or browser combinations are covered against the target set (`configuration_type`, `coverage_threshold`, `pass_threshold`) | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
 | Existing automated cadence | `list_schedule`, `read_schedule_detail` | saved schedules and their detail | A suite that already runs nightly adds triage every day. Count the days in the window. |
-| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is short. Pass explicit start and end times. Do not use it for TestCloud artifacts. |
-| Past automated elapsed time | `read_execution`, `read_execution_test_results` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
+| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is the last 24 hours. Pass explicit start and end times from the real current date. Do not use it for TestCloud artifacts. |
+| Past automated elapsed time | `read_execution`, `find_test_results` with filter_type `EXECUTION` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
 | Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. No tool aggregates across cycles. Write n=1 in the confidence basis. |
 
 Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud (formerly TestCloud) uses a string. `list_executions` and `read_execution` take the number. `list_execution_outputs` takes the string. Never swap them.
 
 Always resolve scope first: `list_projects`, then `list_repositories`.
 
-Each insights tool takes an iteration or a date range. See the tool schema for exact fields. Insights are read at the time of the call. They are not point-in-time history.
+The metrics tools take an iteration, a date range, or both. `fetch_requirement_metrics` takes an iteration only. The others take a `filter` with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, the last 28 days), except `fetch_test_stability_metrics`, which takes flat parameters. See the tool schema for exact fields. Metrics are read at the time of the call. They are not point-in-time history.
 
 ## Human side: the checklist
 

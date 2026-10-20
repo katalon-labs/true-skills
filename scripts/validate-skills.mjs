@@ -515,7 +515,7 @@ export function validateRepo({ root = DEFAULT_ROOT, config = CONFIG, tools } = {
       retired.set(name, replacement);
       if (toolNames.has(name)) fail(`docs/mcp-tools.json: '${name}' is both a tool and retired`);
       const mentionsLive = [...toolNames].some((n) => new RegExp(`(?<![A-Za-z0-9_])${n}(?![A-Za-z0-9_])`).test(replacement));
-      if (!mentionsLive) fail(`docs/mcp-tools.json: retired '${name}' maps to '${replacement}', which names no contract tool`);
+      if (!mentionsLive && !/^none:\s*\S/.test(replacement)) fail(`docs/mcp-tools.json: retired '${name}' maps to '${replacement}', which names no contract tool`);
     }
     for (const t of tools.chatgptOnly || []) chatgptOnly.add(t.name);
     for (const t of tools.nonTools || []) nonTools.add(t.name);

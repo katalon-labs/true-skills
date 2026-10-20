@@ -16,8 +16,8 @@ Reproducibility is the strongest signal. A failure that repeats across environme
 
 A flaky case gives different results for the same test on the same build. Decide this from run history. A read of the code cannot decide it.
 
-1. Call `analyze_test_case_stability` for the cases in scope. It reports flaky, consistently failing, newly failing, and slow tests.
-2. Call `analyze_test_flakiness` for a lookback window and a minimum number of runs. Say the window and the minimum in the report.
+1. Call `fetch_test_stability_metrics` for the execution or iteration in scope. Pass `return_tests` with `FLAKY`, `ALWAYS_FAIL`, `NEW_FAILURE`, `SLOW`, or `ALL`. Without `return_tests` the call returns metrics only. It lists three cases per category unless you raise `limit_tests`.
+2. For a lookback window, pass `from_date` and `to_date` with `return_tests: ["FLAKY"]`. The tool has no minimum-run parameter. Count the runs per case with `find_test_results` (filter_type COMMON, `testCaseId`) and say the window and the run count in the report.
 3. Treat a case as flaky only when history shows mixed results on the same build. A case that began failing after a build change is newly failing. Report it under that name.
 4. Ask a model to explain the likely cause (timing, shared state, data, environment) only after history shows the pattern. Studies of general-purpose models that read test code once found inconsistent flaky labels.
 5. A flaky label that will drive a quarantine needs two independent reads that agree. Use two evidence sources, for example run history and the failure artifacts. Hand the quarantine itself to `test-maintenance`.
@@ -28,11 +28,12 @@ One check on the data: a stability result with all zeros while results show fail
 
 | Source | How to read it |
 |---|---|
-| Test Execution - Cloud artifacts | Call `list_execution_outputs` with the cloud (string) execution ID. The numeric True Platform ID does not work here. |
+| Test Execution - Cloud artifacts | Call `list_execution_outputs` with the cloud (string) execution ID. The numeric True Platform ID does not work here. Without an `execution_id` the tool lists the five most recent cloud executions of the last 24 hours. Enumerate every output. Do not alter a presigned URL. The tool presigns one artifact per call. |
 | Playwright trace | Run `npx playwright trace` on the trace file (Playwright 1.59 or later, checked October 2026). Read the failing step, the network calls, and the page state before it. |
 | Playwright error context | Playwright 1.60 added aria snapshots of the receiving element to `errorContext`. Read it to see what the page showed at the failing assertion. |
 | Uploaded JUnit from Playwright | From Playwright 1.59 the JUnit reporter writes an error element for some failures that used to be failure elements. Compare the failed count in True Platform with the source report before you triage. |
-| Run with AI result | Call `read_manual_ai_session`. Check whether the agent misread the step or clicked the wrong control. A misread step is a test-side defect. |
+| Run with AI result | Call `read_manual_ai_session` with the `manual_execution_id` and `session_id`. Pass `test_case_id` for step detail (`stepDetails` can be null). Check whether the agent misread the step or clicked the wrong control. A misread step is a test-side defect. Polling does not launch a session. |
+| Result error detail | Call `find_test_results` with filter_type `TEST_RESULT` and `include_details: true`. It adds the profile, browser, OS, device, error detail, and failed assertions. It returns no log content. |
 
 If an artifact link does not open, report the link as unreadable. Do not guess its content.
 
@@ -42,19 +43,22 @@ Group by the tuple (failing step, error message, object or locator). One cluster
 
 ## Rerun rules
 
-- `rerun_execution` works only on a completed execution.
+- `rerun_execution` reruns an automated Studio, KRE, or Test Execution - Cloud execution. For a manual TestPak or a Run with AI run, a new START goes through `update_test_run` in `execute-test`.
+- Call `read_execution` first to confirm the execution type. An execution ID alone does not authorize a rerun.
 - It consumes Test Execution - Cloud minutes and can change AUT data. Ask for consent before each call.
 - Use a rerun to test a hypothesis (flaky or environment). State the hypothesis first.
 - A pass on an unchanged rerun marks the case a flaky candidate. The failure stays on the record and the run does not turn green.
-- Rerun one representative per cluster. Do not rerun in a loop.
+- Rerun one representative per cluster. To rerun only that case, `job_targets` maps a job ID to the test case path and name. See the tool schema. Do not rerun in a loop.
 
 ## Defect filing rules
 
 - File only for product defects, and only when the user asked or pre-approved filing.
-- A failed test result ID is required. Get it from `read_test_result` or `read_execution_test_results`.
-- Call `find_alm_integration_projects` first when the ALM integration is unknown.
-- Call `get_defect_insights` to look for an existing defect. If it cannot answer for this signature, ask the user to check the ALM tracker.
-- Preview the defect text, get one confirmation, then call `create_defect`, as the write policy in the skill body requires.
+- A failed test result ID is required. Get it from `find_test_results` (filter_type `TEST_RESULT` or `EXECUTION`).
+- Call `fetch_defects` before you file. A result whose `defects` list is empty has no linked defect. Group the failed results of one cluster in one call.
+- Call `list_alm_integrations` when the ALM integration is unknown. It returns the integration ID and the connection ID. `create_defect` needs both. Jira integrations also return the saved defect field mappings.
+- Ask the user for the summary when it is missing. Suggest the failed case name or "Defect for {test case name}". The description falls back to the result error message.
+- Preview the defect text, get one confirmation, then call `create_defect`, as the write policy in the skill body requires. It files a real Jira or Azure DevOps bug.
+- Read the link back with `fetch_defects` and report the tracker URL the call returned.
 - Never invent a stack trace, a defect key, or an ALM project. If the ID or the integration is missing, report blocked and name the missing input.
 
 ## Report template

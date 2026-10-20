@@ -23,7 +23,7 @@ For each requirement, identify:
 - Role and permission coverage when roles exist.
 - Data setup and cleanup assumptions.
 - Requirement-to-test traceability.
-- At least one case for each defect pattern that still applies to this feature area. Read the defect data with `get_defect_insights`.
+- At least one case for each defect pattern that still applies to this feature area. Read the defect data with `fetch_defect_metrics`. It defaults to unresolved defects. Call it again with `resolution_state` set to `RESOLVED` to see fixed ones. Use `search` to check the Knowledge Base for the feature area before you pick risks.
 
 ## Coverage Output Format
 

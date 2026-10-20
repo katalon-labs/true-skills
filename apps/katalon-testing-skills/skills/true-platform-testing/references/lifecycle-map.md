@@ -5,45 +5,46 @@ Seven stages, each with its skill and its MCP tools. Read this when you route a 
 ```text
 1 PLAN ......... test-plan  (+ test-estimation)
                  list_projects, list_repositories, find_iterations,
-                 get_requirement_insights, find_test_cases_by_requirement,
+                 fetch_requirement_metrics, find_test_cases_by_requirement, search,
                  manage_test_folder, manage_test_suite, find_test_suite_collections,
-                 list_schedule, read_schedule_detail, update_schedule_configuration
+                 list_schedule, read_schedule_detail, update_schedule_configuration,
+                 memory_list
 
 2 DESIGN ....... create-test-cases  (+ test-data, exploratory-charter, test-case-to-playwright,
                  test-case-to-katalon-studio)
-                 find_requirements, read_requirement, create_test_case,
-                 read_test_case, update_test_case, find_test_cases,
-                 list_truetest_auts, search_truetest_sessions, create_truetest_test_case_from_session
+                 find_requirements, read_requirement, search, create_test_case,
+                 read_test_cases, update_test_cases, find_test_cases, memory_list,
+                 list_truetest_auts, search_truetest_sessions,
+                 create_truetest_test_case_from_session, create_truetest_test_case_from_flow
 
 3 MANAGE ....... test-management
                  find_test_folders, manage_test_folder, find_test_suites,
                  manage_test_suite, find_test_suite_collections, move_test_case,
-                 duplicate_test_case, link_requirements_to_test_case,
-                 unlink_requirements_from_test_case, find_test_cases_by_requirement
+                 duplicate_test_case, manage_requirement_test_case_linkages,
+                 find_test_cases_by_requirement, search
 
 4 REVIEW ....... test-review
-                 get_requirement_insights, get_test_case_insights,
-                 analyze_test_case_stability, get_test_configuration_insights,
-                 find_test_cases_by_requirement, read_auts
+                 fetch_requirement_metrics, fetch_test_case_metrics,
+                 fetch_test_stability_metrics, fetch_test_configuration_metrics,
+                 find_test_cases_by_requirement, read_auts, memory_list
 
 5 EXECUTE ...... execute-test  (+ upload-report, playwright-execute)
-                 read_auts, create_test_run, create_manual_ai_session,
-                 read_manual_ai_session, update_test_results, prepare_artifact_upload,
-                 confirm_artifact_upload, find_execution_profiles,
-                 list_test_cloud_environments, build_run_configuration, build_schedule,
+                 read_auts, create_test_run, update_test_run, read_manual_ai_session,
+                 update_test_results, prepare_artifact_upload, confirm_artifact_upload,
+                 find_execution_profiles, list_test_cloud_environments,
+                 build_run_configuration, build_schedule,
                  build_private_local_testing_config, list_executions, read_execution,
-                 read_execution_test_results
+                 find_test_results
 
 6 ANALYZE ...... analyze-failures + release-analyze  (+ test-reporting)
-                 read_test_result, read_execution_test_results, find_test_results,
-                 list_execution_outputs, get_defect_insights, get_test_case_insights,
-                 analyze_test_case_stability, get_test_configuration_insights,
-                 get_requirement_insights, rerun_execution,
-                 find_alm_integration_projects, create_defect
+                 find_test_results, list_execution_outputs, fetch_defect_metrics,
+                 fetch_test_case_metrics, fetch_test_stability_metrics,
+                 fetch_test_configuration_metrics, fetch_requirement_metrics,
+                 rerun_execution, fetch_defects, list_alm_integrations, create_defect
 
 7 MAINTAIN ..... test-maintenance
-                 analyze_test_case_stability, analyze_test_flakiness, find_test_results,
-                 read_execution, update_test_case, move_test_case, duplicate_test_case,
+                 fetch_test_stability_metrics, find_test_results, read_execution,
+                 update_test_cases, move_test_case, duplicate_test_case,
                  rerun_execution
                  |
                  +--> feeds the gap list back to 1 PLAN (the loop closes)
@@ -56,8 +57,8 @@ CROSS-CUTTING .. get-started (first run) . platform-setup (connect) . true-platf
 - Object and action capture, data design, resilience design (stage 2): Katalon Studio desktop.
 - Custom fields, tags, Git settings, governance (stage 3): the True Platform UI.
 - Code and object review, local debug (stage 4): Katalon Studio desktop.
-- Stopping a running execution and Live Monitor (stage 5): the True Platform UI. The MCP can rerun a completed execution and read results.
-- Self-healing, Time Capsule, TrueTest regeneration (stages 6 and 7): product features outside the MCP.
+- Stopping a running automated execution and Live Monitor (stage 5): the True Platform UI. The MCP can end a TestPak run, including hosted Run with AI, with `update_test_run`. It can rerun an automated execution and read results.
+- Self-healing and Time Capsule (stages 6 and 7): product features outside the MCP.
 
 Use a browser tool or Playwright to explore the AUT. Use Katalon Studio for object and script work. Use the MCP for everything in the tool lists above.
 
@@ -98,8 +99,8 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Which requirements have no coverage | `test-management` | none |
 | Is this suite good enough for the pipeline | `test-review` | none |
 | Run these cases and tell me what broke | `execute-test` | none |
-| Run it with AI, I do not have time to click through | `execute-test` | Run with AI has no cancel |
-| I ran it by hand and need to record the results | `execute-test` | needs an active run assigned to you |
+| Run it with AI, I do not have time to click through | `execute-test` | ending the run closes the whole TestPak, and unfinished cases need a skip decision |
+| I ran it by hand and need to record the results | `execute-test` | needs an active run that you created |
 | Schedule the automated suite on Test Execution - Cloud | `execute-test` | none |
 | Run against an app on a private network | `execute-test` | needs a tunnel or an allowlist. `platform-setup` diagnoses tunnels |
 | Turn TC-1042 into a Playwright spec | `test-case-to-playwright` | none |
@@ -111,7 +112,7 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Wire this into CI | `playwright-execute` and `upload-report` | both expose commands CI can run. No CI setup skill exists |
 | This run failed, is it us or the app | `analyze-failures` | none |
 | File the bugs for these failures | `analyze-failures` | needs a failed result ID and an ALM integration |
-| Rerun the failed execution | `analyze-failures` | only a completed execution reruns |
+| Rerun the failed execution | `analyze-failures` | only an automated execution reruns. A TestPak restarts with `update_test_run` |
 | Our suite is flaky | `test-maintenance` | none |
 | Which tests went flaky this month | `test-maintenance` | none |
 | Can we ship 3.2 | `release-analyze` | none |

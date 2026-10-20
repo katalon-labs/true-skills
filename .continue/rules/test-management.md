@@ -12,11 +12,12 @@ This skill covers the management stage: keep the test inventory organized, finda
 
 ## What the MCP can and cannot do
 
-- **Can:** folders (`find_test_folders`, `manage_test_folder`), suites (`find_test_suites`, `read_test_suite`, `manage_test_suite`), suite collections (`find_test_suite_collections`, read-only), case organization (`move_test_case`, `duplicate_test_case`, `delete_test_case`), search (`find_test_cases`), requirement links (`link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `find_test_cases_by_requirement`), and requirement coverage (`get_requirement_insights`).
+- **Can:** folders (`find_test_folders`, `manage_test_folder`), suites (`find_test_suites`, `read_test_suite`, `manage_test_suite`), suite collections (`find_test_suite_collections`, read-only), case organization (`move_test_case`, `duplicate_test_case`, `delete_test_case`), search (`find_test_cases`, and `search` for semantic lookups across cases, suites, folders, and requirements), requirement links (`manage_requirement_test_case_linkages` with `action` `link` or `unlink`, `find_test_cases_by_requirement`), iterations (`find_iterations`), requirement coverage (`fetch_requirement_metrics`), and the team's saved conventions (`memory_list`, `memory_read`).
 - **Cannot:** author custom fields or tags, create dynamic test suites, configure Git repositories, upload scripts, or manage project governance and notifications. These are platform UI or Studio operations. Name them as boundaries. Never claim an MCP write for them.
 - **Collections are read-only.** No tool creates or edits a suite collection.
-- **Names:** test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Folder paths allow `/`. A move target path must start with `Test Cases`.
-- **Deletes:** prefer `update_test_case` and `move_test_case`. `delete_test_case` is unreliable.
+- **Names:** test case names start with a letter or digit and accept only letters, numbers, spaces, and `( ) . , _ -`. Folder paths allow `/`. A move target path must start with `Test Cases` or `Test Cases/`. Suite folder paths start with `Test Suites`.
+- **Deletes:** prefer `update_test_cases` and `move_test_case`. `delete_test_case` is unreliable.
+- **Conventions:** call `memory_list` once at the start. Read matching headlines with `memory_read` and follow them for folder and suite naming, quoting the record. Never restate a memory as a platform fact. If `available` is false, say memory is unavailable. Never call `memory_write` or `memory_forget` unless the user asks you to remember or forget something.
 - **Suites:** a suite rejects a mix of MANUAL and AUTOMATED cases.
 
 ## Traceability workflow
@@ -35,11 +36,11 @@ This skill covers the management stage: keep the test inventory organized, finda
 ## Steps and tool rules
 
 1. **Establish scope.** Call `list_projects`, then `list_repositories`. Resolve one target from context. Ask when several are equally likely.
-2. **Build the trace map.** For each in-scope requirement, call `find_test_cases_by_requirement`. Pass exactly one requirement identifier per call. Call `get_requirement_insights` for the platform coverage status of an iteration. Classify each requirement as covered, partially covered, or orphan.
+2. **Build the trace map.** For each in-scope requirement, call `find_test_cases_by_requirement`. Pass exactly one requirement identifier per call. Call `find_iterations` to confirm the sprint or release exists, then `fetch_requirement_metrics` (`iteration_type` `SPRINT` or `RELEASE`, `iteration_name`) for the platform coverage status of that iteration. Classify each requirement as covered, partially covered, or orphan.
 3. **Find loose assets.** Use `find_test_cases` by feature, folder, and keyword. Look for cases with no requirement link (orphan cases) and for duplicates. Page through every result. A first page is not the inventory.
 4. **Plan the changes.** Write one plan: links to add, links to remove, cases to move, folders to create, suite changes. Use the plan format in `references/traceability.md`. Never guess a link. Link only IDs you confirmed with `read_requirement` or `find_requirements`.
-5. **Validate, confirm, execute.** Follow `references/write-policy.md`. Check the plan against the rules in "Safe mutation" in `references/traceability.md`. Show the plan. Get one confirmation. Then call `link_requirements_to_test_case`, `unlink_requirements_from_test_case`, `manage_test_folder`, `move_test_case`, and `manage_test_suite`. Reuse an existing folder or suite before creating one.
-6. **Read back.** Re-run `find_test_cases_by_requirement` for each changed requirement and `read_test_suite` for each changed suite. Link calls can fail in part. Confirm every link you meant to change.
+5. **Validate, confirm, execute.** Follow `references/write-policy.md`. Check the plan against the rules in "Safe mutation" in `references/traceability.md`. Show the plan. Get one confirmation. Then call `manage_requirement_test_case_linkages` (`link` or `unlink`; many-to-many, so batch the plan into as few calls as the plan allows), `manage_test_folder`, `move_test_case`, and `manage_test_suite`. An `unlink` removes traceability: ask for a yes that names the links. Reuse an existing folder or suite before creating one. Check with `find_test_folders` and `find_test_suites`, and with `search` (`types` `test_folder` and `test_suite`) when names differ. A `search` response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that something is missing.
+6. **Read back.** Re-run `find_test_cases_by_requirement` for each changed requirement and `read_test_suite` for each changed suite. Link calls run per requirement in parallel and can fail in part. Confirm every link you meant to change.
 7. **Report the traceability matrix.** Show requirement, case, suite, coverage percentage, orphan requirements, orphan cases, and duplicate candidates. This is the deliverable.
 
 Deletes and folder or suite DELETE actions need an explicit yes that names the target. A bulk plan never hides one.
@@ -87,7 +88,7 @@ Coverage percentage = requirements with at least one linked case, divided by in-
 
 1. `find_requirements`, or the keys the user supplied. This is the in-scope requirement set. Page through every result.
 2. `find_test_cases_by_requirement` per requirement. Pass exactly one identifier per call. Zero or several identifiers is a validation error.
-3. `get_requirement_insights` for the platform coverage status of the iteration. Reconcile it against your link map. Report any disagreement. Do not pick one silently.
+3. `find_iterations` to confirm the sprint or release exists, then `fetch_requirement_metrics` (`iteration_type` `SPRINT` or `RELEASE`, `iteration_name`) for the platform coverage status of the iteration. The tool takes no date range. Reconcile it against your link map. Report any disagreement. Do not pick one silently.
 4. `find_test_cases` by folder or feature. Surface cases that never appeared in step 2. These are the orphan cases.
 5. `find_test_suites`, then `read_test_suite` for suites that matter. Map each linked case to its suites.
 6. `find_test_suite_collections` when the user cares about release or cycle groupings. A collection groups suites. It is read-only.
@@ -107,7 +108,7 @@ Use one row per change. Every row has a basis.
 
 | # | Change | Target | Detail | Basis |
 |---|---|---|---|---|
-| 1 | link | TC-1099 to CEL-6 | Requirement key | Key read with `read_requirement` |
+| 1 | link | TC-1099 to CEL-6 | Requirement key | Key read with `read_requirement`; applied with `manage_requirement_test_case_linkages` |
 | 2 | unlink | TC-1042 from CEL-9 | Requirement key | Case steps cover login only, with no discount step |
 | 3 | move | TC-1050 to `Test Cases/Auth/Smoke` | Folder path | Folder found with `find_test_folders` |
 | 4 | folder create | `Test Cases/Auth/Smoke` | Path | No match in `find_test_folders` |
@@ -119,18 +120,19 @@ Keep a plan to about 40 rows. Split a larger set into batches. Confirm and execu
 
 Check these before you ask for confirmation.
 
-- Every case name contains only letters, numbers, spaces, and `( ) . , _ -`. A rename must keep to the same charset.
-- Every move target path starts with `Test Cases`. Every folder in a path exists or has an earlier create row.
+- Every case name starts with a letter or digit and contains only letters, numbers, spaces, and `( ) . , _ -`. A rename must keep to the same charset.
+- Every move target path starts with `Test Cases` or `Test Cases/`. Every folder in a path exists or has an earlier create row.
 - Every requirement ID in a link row was confirmed in this session.
 - Every suite keeps one type. A suite rejects a mix of MANUAL and AUTOMATED cases.
 - No row deletes a case, folder, or suite unless the user named that exact target and said yes.
-- Prefer `update_test_case` and `move_test_case` over `delete_test_case`. Delete has returned server errors.
-- Link and unlink calls can succeed in part. After execution, re-read the links for each changed requirement and report any gap.
+- Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Delete has returned server errors. A folder DELETE needs the exact folder `id` from `find_test_folders` by full `rawPath`, never an ancestor from `treePath`.
+- `manage_requirement_test_case_linkages` takes `requirement_ids` and `test_case_ids` and runs per requirement in parallel, so it can succeed in part. After execution, re-read the links with `find_test_cases_by_requirement` for each changed requirement and report any gap.
+- `unlink` is destructive for traceability. Ask for a yes that names the links.
 - Never fabricate a requirement to case link. Link confirmed IDs only.
 
 ## Read back
 
-For each changed requirement, call `find_test_cases_by_requirement` and compare with the plan. For each changed suite, call `read_test_suite`. For each moved case, call `read_test_case` and check the folder path when the result shows it. Report each row as done, skipped, or failed.
+For each changed requirement, call `find_test_cases_by_requirement` and compare with the plan. For each changed suite, call `read_test_suite`. For each moved case, call `read_test_cases` and check the folder path when the result shows it. Report each row as done, skipped, or failed.
 
 ### references/write-policy.md
 
@@ -147,11 +149,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -159,7 +177,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

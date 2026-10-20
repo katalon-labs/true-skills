@@ -14,18 +14,19 @@ Use this skill when someone outside QA asks about quality and the answer must su
 
 Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-- **Available, with dates in the record.** `find_test_results`, `list_executions`, `read_execution`, and `read_execution_test_results` return execution records. Use them for pass rate, failure counts, and run counts per period. `find_iterations` gives the period spine.
-- **Available, as reads at call time.** `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, `get_test_configuration_insights`, `analyze_test_case_stability`, and `analyze_test_flakiness`. The docs say the insights tools accept an iteration or a date range. See the tool schema for exact fields. The scope selects the data. It does not rewind the clock.
+- **Available, with dates in the record.** `find_test_results`, `list_executions`, and `read_execution` return execution records. Use them for pass rate, failure counts, and run counts per period. `find_test_results` takes a COMMON filter whose `query.where` reaches `startTime`, `executionId`, `testSuiteId`, `testCaseId`, and `status`. Its EXECUTION filter walks one run's jobs. `find_iterations` gives the period spine. `list_executions` defaults to the last 24 hours, so set both `start_time` and `end_time` from the real current date for each period.
+- **Available, as reads at call time.** `fetch_requirement_metrics` (an iteration only), `fetch_defect_metrics`, `fetch_test_case_metrics`, `fetch_test_configuration_metrics` (each takes a `filter` with a mandatory `filter_type` of `ITERATION`, `DATE_RANGE`, or `DEFAULT`), and `fetch_test_stability_metrics` (an execution or an iteration, plus optional `from_date` and `to_date`). See the tool schema for exact fields. The scope selects the data. It does not rewind the clock.
+- **Available for linkage.** `fetch_defects` shows the defects linked to a result, a case, or an execution. A result with an empty `defects` list has no linked defect.
 - **Available for scope.** `list_projects`, `list_repositories`, `find_test_suites`, `read_test_suite`, `find_test_cases`, and `find_test_folders` show what each number counts.
 - **Not available.**
   - No tool returns a series, an average, or a delta. You build every trend by looping periods.
   - No tool reads requirement coverage or stability as it stood on a past date. A coverage figure for Sprint 12 read in October includes links added after Sprint 12.
   - No dashboard, chart, or report entity. Dashboards live in the Katalon True Platform UI.
   - No publishing tool. The MCP cannot post to Slack, Confluence, email, or a deck. Hand the brief back as text.
-  - No Release or Build entity. Bind periods to iterations or date ranges.
-  - No escaped-defect flag. Ask which ALM field marks a defect that reached production. If none does, report "defects opened after the release run" and label it a proxy.
+  - No Build entity, and no tool creates a release. Releases and sprints come from `find_iterations`. Bind periods to them or to date ranges.
+  - No escaped-defect flag, and no reopened-defect count in the metrics. Ask which ALM field marks a defect that reached production. If none does, report "defects opened after the release run" and label it a proxy.
   - No record of actual effort, cost, or cycle time. For a forecast, hand off to `test-estimation`.
-  - No custom fields or tags. A team dimension such as squad or component comes from folder or suite structure, or from the user.
+  - No grouping dimension in the metrics tools. A team dimension such as squad or component comes from folder or suite structure, from the `featureAreas` filter on `find_test_cases`, or from the user.
 - **The workaround that keeps trends valid.** A snapshot file written on every run, plus the dated execution series. See `references/snapshot-and-trend.md`. The first run states a baseline and infers no direction.
 
 ## Reporting workflow
@@ -41,7 +42,7 @@ Write the brief <- Name what moved it <- Compare to snapshot, write a new one
 1. **Get the question and the audience before any tool call.** Ask who is asking, what they will decide, and what changes with the answer. If the user says only "a status report", ask which of the four questions in `references/metric-selection.md` applies. A report without a question is a metric dump.
 2. **Choose at most five metrics.** Pick them from `references/metric-selection.md` and justify each in one clause. Cut anything the question does not need. Five is a cap, not a target.
 3. **Fix the period spine.** Use `find_iterations` for sprints with dates, or explicit date ranges. Use three to six periods. Fewer than three cannot show a direction. State the spine in the report.
-4. **Pull per period.** Resolve scope with `list_projects` and `list_repositories`. Call the execution tools once per period. Call an insights tool once per period when its schema takes an iteration or a date range. Call a tool that takes neither once, and trend it from snapshots only. Carry `project_id` and `repository_id` into every call. Label each scoped read "as of <read date>".
+4. **Pull per period.** Resolve scope with `list_projects` and `list_repositories`. Call the execution tools once per period. Call a metrics tool once per period with that period's iteration or date range. `fetch_test_stability_metrics` describes the window you pass, so trend it from snapshots only. Carry `project_id` and `repository_id` into every call that takes them. Label each scoped read "as of <read date>".
 5. **Compare against the snapshot, then write a new one.** Read the prior snapshot for this project. If none exists, this run is the baseline. Write the new snapshot before the brief, so a crash still leaves the next run better off.
 6. **Name what moved the number.** Every trend line gets a named cause: a requirement key, a suite, a defect key, a configuration. If the tool returns counts without keys, ask the user for the key list from the ALM. Never guess a key. If you cannot name a cause, report the number as unexplained.
 7. **Write the brief in the format below.** Hand it back as text. Do not claim to have published it.
@@ -52,10 +53,10 @@ The question decides the metrics. Definitions and anti-patterns are in `referenc
 
 | The stakeholder asked | Report these, nothing else | From |
 |---|---|---|
-| Is quality getting better or worse | pass-rate trend, open critical defect trend, flaky-case count trend | `find_test_results`, `get_defect_insights`, `analyze_test_case_stability` |
-| Are we testing the right things | requirement coverage percent, uncovered critical requirements by key, configuration coverage against the target matrix | `get_requirement_insights`, `find_test_cases_by_requirement`, `get_test_configuration_insights` |
-| Can we trust the results | flaky-case count and trend, cases with erratic history, share of failures tied to a defect | `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results` |
-| Where should the next investment go | coverage gap by area, flakiness concentration by suite, defect concentration by area | `get_requirement_insights`, `analyze_test_case_stability`, `get_defect_insights`, `read_test_suite` |
+| Is quality getting better or worse | pass-rate trend, open critical defect trend, flaky-case count trend | `find_test_results`, `fetch_defect_metrics`, `fetch_test_stability_metrics` |
+| Are we testing the right things | requirement coverage percent, uncovered critical requirements by key, configuration coverage against the target matrix | `fetch_requirement_metrics`, `find_test_cases_by_requirement`, `fetch_test_configuration_metrics` |
+| Can we trust the results | flaky-case count and trend, cases with erratic history, share of failures tied to a defect | `fetch_test_stability_metrics`, `find_test_results`, `fetch_defects` |
+| Where should the next investment go | coverage gap by area, flakiness concentration by suite, defect concentration by area | `fetch_requirement_metrics`, `fetch_test_stability_metrics`, `fetch_defect_metrics`, `read_test_suite` |
 
 Three rules keep the report short:
 
@@ -69,8 +70,8 @@ Three data classes, and they do not trend the same way.
 
 | Class | Metrics | How to trend | Rule |
 |---|---|---|---|
-| **Dated records** | pass rate, failure counts, run counts, results per suite | per-period date ranges on the execution tools | trendable on the first run |
-| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | per-period insights calls, each labeled "as of <read date>" | a cohort comparison, not history. A snapshot gives the "as it stood then" view. |
+| **Dated records** | pass rate, failure counts, run counts, results per suite | per-period date ranges on `find_test_results` and `list_executions` | trendable on the first run |
+| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | per-period metrics calls, each labeled "as of <read date>" | a cohort comparison, not history. A snapshot gives the "as it stood then" view. |
 | **Read-time only** | stability and flakiness | snapshots only | first run states "baseline established". Lookback windows end at read time. Overlapping windows are not separate periods. |
 
 Rules:
@@ -163,17 +164,17 @@ If the request is two questions, write two reports or ask which one matters on t
 
 | Metric | Derived from | Claims | Does **not** claim |
 |---|---|---|---|
-| **Pass rate** | `find_test_results` over a date range. Passed divided by total. | how the suite behaved in that window | that the product is good, or that a failure is a product regression and not an infra or environment blip. A narrow suite passes easily. |
-| **Requirement coverage** | `get_requirement_insights` for the iteration. Covered divided by in-scope. Confirm a named gap with `find_test_cases_by_requirement`. | that a linked case exists | that the case is good or passed. A link is not evidence. |
-| **Uncovered critical requirements** | the uncovered set from `get_requirement_insights`, filtered by the requirement's own priority | the keys nobody tests | completeness, if requirement priority is not kept in the ALM |
-| **Open critical defects** | `get_defect_insights`, read for the period, filtered to critical and high | current standing risk | escape to production. No such field exists. |
-| **Flaky cases** | `analyze_test_case_stability`, and `analyze_test_flakiness` with a minimum run count of about 10 | that the platform's own signal flags them | a flake rate you computed. Report the platform's signal. Do not recompute it. |
+| **Pass rate** | `find_test_results` over a date range (COMMON filter, `query.where` on `startTime`). Passed divided by total. | how the suite behaved in that window | that the product is good, or that a failure is a product regression and not an infra or environment blip. A narrow suite passes easily. |
+| **Requirement coverage** | `fetch_requirement_metrics` for the iteration. Covered divided by in-scope. Confirm a named gap with `find_test_cases_by_requirement`. | that a linked case exists | that the case is good or passed. A link is not evidence. |
+| **Uncovered critical requirements** | the uncovered set from `fetch_requirement_metrics`, filtered by the requirement's own priority | the keys nobody tests | completeness, if requirement priority is not kept in the ALM |
+| **Open critical defects** | `fetch_defect_metrics`, read for the period with the default `UNRESOLVED` state, filtered to critical and high | current standing risk | escape to production. No such field exists. A question about all defects needs a second call with `RESOLVED`. |
+| **Flaky cases** | `fetch_test_stability_metrics` with `return_tests: ["FLAKY"]` and a `from_date` and `to_date` window | that the platform's own signal flags them | a flake rate you computed. Report the platform's signal. Do not recompute it. The tool has no minimum-run parameter. Count runs per case with `find_test_results` and use a floor of about 10. |
 | **Erratic history** | `find_test_results` per case across periods. Alternating outcomes with no code change. | a case whose result is not information | a cause. Hand it to `test-maintenance`. |
-| **Configuration coverage** | `get_test_configuration_insights` against a target matrix the user supplies | which combinations ran | which combinations matter. The target matrix is an input, not a platform fact. |
-| **Triage share** | failures from `find_test_results` that have a linked defect | how much of the red is understood | that the untriaged remainder is harmless |
+| **Configuration coverage** | `fetch_test_configuration_metrics` against a target matrix the user supplies | which combinations ran | which combinations matter. The target matrix is an input, not a platform fact. |
+| **Triage share** | failed results from `find_test_results` (filter_type `EXECUTION`, `status` `FAILED`), then `fetch_defects` for the same execution. A result with an empty `defects` list has no linked defect. | how much of the red is understood | that the untriaged remainder is harmless, or that a linked defect is still open |
 | **Concentration** | any metric above, grouped by suite with `read_test_suite` or by folder with `find_test_folders` | where the problem lives | a root cause |
 
-Triage share needs a per-failure defect link. The docs do not show a tool that lists those links for a project. Ask the user for the defect list from the ALM, or read a sample of failures with `read_test_result` and check whether the record shows a linked defect. Verify this in your session before you report a share.
+Triage share needs a per-failure defect link, and `fetch_defects` gives it per result, case, or execution. Page the failed results to the end before you report a share, and report the denominator.
 
 ## Anti-patterns
 
@@ -184,7 +185,7 @@ Each of these has appeared in a real QA status report.
 - **Pass rate with no scope.** A pass rate over "all results" mixes a smoke run with a full regression.
 - **A coverage percentage with no uncovered list.** The names are the report. The percentage is the least useful part.
 - **Defect counts with no severity split.** Twenty cosmetic defects and three criticals do not compare, and a sum hides the three.
-- **Any metric with no date.** Insights are read at report time, not at period end. Say when.
+- **Any metric with no date.** Metrics are read at report time, not at period end. Say when.
 - **A trend line with no named cause.** If you cannot name the cause, report the number as unexplained.
 - **A single-run pass rate for an AI feature.** Outputs vary between runs. Report the pass proportion over repeated runs, and name the data set. If the team has no repeat runs, say the number is a single sample.
 
@@ -196,7 +197,7 @@ Before a metric goes in, ask: if this number were removed, would the reader deci
 
 # Snapshot and trend reference
 
-The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time read. Execution records carry their own dates. Insights and stability tools return data as of the call, even when you give them an iteration or a date range. This file shows how to build a trend anyway, and how to say what you have.
+The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time read. Execution records carry their own dates. The metrics and stability tools return data as of the call, even when you give them an iteration or a date range. This file shows how to build a trend anyway, and how to say what you have.
 
 ## Contents
 
@@ -210,11 +211,11 @@ The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time rea
 
 | Class | Metrics | Why |
 |---|---|---|
-| **Dated records** | pass rate, failure counts, run counts, results per suite | `find_test_results`, `list_executions`, `read_execution`, and `read_execution_test_results` return records with timestamps. History already exists. Trendable on the first run. |
-| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | The docs say these insights tools accept an iteration or a date range. The scope selects the data. The values are as of the read date. A Sprint 12 coverage figure read in October counts links added after Sprint 12. |
-| **Read-time only** | stability and flakiness | `analyze_test_case_stability` and `analyze_test_flakiness` describe now. A lookback window ends at read time. Two overlapping windows are not two periods. |
+| **Dated records** | pass rate, failure counts, run counts, results per suite | `find_test_results`, `list_executions`, and `read_execution` return records with timestamps. History already exists. Trendable on the first run. |
+| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | `fetch_requirement_metrics` takes an iteration. `fetch_defect_metrics`, `fetch_test_case_metrics`, and `fetch_test_configuration_metrics` take a `filter` of `ITERATION`, `DATE_RANGE`, or `DEFAULT`. The scope selects the data. The values are as of the read date. A Sprint 12 coverage figure read in October counts links added after Sprint 12. |
+| **Read-time only** | stability and flakiness | `fetch_test_stability_metrics` describes the window you pass at the time you read it. A lookback window ends at read time. Two overlapping windows are not two periods. |
 
-If the tool schema in your session shows no iteration or date parameter for a tool, treat that tool as read-time only.
+If the tool schema in your session shows no iteration or date parameter for a tool, treat that tool as read-time only. `list_executions` needs both `start_time` and `end_time` for a period, because its default is the last 24 hours.
 
 Never mix classes in one trend line without saying so. A four-sprint pass-rate trend next to a one-week coverage change is two claims sharing a bullet.
 
@@ -235,11 +236,11 @@ Write one on every run to `.katalon-reporting/<project-slug>.json` in the user's
       "period_label": "Sprint 14 start",
       "requirement_coverage": { "covered": 44, "in_scope": 61 },
       "uncovered_critical": ["CEL-88", "CEL-102"],
-      "defects": { "open": 22, "critical": 7, "high": 9, "reopened": 4 },
+      "defects": { "unresolved": 22, "critical": 7, "high": 9 },
       "flaky_cases": 11,
       "configuration_coverage": { "tested": 6, "target": 9 },
-      "source_tools": ["get_requirement_insights", "get_defect_insights",
-                       "analyze_test_case_stability", "get_test_configuration_insights"]
+      "source_tools": ["fetch_requirement_metrics", "fetch_defect_metrics",
+                       "fetch_test_stability_metrics", "fetch_test_configuration_metrics"]
     }
   ]
 }
@@ -256,8 +257,8 @@ Rules:
 ## The period loop
 
 1. Call `find_iterations` for the spine. If the team has no iterations, take explicit date ranges from the user.
-2. For each period, call the dated-record tools with that period's range.
-3. For each scoped-read tool, call it once per period if its schema takes an iteration or a date range. Otherwise call it once. Label every result "as of <read date>".
+2. For each period, call the dated-record tools with that period's range. Confirm each iteration exists with `find_iterations` first.
+3. For each scoped-read tool, call it once per period with that period's iteration (`iteration_type` and `iteration_name`) or `DATE_RANGE` filter. Label every result "as of <read date>".
 4. Call each read-time-only tool once.
 5. Read the snapshot file. Align its entries to the spine by `taken_at`.
 6. Append the new snapshot.
@@ -328,12 +329,12 @@ Four periods give a direction.
 ## Pull per period
 
 ```text
-find_test_results(repo 8891, 2026-05-19..2026-06-01) -> 214 results, 176 passed, 38 failed
-find_test_results(repo 8891, 2026-06-02..2026-06-15) -> 221 results, 189 passed, 32 failed
-find_test_results(repo 8891, 2026-06-16..2026-06-29) -> 218 results, 194 passed, 24 failed
-find_test_results(repo 8891, 2026-06-30..2026-07-13) -> 226 results, 208 passed, 18 failed
-get_defect_insights(repo 8891, read 2026-07-14)       -> open 14, critical 3, high 6, reopened 2
-analyze_test_case_stability(repo 8891, read 2026-07-14) -> 9 unstable cases
+find_test_results(COMMON, startTime 2026-05-19..2026-06-01) -> 214 results, 176 passed, 38 failed
+find_test_results(COMMON, startTime 2026-06-02..2026-06-15) -> 221 results, 189 passed, 32 failed
+find_test_results(COMMON, startTime 2026-06-16..2026-06-29) -> 218 results, 194 passed, 24 failed
+find_test_results(COMMON, startTime 2026-06-30..2026-07-13) -> 226 results, 208 passed, 18 failed
+fetch_defect_metrics(DEFAULT, UNRESOLVED, read 2026-07-14)  -> unresolved 14, critical 3, high 6
+fetch_test_stability_metrics(ITERATION Sprint 15, read 2026-07-14) -> 9 unstable cases
 ```
 
 The defect and stability reads carry the label "as of 2026-07-14". The tool returned counts without keys, so the report asks the user for the three open critical keys from Jira. The user supplies CEL-241, CEL-258, and CEL-263.

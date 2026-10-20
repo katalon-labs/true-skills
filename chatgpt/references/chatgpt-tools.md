@@ -1,5 +1,7 @@
 # Katalon tools in ChatGPT
 
+The card tools in this file (`show_*`, `plan_*`, `review_*`, `cluster_failures`, `get_release_readiness`, `settings_read`, `settings_update`, `katalon_home`, `katalon_profile`, `app_commit_test_cases`) belong to the ChatGPT app, not to the Katalon MCP server. They are absent from the MCP `tools/list` on purpose. `docs/mcp-tools.json` keeps them in `chatgptOnly`, and `scripts/check-mcp-live.mjs` and `scripts/validate-skills.mjs` treat that list as a separate manifest. Skills outside `chatgpt/` never name them.
+
 In ChatGPT the Katalon connection has read tools and card tools, and no tool the model can call to change the workspace. When a step in this skill names a write tool, use the card tool from the table below instead. The card shows the whole change, and the user's click inside the card performs it. Never report a change that the card has not confirmed.
 
 ## Rules

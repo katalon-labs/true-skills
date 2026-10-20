@@ -16,7 +16,7 @@ MCP clients can add a prefix to tool names (Claude Code uses `mcp__<server>__<to
 
 ## Boundary
 
-- The MCP can list projects and repositories, list and read executions, and read results. It cannot upload a report file.
+- The MCP can list projects and repositories, list and read executions, and read results with `find_test_results`. It cannot upload a report file.
 - It cannot inspect the live AUT UI, create requirements, or run Katalon CLI for you.
 - Katalon Test Execution - Local (formerly KRE) runs Studio suites. With an API key, organization ID, and project ID set, it uploads results by itself.
 - Report Uploader sends Studio and JUnit reports. Its `type` values are `katalon`, `junit`, and `katalon_recorder`.
@@ -115,7 +115,7 @@ If the run fails before any report exists, report that and skip verification.
 Read `references/verify-upload.md`. In short:
 
 1. Wait for import, then find the new execution with `list_executions`.
-2. Read it with `read_execution` and `read_execution_test_results`.
+2. Read it with `read_execution` and `find_test_results` (`filter_type: "EXECUTION"`).
 3. Compare the platform counts with the local counts.
 
 A count of zero, or a count that differs from the local report, is unverified. This holds even when the CLI printed success.

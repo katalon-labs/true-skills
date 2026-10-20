@@ -16,7 +16,7 @@ These skills run on any coding agent and any model tier. Smaller models reason l
 
 - Run one recipe at a time. Do not chain every recipe in one prompt.
 - Confirm scope (project and repository) before any write.
-- After each write, read back with `read_test_case`, `read_test_suite`, or `read_execution` before you move on.
+- After each write, read back with `read_test_cases`, `read_test_suite`, or `read_execution` before you move on.
 - If a tool errors, report the exact error and stop. Do not retry blindly or invent a workaround.
 
 ## Copy-paste prompts by intent

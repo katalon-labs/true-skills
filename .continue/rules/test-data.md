@@ -16,7 +16,7 @@ One artifact serves both lanes. Call it the data contract: what must exist, whic
 
 Three different things in the Katalon world are called "test data". The MCP reaches only one of them.
 
-- **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `read_test_case`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_case`), read the target environment (`read_auts`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
+- **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `search`, `read_test_cases`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_cases`), read the target environment (`read_auts`), read the team's saved data conventions (`memory_list`, `memory_read`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
 - **Cannot, at all:**
   - **Test-data entities.** A standalone Test Data object (CSV, Excel, internal, database) is a Katalon Studio desktop artifact. The MCP does not create, read, or bind it.
   - **Secrets and variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings, Configurations, Secrets & Variables. Steps reference them as `{KEY}`. They apply to cloud-hosted execution only and are scoped to the project. No tool reads or writes them.
@@ -25,7 +25,7 @@ Three different things in the Katalon world are called "test data". The MCP reac
 - **Do not invent tools.** No tool exists for test data, fixtures, secrets, seeding, environment reset, or database queries. When a workflow seems to need one, use the workaround below and state the boundary.
 - **Run with AI reads the case body only.** Data that is missing from the Pre-condition and the Test Data column never reaches the AI runner. The placement rule below follows from this.
 - **Workaround, the data contract that needs no missing tool:**
-  - Manual lane: the Pre-condition plus the per-step Test Data column, written with `update_test_case`.
+  - Manual lane: the Pre-condition plus the per-step Test Data column (`context.data` on each step), written with `update_test_cases`.
   - Automation lane: a checked-in fixture or factory, plus the seed command named in the case Pre-condition so both lanes start from the same state.
 
 Read `references/write-policy.md` before you change cases.
@@ -46,12 +46,12 @@ Read `references/write-policy.md` before you change cases.
 ## Steps and tool rules
 
 1. **Resolve scope.** Call `list_projects`, then `list_repositories`. If exactly one matches the user's wording, use it. Call `read_auts` to learn which environment the data must exist in. Data built for the wrong environment is worse than none.
-2. **Derive the data classes. Do not guess values.** Read the requirement with `read_requirement`. Read the cases with `find_test_cases_by_requirement`, then `read_test_case` on each. Turn each condition into a data class. Rank the conditions by risk first. Use equivalence partitioning and boundary values as tools to find the classes. One class maps to one case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
+2. **Derive the data classes. Do not guess values.** Read the requirement with `read_requirement`. Read the cases with `find_test_cases_by_requirement`, then one `read_test_cases` call with `content_type` `FLOW` for all of them. Call `memory_list` once and read matching headlines with `memory_read`: the team may have saved data conventions. Quote a record when you follow it, and never present it as a platform fact. If `available` is false, say memory is unavailable. Never call `memory_write` or `memory_forget` unless the user asks. Turn each condition into a data class. Rank the conditions by risk first. Use equivalence partitioning and boundary values as tools to find the classes. One class maps to one case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
 3. **Choose the strategy per class.** Pick static, generated, or cloned from production for each class. Never use one strategy by default. The trade-offs are in `references/data-design.md`. Say which you chose and why.
 4. **Place the data.** Apply the placement rule below.
 5. **Plan seed and teardown together.** Use the seeding ladder in `references/seed-and-teardown.md`: application API first, CLI or SQL second, UI last. Record the seed command in the case Pre-condition.
-6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_case` once per case with every edit in one call. Follow `references/write-policy.md`.
-7. **Verify, then run twice.** Call `read_test_case` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
+6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_cases` with every edit to one case in the same call, because actions run in order and separate calls to one case race. Follow `references/write-policy.md`.
+7. **Verify, then run twice.** Call `read_test_cases` with `content_type` `FLOW` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
 
 ## The placement rule
 
@@ -117,7 +117,7 @@ TC-2103  Loyalty discount excludes gift cards
 
 **Step 3 output, the strategy.** Generated per run. The test mutates loyalty tier and order history, so a shared static account goes stale after the first run. Cloned production accounts carry real customer PII for no benefit.
 
-**Step 4 output, the manual lane.** After the user confirms the update set, make one `update_test_case` call per case. For `TC-2101`:
+**Step 4 output, the manual lane.** After the user confirms the update set, send one `update_test_cases` call with the actions for each case. For `TC-2101` that is `UPDATE_PRECONDITION` plus `UPDATE_CONTENT`. `UPDATE_CONTENT` replaces all steps, so send the complete step list from the `FLOW` read, keep any Call Test Case steps, and put each value in the step's `context.data`. Never send `context: {}`. The result for `TC-2101`:
 
 ```text
 Pre-condition:
@@ -136,7 +136,7 @@ Teardown: delete the seeded account with
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-**Expected output of the verification.** `read_test_case` on `TC-2101` returns a non-empty Test Data value on steps 1 to 3, the seed command inside the pre-condition, `{LOYALTY_PASSWORD}` as a reference with no literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land. Re-issue the single update call. Never create a second case.
+**Expected output of the verification.** `read_test_cases` with `content_type` `FLOW` on `TC-2101` returns a non-empty Test Data value on steps 1 to 3, the seed command inside the pre-condition, `{LOYALTY_PASSWORD}` as a reference with no literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land. Re-issue the single update call. Never create a second case.
 
 **Step 4 output, the automation lane.** The same contract as a typed factory, with creation and destruction in one place:
 
@@ -314,7 +314,7 @@ Teardown:
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-Write it into the case with a single `update_test_case` call containing every edit, then confirm with `read_test_case`. If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
+Write it into the case with a single `update_test_cases` call containing every edit (`UPDATE_PRECONDITION` and `UPDATE_CONTENT`, which needs the complete step list), then confirm with `read_test_cases` (`content_type` `FLOW`). If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
 
 ## Automation lane pattern
 
@@ -368,11 +368,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -380,7 +396,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

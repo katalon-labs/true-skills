@@ -30,9 +30,9 @@ Follow the patterns of an existing Playwright framework when one exists. Ask sho
 Resolve the Katalon context before you write code.
 
 - Call `list_projects` and `list_repositories` to find the project and its Test Project (repository).
-- For a suite, call `find_test_suites` and `read_test_suite`. Then read every included case with `read_test_case`.
+- For a suite, call `find_test_suites` and `read_test_suite`. Then read the included cases in one `read_test_cases` call: pass the integer `test_case_ids` and set `content_type` to `FLOW` for the manual steps. `content_type` defaults to `NONE`, which returns metadata only, so a read without it has no steps to convert.
 - For requirement keys, call `find_requirements` or `read_requirement`, then `find_test_cases_by_requirement`.
-- To find cases by filter, call `find_test_cases`. See the tool schema for the filter shapes.
+- To find cases by filter, call `find_test_cases` (`project_id`, `repository_id`, and a `filter` with `filter_type` `COMMON`, `RELATIVE`, or `ITERATION`). Pages start at 0. Copy `next_page_token` into `page_number`. To find cases by meaning, call `search` with `types: ["test_case"]` and `include_documents: false`, then read the hits with `read_test_cases`. A hit gives a title and ref only.
 - If MCP is unavailable or authentication fails, ask for exported cases, case URLs, case IDs, or the case text.
 - Keep the case ID or title in test annotations, tags, or test names, in the style of the target framework.
 
@@ -42,7 +42,7 @@ Extract for each case:
 - AUT URL, roles or accounts, environment, browser or device assumptions, and cleanup needs.
 - Selectors or business data that need human input.
 
-`create_test_case` with an AUTOMATED type creates nothing and returns guidance only. Do not use it to register the generated spec. This skill reads the platform and writes only local files.
+`create_test_case` with `test_case_type` `AUTOMATED` creates nothing and returns the next action for script generation. Do not use it to register the generated spec. This skill reads the platform and writes only local files.
 
 ## Framework Resolution
 

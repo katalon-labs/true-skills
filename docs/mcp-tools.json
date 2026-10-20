@@ -1,564 +1,617 @@
 {
-  "$comment": "Contract for the Katalon True Platform MCP server. Source: docs.katalon.com/katalon-platform/testops-mcp-server (last updated October 2026), captured 2026-10-20 in the P0 mcp-inventory. The live tools/list needs OAuth and was not available, so this file is the contract. A human diffs a live dump with: node scripts/check-mcp-live.mjs <tools-list.json>. Edit this file only through a reviewed change; scripts/validate-skills.mjs reads it.",
+  "$comment": "Contract for the Katalon True Platform MCP server. Source: the live tools/list of the connected server, platform.katalon.io, captured 2026-10-20 (74 tools, schemas read from the connector, no tool called). Evidence: 04-projects/true-skills-modernize/evidence/P3/live-schemas.md and live-diff.txt in the vault. The earlier docs-page contract (71 tools, docs.katalon.com/katalon-platform/testops-mcp-server, October 2026) is superseded. A human re-diffs a live dump with: node scripts/check-mcp-live.mjs <tools-list.json>. Edit this file only through a reviewed change; scripts/validate-skills.mjs reads it.",
+  "source": "Katalon True Platform MCP live tools/list, platform.katalon.io, captured 2026-10-20",
   "contract": "katalon-docs-2026-10",
   "docsUrl": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
-  "docsStatedToolCount": 71,
-  "namedToolCount": 71,
-  "countNote": "The docs page table has 72 rows. create_test_run appears in both the Automated and Manual sections, so there are 71 unique names, and this file lists all 71 (re-diffed 2026-10-20).",
+  "liveToolCount": 74,
+  "namedToolCount": 74,
+  "countNote": "All 74 live tool names are listed. The earlier docs-page contract had 71 names; 15 of them are not live and sit in retired, and 18 live tools were added (search, memory_*, fetch_*_metrics, update_test_run and others). Re-diffed 2026-10-20: check-mcp-live reports no missing and no new tools.",
   "prefixNote": "Skills name tools by bare name. MCP clients add a prefix: Claude Code uses mcp__<server>__<tool>, and mcp__plugin_<plugin>_<server>__<tool> for plugin servers.",
   "classes": {
-    "read": "No side effect. Never needs confirmation.",
-    "write": "Changes workspace state. Preview, confirm once for the mutation set, execute, read back. Entries with destructiveWhen need an explicit yes naming the target for those actions. Entries with consent need confirmation because they consume TestCloud minutes or can change AUT data.",
+    "read": "No side effect. Never needs confirmation. Pure payload builders (build_*) and polling tools are read.",
+    "write": "Changes workspace state. Preview, confirm once for the mutation set, execute, read back. Entries with destructiveWhen need an explicit yes naming the target for those actions. Entries with consent need confirmation because they consume TestCloud minutes, launch a hosted browser against a real AUT, queue generation, or can change AUT data. Entries with external reach a third party system (Jira, ADO) or consume TestCloud minutes.",
     "destructive": "Removes or stops something. Needs an explicit yes that names the target."
   },
   "tools": [
     {
+      "name": "build_private_local_testing_config",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Pure payload builder for private AUT access, mode tunnel or whitelist. MUST show the user the Select Tunnel form and wait for an explicit pick before tunnel mode. Creates nothing."
+    },
+    {
+      "name": "build_run_configuration",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Pure payload builder for automated.configurations. config_type is DESKTOP_AND_MOBILE_BROWSER, MOBILE_NATIVE or API, chosen from the requested environment, not the suite name. Copy os, os_version and browser fields from one list_test_cloud_environments row. MOBILE_NATIVE needs an uploaded app."
+    },
+    {
+      "name": "build_schedule",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Pure payload builder for the schedule object of create_test_run. Creates nothing. For a scheduled manual run, resolve the AUT with read_auts first."
+    },
+    {
+      "name": "confirm_artifact_upload",
+      "group": "results-evidence",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Confirms a prepared upload with the exact artifact_id returned by prepare_artifact_upload and does not attach evidence. Then pass only {artifact_id} in update_test_results evidence. Repeat confirmation is safe."
+    },
+    {
+      "name": "create_defect",
+      "group": "requirements-alm",
+      "class": "write",
+      "confidence": "live-schema",
+      "external": true,
+      "consent": true,
+      "notes": "Files a real Jira or ADO bug linked to one test result (project_id, alm_integration_id, alm_connection_id, test_result_id, payload.summary, payload.description). External side effect: preview and confirm first. Ask the user for the summary when missing; suggest the failed case name or \"Defect for {test case name}\". Description falls back to the result error message."
+    },
+    {
+      "name": "create_manual_ai_session",
+      "group": "execution",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "external": true,
+      "notes": "Legacy and subset launcher for Run with AI. Prefer update_test_run START KATALON_AI. Never call it before or after a START on the same run. Ask the user for browser_profile_mode and os (windows or linux); never default them. Chrome on Windows or Linux only."
+    },
+    {
+      "name": "create_test_case",
+      "group": "test-assets",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Creates a MANUAL case. With test_case_type AUTOMATED it creates nothing and returns script guidance. Name starts with a letter or digit and allows spaces and ( ) . , _ -. path starts with Test Cases. Encode a shared-flow call as a step action {type call, test_case_id}, never as a plain step named Call test case."
+    },
+    {
+      "name": "create_test_cloud_app",
+      "group": "testcloud",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Registers an uploaded binary from storage_path. Skip it when the app was uploaded in the TestCloud web UI. Poll list_test_cloud_apps until the app is READY."
+    },
+    {
+      "name": "create_test_run",
+      "group": "execution",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "external": true,
+      "notes": "Single run-creation tool. mode manual or automated, with the matching manual or automated object, an optional schedule and private_local_testing_configuration. Manual: call read_auts first, ask for AUT or skip, never guess os_version or browser_version. Automated: suites or collections only, test_run_type from build_run_configuration config_type, parallelize_test_cases only when the user asks. If the user did not say manual or automated, ask. Replaces create_manual_test_run and schedule_test_run."
+    },
+    {
+      "name": "create_truetest_journey_map",
+      "group": "truetest",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Starts an async build job and returns a request_id. Report it as queued and poll get_truetest_journey_map_request. Do not resubmit automatically after a validation error, conflict, timeout or upstream error."
+    },
+    {
+      "name": "create_truetest_test_case_from_flow",
+      "group": "truetest",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "notes": "Queues test case generation for one flow (project_id, client_code, map_id, flow_id). STARTED means queued, not done; TERMINATE means no request was created. Existing cases follow the backend regeneration behavior. Read state with get_truetest_journey_map(flow_id)."
+    },
+    {
+      "name": "create_truetest_test_case_from_session",
+      "group": "truetest",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "notes": "Queues generation from 1 to 25 session_references. Search sessions first and let the user pick; pass references unchanged. STARTED means queued, not done. Needs explicit user approval."
+    },
+    {
+      "name": "delete_test_case",
+      "group": "test-assets",
+      "class": "destructive",
+      "confidence": "live-schema",
+      "destructiveTarget": "test case",
+      "notes": "Deletes a case. Unreliable (HTTP 500 observed). Prefer update_test_cases (UPDATE_STATUS INACTIVE) or move_test_case."
+    },
+    {
+      "name": "delete_test_cloud_app",
+      "group": "testcloud",
+      "class": "destructive",
+      "confidence": "live-schema",
+      "destructiveTarget": "app",
+      "notes": "Permanent. The tool text requires the user to type YES and to confirm when several apps match."
+    },
+    {
+      "name": "duplicate_test_case",
+      "group": "test-assets",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Copies a case in place."
+    },
+    {
+      "name": "fetch_defect_metrics",
+      "group": "insights",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Defect distribution by priority and severity. filter.filter_type ITERATION, DATE_RANGE or DEFAULT (last 28 days) is mandatory. resolution_state defaults to UNRESOLVED. Replaces get_defect_insights."
+    },
+    {
+      "name": "fetch_defects",
+      "group": "requirements-alm",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Defect linkage lookup. filter_type TEST_RESULT (test_result_ids), TEST_CASE (test_case_ids, optional execution_id), EXECUTION (execution_id). A result with an empty defects list has no linked defect."
+    },
+    {
+      "name": "fetch_requirement_metrics",
+      "group": "insights",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Requirement coverage statistics for a sprint or release (iteration_type, iteration_name). Check the iteration exists first. Replaces get_requirement_insights."
+    },
+    {
+      "name": "fetch_test_case_metrics",
+      "group": "insights",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Test case execution and automation statistics. filter.filter_type ITERATION, DATE_RANGE or DEFAULT (last 28 days). Replaces get_test_case_insights."
+    },
+    {
+      "name": "fetch_test_configuration_metrics",
+      "group": "insights",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "OS and browser coverage and pass rate with coverage_threshold (0.8) and pass_threshold (0.95). configuration_type OS or BROWSER. Replaces get_test_configuration_insights."
+    },
+    {
+      "name": "fetch_test_stability_metrics",
+      "group": "insights",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Flaky, always-failing, new-failure and slow tests for an EXECUTION or an ITERATION, with from_date and to_date. return_tests (ALL, FLAKY, ALWAYS_FAIL, NEW_FAILURE, SLOW) returns case details; limit_tests defaults to 3 per category. Replaces analyze_test_case_stability and analyze_test_flakiness."
+    },
+    {
+      "name": "find_execution_profiles",
+      "group": "workspace",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Execution profiles for a project and repository. Never assume or infer a profile; return the list and let the user choose. Feeds profile_id for automated runs."
+    },
+    {
+      "name": "find_iterations",
+      "group": "workspace",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Sprints and releases. type Sprint, Release or All with scope CURRENT, PREVIOUS, NEXT, ACTIVE, LAST_N, RECENT, or a structured query.where. detail_level FULL returns dates and state."
+    },
+    {
+      "name": "find_requirements",
+      "group": "requirements-alm",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Synced Jira or ADO requirements. filter_type COMMON (status, id, assignee, createdBy, externalIssue.summary), RELATIVE (RECENT, NEW = last 7 days), ITERATION (iteration_type plus id or name)."
+    },
+    {
+      "name": "find_test_cases",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Filtered list with light metadata. filter_type COMMON (folder with include_subfolders, query.where, featureAreas), RELATIVE (needs at least one criterion), ITERATION. Resolve folder_id with find_test_folders by full rawPath; folder scope is bounded to 200 folders and fails rather than truncating. automationStatus is not testType and not lifecycle status. Page with next_page_token. Relative filters returned HTTP 500 on one project (2026-08-03)."
+    },
+    {
+      "name": "find_test_cases_by_requirement",
+      "group": "requirements-alm",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Reverse join from requirement to cases. Pass exactly one of requirement_id, key (ALM key) or requirement_external_id (externalIssueId). include_details adds description and preCondition."
+    },
+    {
+      "name": "find_test_folders",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Lists folders, paged by next_page_token. Filter by name for a known folder; name search includes nested folders, so compare rawPath to tell same-named folders apart."
+    },
+    {
+      "name": "find_test_results",
+      "group": "results-evidence",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Results at four granularities (filter_type COMMON, RELATIVE, TEST_RESULT, EXECUTION). include_details adds error detail and failed assertions, not log content. Every row carries case and suite names. Replaces read_test_result and read_execution_test_results."
+    },
+    {
+      "name": "find_test_suite_collections",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Lists suite collections, or reads one by collection_id (returns testSuiteEntries, needed for a collection run). No create or edit tool exists."
+    },
+    {
+      "name": "find_test_suites",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Lists suites. COMMON (name partial or exact, query.where) or RELATIVE (RECENT, NEW, CREATED_BY_ME). First page is 0."
+    },
+    {
+      "name": "get_truetest_journey_map",
+      "group": "truetest",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "One map with independent paged cursors for pages, flows, steps and transitions. Never mutates. Copy flow_id values unchanged."
+    },
+    {
+      "name": "get_truetest_journey_map_request",
+      "group": "truetest",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Polls a map build job by request_id and returns the map_id correlation. Do not guess by list order."
+    },
+    {
+      "name": "get_truetest_session",
+      "group": "truetest",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Session metadata and replay steps from an unchanged session_reference. include_raw_events (default false) returns at most 100 events with field values NOT redacted: use only for explicit troubleshooting."
+    },
+    {
+      "name": "get_upload_test_cloud_app_url",
+      "group": "testcloud",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Presigned upload command and storage_path for an app binary. Then create_test_cloud_app, then poll list_test_cloud_apps until READY."
+    },
+    {
+      "name": "list_alm_integrations",
+      "group": "requirements-alm",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "ALM integrations with integration and connection ids and, for Jira, the saved defect custom-field mappings. Feeds create_defect. Replaces find_alm_integration_projects."
+    },
+    {
+      "name": "list_execution_outputs",
+      "group": "results-evidence",
+      "class": "read",
+      "confidence": "live-schema",
+      "idSpace": "testcloud-string",
+      "notes": "TestCloud execution outputs. Without execution_id it lists the last 5 executions in 24 hours; with the TestCloud string id it lists every artifact and presigns one per call (videos first). Enumerate all outputs, never alter URLs."
+    },
+    {
+      "name": "list_executions",
+      "group": "results-evidence",
+      "class": "read",
+      "confidence": "live-schema",
+      "idSpace": "testops-numeric",
+      "notes": "Executions in a time window (default last 24 hours) and optional status. Returns numeric TestOps IDs and scheduling metadata only. Compute timestamps from the real current date."
+    },
+    {
       "name": "list_projects",
       "group": "workspace",
       "class": "read",
-      "confidence": "high",
+      "confidence": "live-schema",
       "notes": "Projects the signed-in user can access. Root of every chain."
     },
     {
       "name": "list_repositories",
       "group": "workspace",
       "class": "read",
-      "confidence": "high",
-      "notes": "Repositories (Test Projects) in a project. repository_id gates the test case, suite and folder tools."
-    },
-    {
-      "name": "find_iterations",
-      "group": "workspace",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Sprints and releases. Relative scope (current, previous, next, active, last N, recent) or a common RSQL filter."
-    },
-    {
-      "name": "find_execution_profiles",
-      "group": "workspace",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Execution profiles. Feeds profile_id for automated runs."
-    },
-    {
-      "name": "get_user_context",
-      "group": "workspace",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Signed-in user profile (whoami). Self only as far as the docs say, so it does not close the assignee lookup gap."
-    },
-    {
-      "name": "find_requirements",
-      "group": "requirements-alm",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Synced Jira or ADO requirements. Read-only mirror."
-    },
-    {
-      "name": "read_requirement",
-      "group": "requirements-alm",
-      "class": "read",
-      "confidence": "high",
-      "notes": "One requirement by requirement_id or key, normalised to Markdown."
-    },
-    {
-      "name": "find_test_cases_by_requirement",
-      "group": "requirements-alm",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Reverse join from requirement to cases. Pass exactly one identifier (requirement_id, key or requirement_external_id); zero or several is a validation error."
-    },
-    {
-      "name": "link_requirements_to_test_case",
-      "group": "requirements-alm",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Link requirements to a test case. Parameters are not documented on the docs page; see the tool schema."
-    },
-    {
-      "name": "unlink_requirements_from_test_case",
-      "group": "requirements-alm",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Remove requirement links from a test case. Parameters are not documented on the docs page; see the tool schema."
-    },
-    {
-      "name": "find_alm_integration_projects",
-      "group": "requirements-alm",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "ALM integration projects. Feeds the integration inputs of create_defect."
-    },
-    {
-      "name": "create_defect",
-      "group": "requirements-alm",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Files a real Jira or ADO bug linked to one FAILED test result. External side effect: preview and confirm first. Needs a failed test result ID and the per-project ALM integration, not the account-level Jira connection."
-    },
-    {
-      "name": "find_test_cases",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Filtered list with light metadata. Relative filters returned HTTP 500 on one project (2026-08-03). Subfolder search is opt-in."
-    },
-    {
-      "name": "read_test_case",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "One test case including steps."
-    },
-    {
-      "name": "create_test_case",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Creates a MANUAL case. With test_case_type AUTOMATED it creates nothing and returns script guidance. Names accept only letters, digits, spaces and ( ) . , _ -."
-    },
-    {
-      "name": "update_test_case",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Metadata and content editor. UPDATE_CONTENT replaces ALL steps, so send the full list."
-    },
-    {
-      "name": "move_test_case",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Moves a case and keeps its name. new_folder_path must start with Test Cases."
-    },
-    {
-      "name": "duplicate_test_case",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Copies a case in place."
-    },
-    {
-      "name": "delete_test_case",
-      "group": "test-assets",
-      "class": "destructive",
-      "confidence": "high",
-      "notes": "Deletes a case. Unreliable (HTTP 500 observed). Prefer update_test_case or move_test_case.",
-      "destructiveTarget": "test case"
-    },
-    {
-      "name": "find_test_folders",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Lists folders."
-    },
-    {
-      "name": "manage_test_folder",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Folder lifecycle through payload.action: CREATE, RENAME, MOVE, DUPLICATE, DELETE.",
-      "destructiveWhen": [
-        "DELETE"
-      ]
-    },
-    {
-      "name": "find_test_suites",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Lists suites. Relative or common filters (name partial or exact, RSQL)."
-    },
-    {
-      "name": "read_test_suite",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "high",
-      "notes": "One suite and its cases."
-    },
-    {
-      "name": "manage_test_suite",
-      "group": "test-assets",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Suite lifecycle through payload.action: CREATE, ADD_TEST_CASES, RENAME, MOVE, DUPLICATE, DELETE. Create and add reject mixed MANUAL and AUTOMATED cases.",
-      "destructiveWhen": [
-        "DELETE"
-      ]
-    },
-    {
-      "name": "find_test_suite_collections",
-      "group": "test-assets",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Lists or reads suite collections by collection_id or name. No create or edit tool exists."
-    },
-    {
-      "name": "read_auts",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "AUTs and their environments. Call right before a manual run. The tool text carries a private-access decision flow."
-    },
-    {
-      "name": "create_test_run",
-      "group": "execution",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Single run-creation tool. mode manual or automated, with the matching manual or automated object, an optional schedule (from build_schedule) and an optional private_local_testing_configuration. Manual Run Now returns manualExecutionId and testSuites. Consumes TestCloud minutes and can change AUT data.",
-      "consent": true
-    },
-    {
-      "name": "build_run_configuration",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Pure payload builder for automated.configurations. config_type is DESKTOP_AND_MOBILE_BROWSER, MOBILE_NATIVE or API. Creates nothing."
-    },
-    {
-      "name": "build_schedule",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Pure payload builder for the schedule object of create_test_run. Creates nothing."
-    },
-    {
-      "name": "build_private_local_testing_config",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Pure payload builder for private AUT access, mode tunnel or whitelist. Ask the user before tunnel mode. Creates nothing."
-    },
-    {
-      "name": "create_manual_ai_session",
-      "group": "execution",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Starts Run with AI against a manual execution. Drives a real browser against the real AUT. Ask the user for browser_profile_mode (SHARED or SEPARATE) and the AUT environment; never infer them. Reuse the private-local configuration unchanged. No cancel tool exists.",
-      "consent": true
-    },
-    {
-      "name": "read_manual_ai_session",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Poll a Run with AI session. No push and no cancel."
-    },
-    {
-      "name": "read_manual_test_run_detail_by_order",
-      "group": "execution",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Finds a manual execution by its order number."
-    },
-    {
-      "name": "rerun_execution",
-      "group": "execution",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Reruns a COMPLETED execution, optionally limited by job_targets. No stop or cancel tool exists.",
-      "consent": true
+      "confidence": "live-schema",
+      "notes": "Repositories (Test Projects) in a project. repository_id gates the test case, suite, folder and profile tools."
     },
     {
       "name": "list_schedule",
       "group": "execution",
       "class": "read",
-      "confidence": "high",
-      "notes": "Saved schedules, filtered by name wildcard."
-    },
-    {
-      "name": "read_schedule_detail",
-      "group": "execution",
-      "class": "read",
-      "confidence": "high",
-      "notes": "One schedule by schedule_id."
-    },
-    {
-      "name": "update_schedule_configuration",
-      "group": "execution",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Partial-merge update. Call once with every target schedule in updates."
-    },
-    {
-      "name": "find_test_results",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Results at four granularities (filter_type COMMON, RELATIVE, TEST_RESULT, EXECUTION). include_details adds step evidence."
-    },
-    {
-      "name": "read_test_result",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "One test result. Needed as input for create_defect."
-    },
-    {
-      "name": "read_execution_test_results",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Job-grouped results for one execution."
-    },
-    {
-      "name": "read_execution",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "high",
-      "notes": "One execution by numeric TestOps execution_id. start_time only for NOT_RUN.",
-      "idSpace": "testops-numeric"
-    },
-    {
-      "name": "list_executions",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Executions in a time window (default last 24 hours) and optional status. Returns numeric TestOps IDs and scheduling metadata only. Never swap with list_execution_outputs.",
-      "idSpace": "testops-numeric"
-    },
-    {
-      "name": "list_execution_outputs",
-      "group": "results-evidence",
-      "class": "read",
-      "confidence": "high",
-      "notes": "TestCloud execution outputs. Without an execution_id it returns the last 5 executions in 24 hours; with the TestCloud string ID it returns artifact URLs. Never swap with list_executions.",
-      "idSpace": "testcloud-string"
-    },
-    {
-      "name": "update_test_results",
-      "group": "results-evidence",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Records a manual result or reviews an automated one. Only the outcomes applied and unchanged count as success. A manual result needs an active run assigned to the user; an automated review needs a completed run."
-    },
-    {
-      "name": "prepare_artifact_upload",
-      "group": "results-evidence",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Returns a signed URL for one evidence file up to 10 MiB."
-    },
-    {
-      "name": "confirm_artifact_upload",
-      "group": "results-evidence",
-      "class": "write",
-      "confidence": "medium",
-      "notes": "Confirms a prepared upload and returns an artifact ID."
-    },
-    {
-      "name": "get_requirement_insights",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Requirement coverage per iteration. Replaces fetch_requirement_data."
-    },
-    {
-      "name": "get_defect_insights",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Defect distribution by iteration or date range. Replaces fetch_defect_data."
-    },
-    {
-      "name": "get_test_case_insights",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Test case execution and automation statistics. Replaces fetch_test_case_data."
-    },
-    {
-      "name": "get_test_configuration_insights",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "OS and browser coverage and pass rate. Replaces fetch_test_configuration_data."
-    },
-    {
-      "name": "analyze_test_case_stability",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Flaky, consistently failing, newly failing and slow tests. Replaces fetch_test_stability_data together with analyze_test_flakiness. Stability data returned all zeros on one project (2026-08-03); cross-check with find_test_results."
-    },
-    {
-      "name": "analyze_test_flakiness",
-      "group": "insights",
-      "class": "read",
-      "confidence": "medium",
-      "notes": "Flakiness over a lookback window with a minimum run count."
-    },
-    {
-      "name": "list_test_cloud_environments",
-      "group": "testcloud",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Browser and device catalog. RSQL filter over platform, browser, deviceName, deviceFamily."
+      "confidence": "live-schema",
+      "notes": "Saved schedules, filtered by name substring."
     },
     {
       "name": "list_test_cloud_agents",
       "group": "testcloud",
       "class": "read",
-      "confidence": "high",
-      "notes": "Execution agents in a project."
+      "confidence": "live-schema",
+      "notes": "Execution agents in a project. Stop when page_token is null."
     },
     {
       "name": "list_test_cloud_apps",
       "group": "testcloud",
       "class": "read",
-      "confidence": "high",
-      "notes": "Uploaded apps. Quote names with spaces in rsql_filter."
+      "confidence": "live-schema",
+      "notes": "Uploaded apps. Quote values with spaces in rsql_filter. Use name, not appName. status NEW, UPLOADING, READY, ERROR."
     },
     {
-      "name": "get_upload_test_cloud_app_url",
+      "name": "list_test_cloud_environments",
       "group": "testcloud",
       "class": "read",
-      "confidence": "high",
-      "notes": "Presigned upload URL and storage_path for an app binary."
-    },
-    {
-      "name": "create_test_cloud_app",
-      "group": "testcloud",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Registers an uploaded binary. Poll list_test_cloud_apps until the app is READY."
-    },
-    {
-      "name": "manage_test_cloud_dynamic_app",
-      "group": "testcloud",
-      "class": "write",
-      "confidence": "high",
-      "notes": "Alias (dynamic) apps. payload.action CREATE or UPDATE. UPDATE silently redirects every consumer of the alias.",
-      "destructiveWhen": [
-        "UPDATE"
-      ]
-    },
-    {
-      "name": "delete_test_cloud_app",
-      "group": "testcloud",
-      "class": "destructive",
-      "confidence": "high",
-      "notes": "Permanent. The tool text requires the user to type YES.",
-      "destructiveTarget": "app"
+      "confidence": "live-schema",
+      "notes": "Browser and device catalog. RSQL filter over platform, platformVersion, browser, browserVersion, device.deviceName and more. Include every user criterion. Page with page_token and next_offset until page_token is null."
     },
     {
       "name": "list_test_cloud_tunnels",
       "group": "testcloud",
       "class": "read",
-      "confidence": "high",
+      "confidence": "live-schema",
       "notes": "Active tunnels in a project."
-    },
-    {
-      "name": "prepare_test_cloud_tunnel_start",
-      "group": "testcloud",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Returns the setup commands for a tunnel client. test_type MANUAL or AUTOMATED; manual_execution_mode TESTPAK or RUN_WITH_AI."
-    },
-    {
-      "name": "stop_test_cloud_tunnel",
-      "group": "testcloud",
-      "class": "destructive",
-      "confidence": "high",
-      "notes": "Kills a shared tunnel. Other runs may depend on it.",
-      "destructiveTarget": "tunnel"
     },
     {
       "name": "list_truetest_auts",
       "group": "truetest",
       "class": "read",
-      "confidence": "high",
-      "notes": "Linked AUTs. Yields client_code."
+      "confidence": "live-schema",
+      "notes": "Linked TrueTest AUTs. platform_aut_id plus client_code is the AUT identity."
     },
     {
       "name": "list_truetest_tracking_environments",
       "group": "truetest",
       "class": "read",
-      "confidence": "high",
+      "confidence": "live-schema",
       "notes": "Tracking environments for a client_code."
     },
     {
-      "name": "search_truetest_sessions",
-      "group": "truetest",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Captured sessions. Window at most 31 days. Returns an opaque session_reference that must never be constructed."
+      "name": "manage_requirement_test_case_linkages",
+      "group": "requirements-alm",
+      "class": "write",
+      "confidence": "live-schema",
+      "destructiveWhen": [
+        "unlink"
+      ],
+      "notes": "One tool for link and unlink: action link | unlink, requirement_ids[], test_case_ids[]. Duplicates ignored. Requests run in parallel per requirement, so a partial failure leaves some requirements already updated: read back. Replaces link_requirements_to_test_case and unlink_requirements_from_test_case."
     },
     {
-      "name": "get_truetest_session",
-      "group": "truetest",
+      "name": "manage_test_cloud_dynamic_app",
+      "group": "testcloud",
+      "class": "write",
+      "confidence": "live-schema",
+      "destructiveWhen": [
+        "UPDATE"
+      ],
+      "notes": "Alias (dynamic) apps. payload.action CREATE or UPDATE. UPDATE silently redirects every consumer of the alias. Verify the target app first and confirm when several apps match."
+    },
+    {
+      "name": "manage_test_folder",
+      "group": "test-assets",
+      "class": "write",
+      "confidence": "live-schema",
+      "destructiveWhen": [
+        "DELETE"
+      ],
+      "notes": "Folder lifecycle through payload.action: CREATE (path, testFolderType TEST_CASE | TEST_SUITE), RENAME, MOVE, DUPLICATE, DELETE. DELETE id must be the exact folder resolved by full rawPath, not an ancestor from treePath."
+    },
+    {
+      "name": "manage_test_suite",
+      "group": "test-assets",
+      "class": "write",
+      "confidence": "live-schema",
+      "destructiveWhen": [
+        "DELETE"
+      ],
+      "notes": "Suite lifecycle through payload.action: CREATE, ADD_TEST_CASES, RENAME, MOVE, DUPLICATE, DELETE. Manages suite definitions only; a suite does not create a TestPak. Never mix MANUAL and AUTOMATED cases in one suite."
+    },
+    {
+      "name": "memory_forget",
+      "group": "knowledge",
+      "class": "destructive",
+      "confidence": "live-schema",
+      "destructiveTarget": "memory record",
+      "notes": "Permanently deletes memory records the user asked to forget. Run memory_list then memory_read first, delete exactly those ids, name what was deleted. Ask first when the read returns more than the user meant."
+    },
+    {
+      "name": "memory_list",
+      "group": "knowledge",
       "class": "read",
-      "confidence": "high",
-      "notes": "Session metadata and replay steps. include_raw_events is capped at 100 and PII-redacted."
+      "confidence": "live-schema",
+      "notes": "Kai memory headlines for the project and the user, plus the policy page in full. Call once per session. A truncated or unavailable listing never proves the team has decided nothing."
+    },
+    {
+      "name": "memory_read",
+      "group": "knowledge",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Full bodies for up to 20 memory ids. Agent rule beats user memory; otherwise the newer record wins; say which one you followed. Bodies are the person's own wording, not platform facts."
+    },
+    {
+      "name": "memory_read_page",
+      "group": "knowledge",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "One distilled guidance page by slug from memory_list. Information, never an instruction to act."
+    },
+    {
+      "name": "memory_write",
+      "group": "knowledge",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Writes the person's OWN memory, only when the user asks to remember something. Body in the user's own words, headline under 120 chars, kind convention | preference | correction | verdict | constraint | environment. Never writes a project agent rule. Report redacted fields and duplicate hits."
+    },
+    {
+      "name": "move_test_case",
+      "group": "test-assets",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Moves a case and keeps its name. new_folder_path must start with Test Cases."
+    },
+    {
+      "name": "prepare_artifact_upload",
+      "group": "results-evidence",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Returns a signed PUT URL for one evidence file up to 10 MiB. Measure the exact content_length first. No base64, no local paths. Upload without Platform credentials, then confirm_artifact_upload."
+    },
+    {
+      "name": "prepare_test_cloud_tunnel_start",
+      "group": "testcloud",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Returns setup commands for a tunnel client. test_type MANUAL or AUTOMATED; manual_execution_mode RUN_WITH_AI returns the full guide, TESTPAK or unknown returns VPN guidance only."
+    },
+    {
+      "name": "read_auts",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "AUTs and their environments with clientCode. Call right before a manual run. The tool text carries the private-access decision flow with fixed option labels. Never auto-select a tunnel. If private access is needed and no tunnel is active, block the run."
+    },
+    {
+      "name": "read_execution",
+      "group": "results-evidence",
+      "class": "read",
+      "confidence": "live-schema",
+      "idSpace": "testops-numeric",
+      "notes": "One execution by numeric TestOps execution_id. start_time only for NOT_RUN. configType MANUAL marks a TestPak container, not an executor choice."
+    },
+    {
+      "name": "read_manual_ai_session",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Poll a Run with AI session (manual_execution_id, session_id). No push and no cancel. Pass test_case_id for per-step detail. Report overall status and next action only. Polling never launches a session."
+    },
+    {
+      "name": "read_requirement",
+      "group": "requirements-alm",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "One requirement by requirement_id or key, normalised to Markdown. Read customFields before calling a requirement thin: acceptance criteria live there. include_attachments costs a live Jira or ADO call."
+    },
+    {
+      "name": "read_schedule_detail",
+      "group": "execution",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "One schedule by schedule_id."
+    },
+    {
+      "name": "read_test_cases",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Batch read by test_case_ids. content_type NONE (default), FLOW (steps), SCRIPT, BOTH. Replaces read_test_case."
+    },
+    {
+      "name": "read_test_suite",
+      "group": "test-assets",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "One suite and its cases."
+    },
+    {
+      "name": "rerun_execution",
+      "group": "execution",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "external": true,
+      "notes": "Reruns an explicitly requested AUTOMATED execution, optionally limited by job_targets. Call read_execution first. An ID alone does not authorise a rerun. TestPak or manual runs use update_test_run START. No stop or cancel tool exists."
+    },
+    {
+      "name": "search",
+      "group": "knowledge",
+      "class": "read",
+      "confidence": "live-schema",
+      "notes": "Semantic search of the Knowledge Base: test cases, suites, folders, requirements and uploaded documents. Set include_documents false for an entities-only duplicate check. Tier, not score, decides exists. Empty, incomplete or keyword_fallback results never prove absence. Entity hits carry no steps: read them with read_test_cases. A requirement hit is context, not a coverage link."
     },
     {
       "name": "search_truetest_journey_maps",
       "group": "truetest",
       "class": "read",
-      "confidence": "high",
-      "notes": "Lists journey maps by status, dates or creator_email."
+      "confidence": "live-schema",
+      "notes": "Lists journey maps by status, dates, tracking environment or creator_email."
     },
     {
-      "name": "get_truetest_journey_map",
+      "name": "search_truetest_sessions",
       "group": "truetest",
       "class": "read",
-      "confidence": "high",
-      "notes": "One map with four independent paged cursors (pages, flows, steps, sessions, linked tests)."
+      "confidence": "live-schema",
+      "notes": "Captured sessions. Window at most 31 days. Returns an opaque session_reference that must never be constructed. Pass tracking_environment_id for attributes and replay URLs. Render columns UTC, Steps, Duration, Session ID, Custom attributes, Replay. email filter only when the user asks to find that session."
     },
     {
-      "name": "create_truetest_journey_map",
-      "group": "truetest",
+      "name": "stop_test_cloud_tunnel",
+      "group": "testcloud",
+      "class": "destructive",
+      "confidence": "live-schema",
+      "destructiveTarget": "tunnel",
+      "notes": "Kills a shared tunnel. Other runs may depend on it."
+    },
+    {
+      "name": "update_schedule_configuration",
+      "group": "execution",
       "class": "write",
-      "confidence": "high",
-      "notes": "Starts an async build job and returns a request_id."
+      "confidence": "live-schema",
+      "notes": "Partial-merge update. Call ONCE after the user confirms, with every target schedule in updates. Only explicitly requested settings. Never infer timeZone; ask for the IANA zone. startTime must be in the future. configType, testType and repositoryId change only with a full runConfigurationEntries replacement."
     },
     {
-      "name": "get_truetest_journey_map_request",
-      "group": "truetest",
-      "class": "read",
-      "confidence": "high",
-      "notes": "Polls a map build job. Do not auto-resubmit on error."
-    },
-    {
-      "name": "create_truetest_test_case_from_session",
-      "group": "truetest",
+      "name": "update_test_cases",
+      "group": "test-assets",
       "class": "write",
-      "confidence": "medium",
-      "notes": "Generates test cases from 1 to 25 session IDs. Needs explicit user approval. The Sep 2026 code name differs (see unconfirmed); confirm against a live tools/list.",
-      "consent": true
+      "confidence": "live-schema",
+      "notes": "Batched editor: updates[] of {action, test_case_data}. Actions RENAME, UPDATE_STATUS, UPDATE_DESCRIPTION, UPDATE_PRECONDITION, UPDATE_PRIORITY, UPDATE_AUTOMATION_STATUS, UPDATE_CUSTOM_FIELD, UPDATE_ASSIGNEE, UPDATE_LINKED_TEST_CASES, REMOVE_LINKED_TEST_CASE, UPDATE_CONTENT. UPDATE_CONTENT replaces ALL steps, so send the full list and keep Call Test Case actions. Batch every change to one case in one call. Replaces update_test_case."
+    },
+    {
+      "name": "update_test_results",
+      "group": "results-evidence",
+      "class": "write",
+      "confidence": "live-schema",
+      "notes": "Records a manual result (RECORD) or reviews an automated one (REVIEW). Case status never implies step statuses; steps is a partial update; all_steps_status only when the user reports all steps. Record observed outcomes only. The run must be active and created by the caller. Count only applied and unchanged outcomes as success."
+    },
+    {
+      "name": "update_test_run",
+      "group": "execution",
+      "class": "write",
+      "confidence": "live-schema",
+      "consent": true,
+      "external": true,
+      "destructiveWhen": [
+        "END with unfinished_cases SKIP"
+      ],
+      "notes": "TestPak lifecycle: CONFIGURE (AUT and private access), START (MANUAL or KATALON_AI), END. Before START ask: Run With AI (recommended) or manual TestPak. No AI request does not mean MANUAL. KATALON_AI needs browser_profile_mode asked from the user. After a hosted START call read_manual_ai_session once. END with unfinished cases is rejected unless the user explicitly authorises SKIP."
     }
   ],
   "retired": {
+    "analyze_test_case_stability": "fetch_test_stability_metrics with return_tests (ALL, FLAKY, ALWAYS_FAIL, NEW_FAILURE, SLOW) and filter_type EXECUTION or ITERATION",
+    "analyze_test_flakiness": "fetch_test_stability_metrics with return_tests FLAKY and a from_date and to_date window",
+    "find_alm_integration_projects": "list_alm_integrations",
+    "get_defect_insights": "fetch_defect_metrics",
+    "get_requirement_insights": "fetch_requirement_metrics",
+    "get_test_case_insights": "fetch_test_case_metrics",
+    "get_test_configuration_insights": "fetch_test_configuration_metrics",
+    "get_user_context": "none: not exposed by the live server. There is no whoami tool; read the user from the client session, and ask the user for any assignee UUID",
+    "link_requirements_to_test_case": "manage_requirement_test_case_linkages with action link",
+    "unlink_requirements_from_test_case": "manage_requirement_test_case_linkages with action unlink",
+    "read_execution_test_results": "find_test_results with filter_type EXECUTION",
+    "read_manual_test_run_detail_by_order": "none: the live server has no lookup by order number. Use list_executions to find the numeric execution_id, then read_execution",
+    "read_test_case": "read_test_cases with content_type FLOW",
+    "read_test_result": "find_test_results with filter_type TEST_RESULT",
+    "update_test_case": "update_test_cases with one action per field",
     "create_manual_test_run": "create_test_run with mode manual",
     "schedule_test_run": "create_test_run with mode automated plus schedule from build_schedule",
-    "fetch_requirement_data": "get_requirement_insights",
-    "fetch_defect_data": "get_defect_insights",
-    "fetch_test_case_data": "get_test_case_insights",
-    "fetch_test_stability_data": "analyze_test_case_stability and analyze_test_flakiness",
-    "fetch_test_configuration_data": "get_test_configuration_insights"
+    "fetch_requirement_data": "fetch_requirement_metrics",
+    "fetch_defect_data": "fetch_defect_metrics",
+    "fetch_test_case_data": "fetch_test_case_metrics",
+    "fetch_test_stability_data": "fetch_test_stability_metrics with return_tests",
+    "fetch_test_configuration_data": "fetch_test_configuration_metrics",
+    "generate_truetest_test_cases_from_sessions": "create_truetest_test_case_from_session",
+    "search_external_tool_ops": "none: absent from the live tools/list on 2026-10-20. Use the Jira, ADO, GitHub, Drive, Figma or Confluence connector directly",
+    "run_external_skill": "none: absent from the live tools/list on 2026-10-20. Do the tracker step through the tracker connector"
   },
-  "unconfirmedNote": "Names seen in the 2026-09-10 live capture or the server code, absent from the October 2026 docs. Skills must not use them. check-mcp-live reports them when a live dump contains them.",
-  "unconfirmed": {
-    "search": "Semantic search over test cases, suites, folders and requirements (2026-09-10 live capture).",
-    "search_external_tool_ops": "Meta-tool that finds a Jira, ADO, GitHub, Drive, Figma or Confluence operation (2026-09-10).",
-    "run_external_skill": "Runs a bundled external-tracker recipe. Can write (2026-09-10).",
-    "read_test_cases": "Batch hydrate by ID. Sep family of read_test_case.",
-    "update_test_cases": "Batched update with an action enum. Sep family of update_test_case.",
-    "manage_requirement_test_case_linkages": "One polymorphic link and unlink tool. Sep family of link_requirements_to_test_case.",
-    "list_alm_integrations": "Sep family of find_alm_integration_projects.",
-    "fetch_requirement_metrics": "Sep family of get_requirement_insights.",
-    "fetch_defect_metrics": "Sep family of get_defect_insights.",
-    "fetch_defects": "Defect linkage lookup by result, case or execution (2026-09-10).",
-    "fetch_test_case_metrics": "Sep family of get_test_case_insights.",
-    "fetch_test_configuration_metrics": "Sep family of get_test_configuration_insights.",
-    "fetch_test_stability_metrics": "Sep family of analyze_test_case_stability.",
-    "generate_truetest_test_cases_from_sessions": "Server code name for create_truetest_test_case_from_session (capabilities note, 2026-09)."
-  },
+  "unconfirmedNote": "Names seen in an earlier capture or the server code but not in the live tools/list. Empty on 2026-10-20: every earlier unconfirmed name is now either live or in retired.",
+  "unconfirmed": {},
+  "chatgptOnlyNote": "Tools served by the ChatGPT app, not by the Katalon MCP server. They are absent from the live tools/list on purpose, so check-mcp-live.mjs excludes them from the missing, new and retired diff. Only files under chatgpt/ may name them.",
   "chatgptOnly": [
     {
       "name": "settings_read",
       "notes": "Reads the stored default project."
+    },
+    {
+      "name": "settings_update",
+      "notes": "Saves the default project, repository and AUT environment. Used by the get-started skill in ChatGPT only."
+    },
+    {
+      "name": "katalon_profile",
+      "notes": "Returns the signed-in organization and account name. ChatGPT app only."
+    },
+    {
+      "name": "katalon_home",
+      "notes": "Card: Katalon home view. ChatGPT app only."
     },
     {
       "name": "show_requirement_coverage",

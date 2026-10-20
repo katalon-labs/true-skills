@@ -14,7 +14,7 @@ This skill turns a scoped cycle into person-hours, a date, and a headcount. The 
 
 The Katalon MCP can count the work. It cannot measure the effort. Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-- **Available.** Case and suite counts: `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement`. Uncovered requirements: `get_requirement_insights`. Automated and manual split, when exposed: `get_test_case_insights`. Failure and flake burden: `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results`. Configuration matrix: `get_test_configuration_insights`. Cycle window: `find_iterations`. Existing automated cadence: `list_schedule`, `read_schedule_detail`. A past execution: `list_executions`, `read_execution`, `read_execution_test_results`.
+- **Available.** Case and suite counts: `find_test_cases` (its COMMON filter queries `testType` and `automationStatus`), `read_test_suite`, `find_test_cases_by_requirement`. Uncovered requirements: `fetch_requirement_metrics`. Automated and manual split, and execution statistics: `fetch_test_case_metrics`. Failure and flake burden: `fetch_test_stability_metrics`, `find_test_results`. Configuration matrix: `fetch_test_configuration_metrics`. Cycle window: `find_iterations`. Existing automated cadence: `list_schedule`, `read_schedule_detail`. A past execution: `list_executions`, `read_execution`, and `find_test_results` with filter_type `EXECUTION`.
 - **Not available.** How long a person takes. No tool books effort against a case, a run, or a person. A manual run's open and close times are calendar time, not work. The platform also holds no roster, capacity, PTO, calendar, rate, cost model, or field for the estimate, and no cross-cycle average.
 - **Looks like data and is not.** Session concurrency. `list_test_cloud_environments`, `find_execution_profiles`, and `list_test_cloud_agents` list environments, profiles, and agents. The docs do not show a parallel-session limit in them. Tag concurrency as team-supplied.
 - **Field check.** Read one execution with `read_execution` and confirm that an elapsed-time field exists before you model on it. If it is absent, ask for the figure and tag it team-supplied. A missing field is never zero.
@@ -35,8 +35,8 @@ Answer the question asked -> State the uncertainty
 ## Steps
 
 1. **Fix the scope, or force Low confidence.** Call `list_projects`, then `list_repositories`. Bind the window with `find_iterations`. Get the release, sprint, folder, or suite in writing. If scope still moves, build the model with the scope as a stated assumption and set confidence to Low.
-2. **Count what the platform can count.** Use `get_requirement_insights` for uncovered requirements. Use `find_test_cases` and `read_test_suite` for case counts. Use `get_test_case_insights` for the automated and manual split. Use `get_test_configuration_insights` for the matrix multiplier. Use `analyze_test_case_stability` for the flake burden. Say so when a result is paginated or truncated. Do not report a partial page as a total.
-3. **Read one comparable execution.** Agree on the closest finished cycle with the human. Call `list_executions` with an explicit time window (the default window is short). Then call `read_execution` and `read_execution_test_results`. Take the pass rate and, if present, the automated elapsed time. This is your only platform calibration. It is one sample. Say "n=1".
+2. **Count what the platform can count.** Use `fetch_requirement_metrics` (`iteration_type` and `iteration_name`, with the iteration checked through `find_iterations`) for uncovered requirements. Use `find_test_cases` and `read_test_suite` for case counts. Pages start at 0, so copy `next_page_token` into `page_number` until it is null. Use `fetch_test_case_metrics` for the automated and manual split, or count it with `find_test_cases` and a `testType` query. Use `fetch_test_configuration_metrics` for the matrix multiplier. Use `fetch_test_stability_metrics` with `return_tests` for the flake burden. Without `return_tests` it returns metrics only, and it lists three cases per category unless you raise `limit_tests`. Say so when a result is paginated or truncated. Do not report a partial page as a total.
+3. **Read one comparable execution.** Agree on the closest finished cycle with the human. Call `list_executions` with both `start_time` and `end_time` from the real current date (the default window is the last 24 hours). Then call `read_execution` and `find_test_results` with filter_type `EXECUTION`. Its pages walk the execution's jobs, so page until the list ends. Take the pass rate and, if present, the automated elapsed time. This is your only platform calibration. It is one sample. Say "n=1".
 4. **Get the rates from the human.** Ask for manual minutes per case, design minutes per new case, new cases per uncovered requirement, triage minutes per failing result, automation authoring hours per case, productive hours per tester per day, overhead percentage, and session concurrency. Rank the sources: measured in this project within 90 days, then team declaration, then another project or an older cycle, then an industry default. Tag each rate with its source and date.
 5. **Size five buckets.** Design, manual execution, automated execution and triage, automation authoring, fixed overhead. Record an out-of-scope bucket as zero with the reason.
 6. **Give each driver a low, a likely, and a high value.** A driver is a rate or a count that can miss, such as new cases per requirement or the failure rate. Set the high value from a named risk. If you cannot name the risk, use 1.5 times the likely value and cap confidence at Medium.
@@ -264,22 +264,22 @@ Every figure in an estimate is a platform fact or a human input. This file draws
 
 | Estimation input | Tool | What it gives you | Trap |
 |---|---|---|---|
-| Cycle window | `find_iterations` | sprint or iteration name, start, and end | Calendar days, not working days. Subtract holidays yourself. |
-| Uncovered requirements | `get_requirement_insights` | requirement coverage for an iteration | "Covered" means linked, not passing. A linked case that never ran still costs execution time. |
-| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. |
-| Automated and manual split | `get_test_case_insights` | case quality signals, and the split when exposed | Not guaranteed. If absent, ask and tag it team-supplied. |
-| Failure and flake burden | `analyze_test_case_stability`, `analyze_test_flakiness`, `find_test_results` | flaky, always failing, newly failing, and slow cases; flakiness over a lookback window with a minimum run count; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. A signal from fewer than about 10 runs is unconfirmed. |
-| Configuration matrix | `get_test_configuration_insights` | which environments, browsers, and devices are covered against the target set | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
+| Cycle window | `find_iterations` | sprint or release name, start, and end (set `detail_level` to `FULL` for dates) | Calendar days, not working days. Subtract holidays yourself. |
+| Uncovered requirements | `fetch_requirement_metrics` | requirement coverage for a sprint or release | "Covered" means linked, not passing. A linked case that never ran still costs execution time. It takes no date range. |
+| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. Folder-scoped search resolves at most 200 folders and fails rather than truncating. |
+| Automated and manual split | `fetch_test_case_metrics`, or `find_test_cases` with a `testType` or `automationStatus` query | execution statistics, automation status, and case records | `automationStatus` is not `testType`. Do not substitute one for the other. If neither answers, ask and tag it team-supplied. |
+| Failure and flake burden | `fetch_test_stability_metrics`, `find_test_results` | flaky, always failing, newly failing, and slow cases (set `return_tests`); flakiness over a `from_date` and `to_date` window; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. The stability tool has no minimum-run parameter. Count runs with `find_test_results`. A signal from fewer than about 10 runs is unconfirmed. |
+| Configuration matrix | `fetch_test_configuration_metrics` | which OS or browser combinations are covered against the target set (`configuration_type`, `coverage_threshold`, `pass_threshold`) | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
 | Existing automated cadence | `list_schedule`, `read_schedule_detail` | saved schedules and their detail | A suite that already runs nightly adds triage every day. Count the days in the window. |
-| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is short. Pass explicit start and end times. Do not use it for TestCloud artifacts. |
-| Past automated elapsed time | `read_execution`, `read_execution_test_results` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
+| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is the last 24 hours. Pass explicit start and end times from the real current date. Do not use it for TestCloud artifacts. |
+| Past automated elapsed time | `read_execution`, `find_test_results` with filter_type `EXECUTION` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
 | Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. No tool aggregates across cycles. Write n=1 in the confidence basis. |
 
 Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud (formerly TestCloud) uses a string. `list_executions` and `read_execution` take the number. `list_execution_outputs` takes the string. Never swap them.
 
 Always resolve scope first: `list_projects`, then `list_repositories`.
 
-Each insights tool takes an iteration or a date range. See the tool schema for exact fields. Insights are read at the time of the call. They are not point-in-time history.
+The metrics tools take an iteration, a date range, or both. `fetch_requirement_metrics` takes an iteration only. The others take a `filter` with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, the last 28 days), except `fetch_test_stability_metrics`, which takes flat parameters. See the tool schema for exact fields. Metrics are read at the time of the call. They are not point-in-time history.
 
 ## Human side: the checklist
 
@@ -449,12 +449,12 @@ Tag every line. Nothing untagged enters the model.
 | Input | Value | Source |
 |---|---|---|
 | Cycle window | 2026-08-17 to 2026-08-28, 10 working days | MCP `find_iterations` |
-| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `get_requirement_insights` |
+| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `fetch_requirement_metrics` |
 | Cases in the release folder | 214 (187 linked, 27 unlinked regression) | MCP `find_test_cases`, full page, not truncated |
-| Automated / manual split | 96 / 118 | MCP `get_test_case_insights` |
-| Unstable cases, last 30 days | 11 | MCP `analyze_test_case_stability` |
-| Automated pass rate, sprint 3.1 | 91% | MCP `read_execution_test_results` on the sprint 3.1 execution found with `list_executions` |
-| Target configurations | Chrome, Safari, Android Chrome. Automated covers all 3. Manual covers Chrome only. | MCP `get_test_configuration_insights` |
+| Automated / manual split | 96 / 118 | MCP `fetch_test_case_metrics` |
+| Unstable cases, last 30 days | 11 | MCP `fetch_test_stability_metrics` |
+| Automated pass rate, sprint 3.1 | 91% | MCP `find_test_results` (filter_type `EXECUTION`) on the sprint 3.1 execution found with `list_executions` |
+| Target configurations | Chrome, Safari, Android Chrome. Automated covers all 3. Manual covers Chrome only. | MCP `fetch_test_configuration_metrics` |
 | Sprint 3.1 automated elapsed | 41 min for 96 results | MCP `read_execution`, elapsed field confirmed on the record |
 | Session concurrency | 4 parallel sessions | **Team-supplied.** Not an MCP field. |
 | Manual minutes per case | 15 / 18 / 22 (low / likely / high) | **Team-supplied.** Likely value measured on sprint 3.1. |
@@ -551,11 +551,11 @@ Excluded:
   - Manual execution on Safari and Android Chrome: the manual matrix is Chrome only
   - Any money figure: the platform holds no rate
 Evidence:
-  MCP   get_requirement_insights -> 34 in scope, 8 uncovered
+  MCP   fetch_requirement_metrics -> 34 in scope, 8 uncovered
   MCP   find_test_cases -> 214 cases in the release folder
-  MCP   get_test_case_insights -> 96 automated / 118 manual
-  MCP   analyze_test_case_stability -> 11 unstable in 30 days
-  MCP   read_execution_test_results -> 91% pass on sprint 3.1
+  MCP   fetch_test_case_metrics -> 96 automated / 118 manual
+  MCP   fetch_test_stability_metrics -> 11 unstable in 30 days
+  MCP   find_test_results (EXECUTION) -> 91% pass on sprint 3.1
   Team  18 min per manual case -> measured by the team on sprint 3.1
   Team  4 parallel sessions -> TestCloud plan, not an MCP field
 ```

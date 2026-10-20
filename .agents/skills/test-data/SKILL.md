@@ -18,7 +18,7 @@ One artifact serves both lanes. Call it the data contract: what must exist, whic
 
 Three different things in the Katalon world are called "test data". The MCP reaches only one of them.
 
-- **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `read_test_case`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_case`), read the target environment (`read_auts`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
+- **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `search`, `read_test_cases`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_cases`), read the target environment (`read_auts`), read the team's saved data conventions (`memory_list`, `memory_read`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
 - **Cannot, at all:**
   - **Test-data entities.** A standalone Test Data object (CSV, Excel, internal, database) is a Katalon Studio desktop artifact. The MCP does not create, read, or bind it.
   - **Secrets and variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings, Configurations, Secrets & Variables. Steps reference them as `{KEY}`. They apply to cloud-hosted execution only and are scoped to the project. No tool reads or writes them.
@@ -27,7 +27,7 @@ Three different things in the Katalon world are called "test data". The MCP reac
 - **Do not invent tools.** No tool exists for test data, fixtures, secrets, seeding, environment reset, or database queries. When a workflow seems to need one, use the workaround below and state the boundary.
 - **Run with AI reads the case body only.** Data that is missing from the Pre-condition and the Test Data column never reaches the AI runner. The placement rule below follows from this.
 - **Workaround, the data contract that needs no missing tool:**
-  - Manual lane: the Pre-condition plus the per-step Test Data column, written with `update_test_case`.
+  - Manual lane: the Pre-condition plus the per-step Test Data column (`context.data` on each step), written with `update_test_cases`.
   - Automation lane: a checked-in fixture or factory, plus the seed command named in the case Pre-condition so both lanes start from the same state.
 
 Read `references/write-policy.md` before you change cases.
@@ -48,12 +48,12 @@ Read `references/write-policy.md` before you change cases.
 ## Steps and tool rules
 
 1. **Resolve scope.** Call `list_projects`, then `list_repositories`. If exactly one matches the user's wording, use it. Call `read_auts` to learn which environment the data must exist in. Data built for the wrong environment is worse than none.
-2. **Derive the data classes. Do not guess values.** Read the requirement with `read_requirement`. Read the cases with `find_test_cases_by_requirement`, then `read_test_case` on each. Turn each condition into a data class. Rank the conditions by risk first. Use equivalence partitioning and boundary values as tools to find the classes. One class maps to one case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
+2. **Derive the data classes. Do not guess values.** Read the requirement with `read_requirement`. Read the cases with `find_test_cases_by_requirement`, then one `read_test_cases` call with `content_type` `FLOW` for all of them. Call `memory_list` once and read matching headlines with `memory_read`: the team may have saved data conventions. Quote a record when you follow it, and never present it as a platform fact. If `available` is false, say memory is unavailable. Never call `memory_write` or `memory_forget` unless the user asks. Turn each condition into a data class. Rank the conditions by risk first. Use equivalence partitioning and boundary values as tools to find the classes. One class maps to one case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
 3. **Choose the strategy per class.** Pick static, generated, or cloned from production for each class. Never use one strategy by default. The trade-offs are in `references/data-design.md`. Say which you chose and why.
 4. **Place the data.** Apply the placement rule below.
 5. **Plan seed and teardown together.** Use the seeding ladder in `references/seed-and-teardown.md`: application API first, CLI or SQL second, UI last. Record the seed command in the case Pre-condition.
-6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_case` once per case with every edit in one call. Follow `references/write-policy.md`.
-7. **Verify, then run twice.** Call `read_test_case` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
+6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_cases` with every edit to one case in the same call, because actions run in order and separate calls to one case race. Follow `references/write-policy.md`.
+7. **Verify, then run twice.** Call `read_test_cases` with `content_type` `FLOW` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
 
 ## The placement rule
 
@@ -119,7 +119,7 @@ TC-2103  Loyalty discount excludes gift cards
 
 **Step 3 output, the strategy.** Generated per run. The test mutates loyalty tier and order history, so a shared static account goes stale after the first run. Cloned production accounts carry real customer PII for no benefit.
 
-**Step 4 output, the manual lane.** After the user confirms the update set, make one `update_test_case` call per case. For `TC-2101`:
+**Step 4 output, the manual lane.** After the user confirms the update set, send one `update_test_cases` call with the actions for each case. For `TC-2101` that is `UPDATE_PRECONDITION` plus `UPDATE_CONTENT`. `UPDATE_CONTENT` replaces all steps, so send the complete step list from the `FLOW` read, keep any Call Test Case steps, and put each value in the step's `context.data`. Never send `context: {}`. The result for `TC-2101`:
 
 ```text
 Pre-condition:
@@ -138,7 +138,7 @@ Teardown: delete the seeded account with
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-**Expected output of the verification.** `read_test_case` on `TC-2101` returns a non-empty Test Data value on steps 1 to 3, the seed command inside the pre-condition, `{LOYALTY_PASSWORD}` as a reference with no literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land. Re-issue the single update call. Never create a second case.
+**Expected output of the verification.** `read_test_cases` with `content_type` `FLOW` on `TC-2101` returns a non-empty Test Data value on steps 1 to 3, the seed command inside the pre-condition, `{LOYALTY_PASSWORD}` as a reference with no literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land. Re-issue the single update call. Never create a second case.
 
 **Step 4 output, the automation lane.** The same contract as a typed factory, with creation and destruction in one place:
 

@@ -55,7 +55,7 @@ Resolve context in this order before any write:
 2. Call `list_repositories` with `project_id`. Treat repository and Test Project as one target. If the user says "Katalon Cloud", prefer a repository with that name. Do not scan all repositories to avoid a choice.
 3. Name the project and repository to the user in one line.
 
-Then pass the resolved values to the next skill. Do not resolve again. Repeat `project_id` and `repository_id` on every call that takes them, because the MCP keeps no session. Carry IDs between calls yourself: requirement keys, suite IDs, `manualExecutionId`, and execution IDs.
+Then pass the resolved values to the next skill. Do not resolve again. Repeat `project_id` and `repository_id` on every call that takes them, because the MCP keeps no session. Carry IDs between calls yourself: requirement keys, suite IDs, `manualExecutionId`, `session_id`, and execution IDs.
 
 Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud uses a string. Never pass one where the other belongs.
 
@@ -66,7 +66,7 @@ The full rules are in `references/write-policy.md`. In short:
 - Reads need no confirmation.
 - Before a write, preview the whole mutation set, get one confirmation, run it, then read back.
 - A destructive tool needs a yes that names the target.
-- Before `create_test_run`, `create_manual_ai_session`, or `rerun_execution`, confirm. These use cloud minutes and can change AUT data. A confirmation covers one run.
+- Before `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`, confirm. These use cloud minutes, launch a hosted browser, or can change AUT data. A confirmation covers one run.
 - Never rely on a server prompt or on sampling. Ask in chat.
 
 A user who asks for a full flow has not confirmed each write. Preview at each stage boundary, or once for the whole chain when the chain is short and the user agrees.
@@ -88,7 +88,9 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 ## Capability Boundary
 
-State the boundary before you promise a workflow. The MCP can run both manual and automated runs, rerun a completed execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, and work with TrueTest sessions. It cannot create requirements, create a formal Test Plan entity, cancel Run with AI, stop a running execution, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+
+When the work authors or names things, call `memory_list` once and read the headlines that match. Treat the bodies as the team's decisions, quote them, and never restate them as platform facts. If memory is unavailable, say so. Memory is optional. Call `memory_write` or `memory_forget` only when the user asks.
 
 ## References
 
@@ -113,7 +115,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the Katalon docs page "Katalon True Platform MCP Server" (last updated October 2026). The live tool list needs sign-in, so this page is the contract. If a tool named here is missing in your session, say so and use the closest documented tool. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -121,35 +123,37 @@ Name tools by bare name, as written here. Clients add a prefix. Claude Code uses
 
 Workspace and discovery
 - `list_projects`, `list_repositories`, `find_iterations`, `find_execution_profiles`.
-- `get_user_context` returns the signed-in user. It does not look up other users.
+- `search` runs semantic search over test cases, suites, folders, requirements, and uploaded specification documents.
+- No tool returns the signed-in user. Take the user from the client session. Ask the user for any assignee UUID.
 
 Requirements and ALM
 - `find_requirements`, `read_requirement`. Requirements are a read-only mirror of Jira or Azure DevOps.
-- `find_test_cases_by_requirement`, `link_requirements_to_test_case`, `unlink_requirements_from_test_case`.
-- `find_alm_integration_projects`, `create_defect`.
+- `find_test_cases_by_requirement`.
+- `manage_requirement_test_case_linkages` links or unlinks, many requirements to many cases, in one call.
+- `list_alm_integrations` returns the integration and connection IDs. `fetch_defects` shows the defects already linked to a result, a case, or an execution. `create_defect` files a new one.
 
 Test cases, folders, suites
-- `find_test_cases`, `read_test_case`, `create_test_case`, `update_test_case`, `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
 
 Execution
-- `read_auts`, `create_test_run` (manual and automated), `create_manual_ai_session`, `read_manual_ai_session`.
-- `read_manual_test_run_detail_by_order` finds a manual run by its order number.
+- `read_auts`, `create_test_run` (manual and automated), `update_test_run` (CONFIGURE, START, END), `read_manual_ai_session`.
+- `create_manual_ai_session` is the legacy launcher for a subset of cases. Prefer `update_test_run` with START and `KATALON_AI`.
 - `build_run_configuration`, `build_schedule`, `build_private_local_testing_config`.
-- `rerun_execution` reruns a completed execution.
+- `rerun_execution` reruns an automated execution.
 - `list_schedule`, `read_schedule_detail`, `update_schedule_configuration`.
 
 Results and evidence
-- `find_test_results`, `read_test_result`, `read_execution`, `read_execution_test_results`.
+- `find_test_results` reads results by test result, by execution, or by a common or relative filter. `read_execution`.
 - `list_executions` (numeric TestOps IDs) and `list_execution_outputs` (TestCloud string IDs and artifact URLs).
 - `update_test_results` records a manual result or reviews an automated one.
 - `prepare_artifact_upload` and `confirm_artifact_upload` attach evidence up to 10 MiB.
 
-Quality insights
-- `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, `get_test_configuration_insights`.
-- `analyze_test_case_stability` (flaky, always failing, newly failing, slow) and `analyze_test_flakiness` (lookback window, minimum runs).
+Quality metrics
+- `fetch_requirement_metrics`, `fetch_defect_metrics`, `fetch_test_case_metrics`, `fetch_test_configuration_metrics`.
+- `fetch_test_stability_metrics` returns flaky, always failing, newly failing, and slow tests. It takes a lookback window. It has no minimum run count.
 
 Test Execution - Cloud assets and tunnels
 - `list_test_cloud_environments`, `list_test_cloud_agents`, `list_test_cloud_apps`.
@@ -159,33 +163,40 @@ Test Execution - Cloud assets and tunnels
 TrueTest
 - `list_truetest_auts`, `list_truetest_tracking_environments`, `search_truetest_sessions`, `get_truetest_session`.
 - `search_truetest_journey_maps`, `get_truetest_journey_map`, `create_truetest_journey_map`, `get_truetest_journey_map_request`.
-- `create_truetest_test_case_from_session` needs user approval and takes 1 to 25 sessions.
+- `create_truetest_test_case_from_session` takes 1 to 25 sessions. `create_truetest_test_case_from_flow` takes one journey-map flow. Both queue generation and need user approval. A flow that already has linked cases follows the backend regeneration behavior, so confirm before you run it there.
+
+Team memory (Kai)
+- `memory_list`, `memory_read`, `memory_read_page` read the conventions the team and the user taught Kai.
+- `memory_write` and `memory_forget` change that memory. Call them only when the user asks to remember or forget something. Memory is optional context. Every skill works when it is empty or unavailable.
 
 ## Not available through the MCP
 
 - Create requirements. Create them in Jira or Azure DevOps, then sync, find, and link.
 - Create a formal Test Plan entity. A named folder or suite gives an execution scope. It is no plan of record.
 - Guarantee that Run with AI finishes. The platform can block it or fail it.
-- Cancel Run with AI. You can only poll it.
-- Stop or terminate a running execution. `rerun_execution` works only on completed executions.
+- Stop a running automated execution (Studio, Katalon Test Execution - Local, or Test Execution - Cloud). `rerun_execution` starts a new one. To close a TestPak run, including a hosted Run with AI session, call `update_test_run` with END.
 - Inspect the live AUT. Use a browser tool or Playwright.
 - Look up another user to set an assignee.
+- Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, or project governance. Use the True Platform UI.
-- Self-healing, Time Capsule, and TrueTest regeneration. These are product features outside the MCP.
+- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
 ## Quirks every skill keeps
 
-- `delete_test_case` is unreliable. Prefer `update_test_case` or `move_test_case`.
-- A test case name accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A folder path can contain `/`.
+- `delete_test_case` removes a case. Ask for a yes that names the case. Read back after the delete.
+- A test case name starts with a letter or digit. It accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A `path` for a case starts with `Test Cases`. A folder path can contain `/`.
 - `create_test_case` with type AUTOMATED creates nothing. It returns guidance only.
+- `update_test_cases` with UPDATE_CONTENT replaces all steps. Send the complete step list and keep every Call Test Case step.
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
-- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`.
-- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run assigned to you. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode`. Ask the user. Never infer it.
-- `create_defect` needs the `alm_integration_id` from `find_alm_integration_projects`. It is not the Jira connection ID.
+- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
+- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
+- `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
+- `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
 
 ## Terminology
@@ -201,46 +212,46 @@ Each recipe chains several skills into one play. A recipe gives the trigger, the
 ## R1 - Requirement to ship call (stages 1 to 6)
 - **Trigger:** "test CEL-6 end to end and tell me if we can ship."
 - **Skills:** `test-plan`, `create-test-cases`, `execute-test`, `analyze-failures`, `release-analyze`.
-- **Tools:** `get_requirement_insights`, `find_test_cases_by_requirement`, `create_test_case`, `link_requirements_to_test_case`, `manage_test_suite`, `read_auts`, `create_test_run`, `create_manual_ai_session`, `read_manual_ai_session`, `read_test_result`, then the insights tools.
+- **Tools:** `fetch_requirement_metrics`, `find_test_cases_by_requirement`, `search`, `create_test_case`, `manage_requirement_test_case_linkages`, `manage_test_suite`, `read_auts`, `create_test_run`, `update_test_run` (START with `KATALON_AI`), `read_manual_ai_session`, `find_test_results`, then the metrics tools.
 - **Stop when:** the release verdict is issued (Ready, Ready with risk, or Not ready).
 - **Boundary:** the ship call reads gates. It does not set them. Each write and each run needs its own confirmation.
 
 ## R2 - Coverage rescue (stages 3, 4, 2)
 - **Trigger:** "we have gaps, fix our coverage for project X."
 - **Skills:** `test-management` (find orphan requirements and cases), `test-review` (verdict on what exists), `create-test-cases` (fill the gaps).
-- **Tools:** `find_test_cases_by_requirement`, `get_requirement_insights`, `find_test_cases`, `get_test_case_insights`, then `create_test_case` and `link_requirements_to_test_case`.
+- **Tools:** `find_test_cases_by_requirement`, `fetch_requirement_metrics`, `find_test_cases`, `fetch_test_case_metrics`, `search`, then `create_test_case` and `manage_requirement_test_case_linkages`.
 - **Stop when:** every in-scope requirement has at least one linked case and the review verdict is Approve or Approve with fixes.
 
 ## R3 - Flaky-suite cleanup (stages 6, 7, 4)
 - **Trigger:** "our regression is flaky, clean it up."
 - **Skills:** `analyze-failures` (classify automation defects), `test-maintenance` (repair or regenerate), `test-review` (approve again).
-- **Tools:** `find_test_results`, `read_test_result`, `analyze_test_case_stability`, `analyze_test_flakiness`, `update_test_case`, `move_test_case`, `rerun_execution`.
+- **Tools:** `find_test_results`, `fetch_test_stability_metrics` (with `return_tests` set to `FLAKY` and a `from_date` and `to_date` window), `update_test_cases`, `move_test_case`, `rerun_execution`.
 - **Stop when:** the flaky cases on the critical path are repaired or retired and the suite passes review again.
-- **Boundary:** a stability gain inside the noise floor does not confirm a fix. For example, a gain under about 15 points on a suite of around 40 results proves nothing.
+- **Boundary:** the stability tool has no minimum run count, so you set the window and judge the sample size yourself. A stability gain inside the noise floor does not confirm a fix. For example, a gain under about 15 points on a suite of around 40 results proves nothing.
 
 ## R4 - Manual to automation (stages 2 to 5)
 - **Trigger:** "turn these manual cases into automation and run them into the platform."
 - **Skills:** `create-test-cases`, `test-case-to-playwright`, `playwright-execute`, `upload-report`.
-- **Tools:** `read_test_case`, `find_test_cases`, then Playwright and `@katalon/playwright-reporter`, verified with `list_executions` and `read_execution`.
+- **Tools:** `read_test_cases` (with `content_type` set to `FLOW`), `find_test_cases`, then Playwright and `@katalon/playwright-reporter`, verified with `list_executions` and `read_execution`.
 - **Stop when:** the Playwright run is uploaded and the platform run is verified.
 
 ## R5 - Cross-lane trust check (stages 5, 6)
 - **Trigger:** "do not trust the AI pass, verify it against real automation."
 - **Skills:** `execute-test` (Run with AI) and `playwright-execute` (code lane), then `analyze-failures`.
-- **Tools:** `create_manual_ai_session`, `read_manual_ai_session`, a Playwright run with `@katalon/playwright-reporter`, then `read_test_result` on both.
+- **Tools:** `update_test_run` (START with `KATALON_AI`), `read_manual_ai_session`, a Playwright run with `@katalon/playwright-reporter`, then `find_test_results` on both.
 - **Stop when:** every critical case's AI verdict is checked against the code lane and each disagreement is recorded.
 - **Boundary:** an AI pass that the code lane contradicts is not a pass.
 
 ## R6 - Traceability audit (stage 3)
 - **Trigger:** "show me requirement-to-test coverage."
 - **Skills:** `test-management`.
-- **Tools:** `find_requirements`, `find_test_cases_by_requirement`, `get_requirement_insights`, `find_test_cases`.
+- **Tools:** `find_requirements`, `find_test_cases_by_requirement`, `fetch_requirement_metrics`, `find_test_cases`.
 - **Stop when:** the requirement, case, and suite matrix, the orphan lists, and the coverage percentage are reported.
 
 ## R7 - Sessions to cases (stage 2)
 - **Trigger:** "build cases from what real users did last week."
 - **Skills:** `create-test-cases`, then `test-review`.
-- **Tools:** `list_truetest_auts`, `search_truetest_sessions`, `get_truetest_session`, `create_truetest_test_case_from_session`.
+- **Tools:** `list_truetest_auts`, `list_truetest_tracking_environments`, `search_truetest_sessions`, `get_truetest_session`, `create_truetest_test_case_from_session`. For a journey-map flow, use `create_truetest_journey_map`, `get_truetest_journey_map`, then `create_truetest_test_case_from_flow`.
 - **Stop when:** the approved cases exist and the review verdict is issued.
 - **Boundary:** generation needs the user's approval and takes 1 to 25 sessions. Mask personal data before you quote a session.
 
@@ -257,45 +268,46 @@ Seven stages, each with its skill and its MCP tools. Read this when you route a 
 ```text
 1 PLAN ......... test-plan  (+ test-estimation)
                  list_projects, list_repositories, find_iterations,
-                 get_requirement_insights, find_test_cases_by_requirement,
+                 fetch_requirement_metrics, find_test_cases_by_requirement, search,
                  manage_test_folder, manage_test_suite, find_test_suite_collections,
-                 list_schedule, read_schedule_detail, update_schedule_configuration
+                 list_schedule, read_schedule_detail, update_schedule_configuration,
+                 memory_list
 
 2 DESIGN ....... create-test-cases  (+ test-data, exploratory-charter, test-case-to-playwright,
                  test-case-to-katalon-studio)
-                 find_requirements, read_requirement, create_test_case,
-                 read_test_case, update_test_case, find_test_cases,
-                 list_truetest_auts, search_truetest_sessions, create_truetest_test_case_from_session
+                 find_requirements, read_requirement, search, create_test_case,
+                 read_test_cases, update_test_cases, find_test_cases, memory_list,
+                 list_truetest_auts, search_truetest_sessions,
+                 create_truetest_test_case_from_session, create_truetest_test_case_from_flow
 
 3 MANAGE ....... test-management
                  find_test_folders, manage_test_folder, find_test_suites,
                  manage_test_suite, find_test_suite_collections, move_test_case,
-                 duplicate_test_case, link_requirements_to_test_case,
-                 unlink_requirements_from_test_case, find_test_cases_by_requirement
+                 duplicate_test_case, manage_requirement_test_case_linkages,
+                 find_test_cases_by_requirement, search
 
 4 REVIEW ....... test-review
-                 get_requirement_insights, get_test_case_insights,
-                 analyze_test_case_stability, get_test_configuration_insights,
-                 find_test_cases_by_requirement, read_auts
+                 fetch_requirement_metrics, fetch_test_case_metrics,
+                 fetch_test_stability_metrics, fetch_test_configuration_metrics,
+                 find_test_cases_by_requirement, read_auts, memory_list
 
 5 EXECUTE ...... execute-test  (+ upload-report, playwright-execute)
-                 read_auts, create_test_run, create_manual_ai_session,
-                 read_manual_ai_session, update_test_results, prepare_artifact_upload,
-                 confirm_artifact_upload, find_execution_profiles,
-                 list_test_cloud_environments, build_run_configuration, build_schedule,
+                 read_auts, create_test_run, update_test_run, read_manual_ai_session,
+                 update_test_results, prepare_artifact_upload, confirm_artifact_upload,
+                 find_execution_profiles, list_test_cloud_environments,
+                 build_run_configuration, build_schedule,
                  build_private_local_testing_config, list_executions, read_execution,
-                 read_execution_test_results
+                 find_test_results
 
 6 ANALYZE ...... analyze-failures + release-analyze  (+ test-reporting)
-                 read_test_result, read_execution_test_results, find_test_results,
-                 list_execution_outputs, get_defect_insights, get_test_case_insights,
-                 analyze_test_case_stability, get_test_configuration_insights,
-                 get_requirement_insights, rerun_execution,
-                 find_alm_integration_projects, create_defect
+                 find_test_results, list_execution_outputs, fetch_defect_metrics,
+                 fetch_test_case_metrics, fetch_test_stability_metrics,
+                 fetch_test_configuration_metrics, fetch_requirement_metrics,
+                 rerun_execution, fetch_defects, list_alm_integrations, create_defect
 
 7 MAINTAIN ..... test-maintenance
-                 analyze_test_case_stability, analyze_test_flakiness, find_test_results,
-                 read_execution, update_test_case, move_test_case, duplicate_test_case,
+                 fetch_test_stability_metrics, find_test_results, read_execution,
+                 update_test_cases, move_test_case, duplicate_test_case,
                  rerun_execution
                  |
                  +--> feeds the gap list back to 1 PLAN (the loop closes)
@@ -308,8 +320,8 @@ CROSS-CUTTING .. get-started (first run) . platform-setup (connect) . true-platf
 - Object and action capture, data design, resilience design (stage 2): Katalon Studio desktop.
 - Custom fields, tags, Git settings, governance (stage 3): the True Platform UI.
 - Code and object review, local debug (stage 4): Katalon Studio desktop.
-- Stopping a running execution and Live Monitor (stage 5): the True Platform UI. The MCP can rerun a completed execution and read results.
-- Self-healing, Time Capsule, TrueTest regeneration (stages 6 and 7): product features outside the MCP.
+- Stopping a running automated execution and Live Monitor (stage 5): the True Platform UI. The MCP can end a TestPak run, including hosted Run with AI, with `update_test_run`. It can rerun an automated execution and read results.
+- Self-healing and Time Capsule (stages 6 and 7): product features outside the MCP.
 
 Use a browser tool or Playwright to explore the AUT. Use Katalon Studio for object and script work. Use the MCP for everything in the tool lists above.
 
@@ -350,8 +362,8 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Which requirements have no coverage | `test-management` | none |
 | Is this suite good enough for the pipeline | `test-review` | none |
 | Run these cases and tell me what broke | `execute-test` | none |
-| Run it with AI, I do not have time to click through | `execute-test` | Run with AI has no cancel |
-| I ran it by hand and need to record the results | `execute-test` | needs an active run assigned to you |
+| Run it with AI, I do not have time to click through | `execute-test` | ending the run closes the whole TestPak, and unfinished cases need a skip decision |
+| I ran it by hand and need to record the results | `execute-test` | needs an active run that you created |
 | Schedule the automated suite on Test Execution - Cloud | `execute-test` | none |
 | Run against an app on a private network | `execute-test` | needs a tunnel or an allowlist. `platform-setup` diagnoses tunnels |
 | Turn TC-1042 into a Playwright spec | `test-case-to-playwright` | none |
@@ -363,7 +375,7 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Wire this into CI | `playwright-execute` and `upload-report` | both expose commands CI can run. No CI setup skill exists |
 | This run failed, is it us or the app | `analyze-failures` | none |
 | File the bugs for these failures | `analyze-failures` | needs a failed result ID and an ALM integration |
-| Rerun the failed execution | `analyze-failures` | only a completed execution reruns |
+| Rerun the failed execution | `analyze-failures` | only an automated execution reruns. A TestPak restarts with `update_test_run` |
 | Our suite is flaky | `test-maintenance` | none |
 | Which tests went flaky this month | `test-maintenance` | none |
 | Can we ship 3.2 | `release-analyze` | none |
@@ -376,44 +388,44 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 
 # MCP tool index
 
-Every Katalon MCP tool in the October 2026 docs, grouped by area. Source: the Katalon docs page "Katalon True Platform MCP Server". Parameters are in each tool's own schema. This page lists only what the docs state.
+Every tool on the live Katalon True Platform MCP server, grouped by area. The server exposes 74 tools, captured 2026-10-20. Parameters are in each tool's own schema. This page lists the job of each tool and the rule that most often goes wrong.
 
-Class: R reads or builds a payload. W writes. D is destructive and needs an explicit yes that names the target. Stage: 1 plan, 2 design, 3 manage, 4 review, 5 execute, 6 analyze, 7 maintain.
+Class: R reads or builds a payload. W writes. C needs confirmation because it uses Test Execution - Cloud minutes, launches a hosted browser, queues generation, or reaches Jira or Azure DevOps. D is destructive and needs an explicit yes that names the target. Stage: 1 plan, 2 design, 3 manage, 4 review, 5 execute, 6 analyze, 7 maintain.
 
 ## Workspace and discovery
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `list_projects` | R | Projects the user can reach. Start here. | all |
+| `list_projects` | R | Projects the user can reach. Start here. Also the connection check, because no tool returns the signed-in user. | all |
 | `list_repositories` | R | Repositories (Test Projects) of a project. Takes `project_id`. | all |
-| `find_iterations` | R | Sprints and releases, by relative scope or filter. | 1, 4 |
-| `find_execution_profiles` | R | Execution profiles for automated runs. | 5 |
-| `get_user_context` | R | The signed-in user. Use it to confirm who is connected. | setup |
+| `find_iterations` | R | Sprints and releases, by scope or query. | 1, 4 |
+| `find_execution_profiles` | R | Execution profiles for automated runs. Never assume a default. | 5 |
+| `search` | R | Semantic search over cases, suites, folders, requirements, and uploaded documents. A hit has a tier. No hit does not prove absence. | 1, 2, 3 |
 
 ## Requirements and ALM
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
 | `find_requirements` | R | Synced Jira or Azure DevOps requirements. | 1, 2 |
-| `read_requirement` | R | One requirement as Markdown. | 2 |
+| `read_requirement` | R | One requirement as Markdown. Read `customFields` for acceptance criteria. | 2 |
 | `find_test_cases_by_requirement` | R | Cases linked to one requirement. Pass exactly one identifier. | 1, 3, 4 |
-| `link_requirements_to_test_case` | W | Link requirements to a case. | 3 |
-| `unlink_requirements_from_test_case` | W | Remove a link. | 3 |
-| `find_alm_integration_projects` | R | ALM integration projects. Gives `alm_integration_id`. | 6 |
-| `create_defect` | W | File an ALM defect for one failed result. External side effect. | 6 |
+| `manage_requirement_test_case_linkages` | W, D | Link or unlink many requirements and many cases in one call. Unlink needs a yes that names the links. | 3 |
+| `list_alm_integrations` | R | ALM integration and connection IDs, and Jira defect field mappings. | 6 |
+| `fetch_defects` | R | Defects already linked to a result, a case, or an execution. Check it before `create_defect`. | 6 |
+| `create_defect` | W, C | File a Jira or Azure DevOps bug for one failed result. Ask for the summary. | 6 |
 
 ## Test cases, folders, suites
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `find_test_cases` | R | Filtered list of cases. | 2, 3 |
-| `read_test_case` | R | One case with steps. | 2, 4 |
+| `find_test_cases` | R | Filtered list of cases. Pages start at 0. | 2, 3 |
+| `read_test_cases` | R | Many cases by ID. `content_type` FLOW returns steps. | 2, 4 |
 | `create_test_case` | W | Create a manual case. AUTOMATED creates nothing. | 2 |
-| `update_test_case` | W | Edit metadata or content. | 2, 7 |
+| `update_test_cases` | W | Batched edits, one `action` per field. Batch every change to one case in one call. | 2, 7 |
 | `move_test_case` | W | Move a case to a folder. | 3, 7 |
 | `duplicate_test_case` | W | Copy a case in place. | 7 |
-| `delete_test_case` | D | Delete a case. Unreliable. Prefer update or move. | 3 |
-| `find_test_folders` | R | List folders. | 3 |
+| `delete_test_case` | D | Delete a case. | 3 |
+| `find_test_folders` | R | List folders. Compare `rawPath` values. | 3 |
 | `manage_test_folder` | W, D | Create, rename, move, duplicate, or delete a folder. DELETE is destructive. | 1, 3 |
 | `find_test_suites` | R | List suites. | 3, 5 |
 | `read_test_suite` | R | A suite and its cases. | 3, 5 |
@@ -425,42 +437,39 @@ Class: R reads or builds a payload. W writes. D is destructive and needs an expl
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
 | `read_auts` | R | AUTs and environments. Call right before a manual run. | 4, 5 |
-| `create_test_run` | W | Create a manual or automated run. Needs consent. | 5 |
+| `create_test_run` | W, C | Create a manual or automated run. Ask manual or automated first when the user did not say. | 5 |
+| `update_test_run` | W, C, D | CONFIGURE the AUT and private access, START (MANUAL or KATALON_AI), or END the run. END with SKIP is destructive. | 5 |
 | `build_run_configuration` | R | Build the configuration payload for an automated run. | 5 |
 | `build_schedule` | R | Build the schedule payload. | 5 |
-| `build_private_local_testing_config` | R | Build the tunnel or allowlist payload for a private AUT. | 5 |
-| `create_manual_ai_session` | W | Start Run with AI on a manual run. Needs consent. | 5 |
-| `read_manual_ai_session` | R | Poll a Run with AI session. No cancel exists. | 5 |
-| `read_manual_test_run_detail_by_order` | R | Find a manual run by its order number. | 5 |
-| `rerun_execution` | W | Rerun a completed execution. Needs consent. | 6, 7 |
+| `build_private_local_testing_config` | R | Build the tunnel or allowlist payload for a private AUT. Only after the user chose. | 5 |
+| `create_manual_ai_session` | W, C | Legacy launcher for Run with AI on a subset of cases. Never use it on a run that `update_test_run` started. | 5 |
+| `read_manual_ai_session` | R | Poll a Run with AI session. | 5 |
+| `rerun_execution` | W, C | Rerun an automated execution the user named. Not for a TestPak. | 6, 7 |
 | `list_schedule` | R | Saved schedules. | 1, 5 |
 | `read_schedule_detail` | R | One schedule. | 1, 5 |
-| `update_schedule_configuration` | W | Edit schedules. Call once with every target. | 1, 5 |
+| `update_schedule_configuration` | W | Edit schedules. Call once, after a yes, with every target. | 1, 5 |
 
 ## Results and evidence
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `find_test_results` | R | Results at several granularities. | 6, 7 |
-| `read_test_result` | R | One result. Needed for `create_defect`. | 6, 7 |
+| `find_test_results` | R | Results by test result, by execution, or by a common or relative filter. | 6, 7 |
 | `read_execution` | R | One execution, by numeric TestOps ID. | 5, 6, 7 |
-| `read_execution_test_results` | R | Results of an execution, grouped by job. | 5, 6 |
-| `list_executions` | R | Executions with numeric TestOps IDs. | 5, 6 |
+| `list_executions` | R | Executions with numeric TestOps IDs, in a time window. | 5, 6 |
 | `list_execution_outputs` | R | Test Execution - Cloud artifacts, by string ID. | 6 |
 | `update_test_results` | W | Record a manual result or review an automated one. | 5, 6 |
 | `prepare_artifact_upload` | W | Get a signed URL for evidence up to 10 MiB. | 5, 6 |
 | `confirm_artifact_upload` | W | Confirm the upload and get an artifact ID. | 5, 6 |
 
-## Quality insights
+## Quality metrics
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `get_requirement_insights` | R | Requirement coverage for an iteration. | 1, 4, 6 |
-| `get_defect_insights` | R | Defect distribution. | 4, 6 |
-| `get_test_case_insights` | R | Case execution statistics and automation status. | 4, 6 |
-| `get_test_configuration_insights` | R | OS and browser coverage. | 4, 6 |
-| `analyze_test_case_stability` | R | Flaky, always failing, newly failing, and slow tests. | 4, 6, 7 |
-| `analyze_test_flakiness` | R | Flakiness over a lookback window with a minimum run count. | 6, 7 |
+| `fetch_requirement_metrics` | R | Requirement coverage for a sprint or release. | 1, 4, 6 |
+| `fetch_defect_metrics` | R | Defect distribution. One resolution state per call. | 4, 6 |
+| `fetch_test_case_metrics` | R | Case execution statistics and automation status. | 4, 6 |
+| `fetch_test_configuration_metrics` | R | OS or browser coverage and pass rate. | 4, 6 |
+| `fetch_test_stability_metrics` | R | Flaky, always failing, newly failing, and slow tests. | 4, 6, 7 |
 
 ## Test Execution - Cloud assets and tunnels
 
@@ -472,7 +481,7 @@ Class: R reads or builds a payload. W writes. D is destructive and needs an expl
 | `get_upload_test_cloud_app_url` | R | Signed upload URL for an app. | 5 |
 | `create_test_cloud_app` | W | Register an uploaded app. | 5 |
 | `manage_test_cloud_dynamic_app` | W, D | Create or update an app alias. UPDATE is destructive. | 5 |
-| `delete_test_cloud_app` | D | Delete apps for good. | 5 |
+| `delete_test_cloud_app` | D | Delete apps for good. The user types YES. | 5 |
 | `list_test_cloud_tunnels` | R | Active tunnels. | 5 |
 | `prepare_test_cloud_tunnel_start` | R | Commands that start a tunnel client. | 5 |
 | `stop_test_cloud_tunnel` | D | Stop a tunnel. Others may share it. | 5 |
@@ -486,10 +495,21 @@ Class: R reads or builds a payload. W writes. D is destructive and needs an expl
 | `search_truetest_sessions` | R | Captured sessions. Window up to 31 days. | 2 |
 | `get_truetest_session` | R | One session with replay steps. | 2 |
 | `search_truetest_journey_maps` | R | Journey maps. | 2 |
-| `get_truetest_journey_map` | R | One journey map, in pages. | 2 |
+| `get_truetest_journey_map` | R | One journey map, in pages. Also shows the cases linked to a flow. | 2 |
 | `create_truetest_journey_map` | W | Start a journey map job. | 2 |
 | `get_truetest_journey_map_request` | R | Poll a journey map job. Do not resubmit on error. | 2 |
-| `create_truetest_test_case_from_session` | W | Generate cases from 1 to 25 sessions. Needs user approval. | 2 |
+| `create_truetest_test_case_from_session` | W, C | Queue case generation from 1 to 25 sessions. Needs user approval. | 2 |
+| `create_truetest_test_case_from_flow` | W, C | Queue case generation for one journey-map flow. Confirm before you run it on a flow that has cases. | 2 |
+
+## Team memory (Kai)
+
+| Tool | Class | What it does | Stage |
+|---|---|---|---|
+| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of authoring. | 1, 2, 3, 4 |
+| `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | 1, 2, 3, 4 |
+| `memory_read_page` | R | One distilled guidance page by slug. | 1, 2, 3, 4 |
+| `memory_write` | W | Store one note in the user's own words. Only when the user asks. | none |
+| `memory_forget` | D | Delete memory records for good. Only when the user asks. | none |
 
 ## Not available through the MCP
 
@@ -515,7 +535,7 @@ These skills run on any coding agent and any model tier. Smaller models reason l
 
 - Run one recipe at a time. Do not chain every recipe in one prompt.
 - Confirm scope (project and repository) before any write.
-- After each write, read back with `read_test_case`, `read_test_suite`, or `read_execution` before you move on.
+- After each write, read back with `read_test_cases`, `read_test_suite`, or `read_execution` before you move on.
 - If a tool errors, report the exact error and stop. Do not retry blindly or invent a workaround.
 
 ## Copy-paste prompts by intent
@@ -554,11 +574,27 @@ These rules apply to every agent and every skill that changes data on Katalon Tr
 4. Run the writes.
 5. Read back each changed item with a read tool and report what the platform now holds.
 
-Reads need no confirmation. This covers every tool that finds, reads, lists, gets, or analyzes, and every tool that only builds a payload.
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
 
 A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
 
-Destructive tools need an explicit yes that names the target. These are `delete_test_case`, `delete_test_cloud_app`, `manage_test_folder` or `manage_test_suite` with a DELETE action, `stop_test_cloud_tunnel`, and `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias. `stop_test_cloud_tunnel` stops a tunnel that other runs may share.
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
 
 Two more rules for bulk work:
 - Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
@@ -566,7 +602,7 @@ Two more rules for bulk work:
 
 ## Execution consent
 
-Confirm before you call `create_test_run`, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes and can change data in the application under test (AUT). The confirmation names:
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
 - the suite or cases,
 - the AUT environment,
 - the mode (manual, Run with AI, or automated),

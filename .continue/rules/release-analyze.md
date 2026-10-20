@@ -18,8 +18,8 @@ Katalon True Platform (formerly TestOps) holds the data. Katalon Test Execution 
 
 State the MCP boundary before you promise an assessment.
 
-- Available through the Katalon MCP: project and repository discovery, iterations, requirements, test cases, suites, executions and results, insights on requirements, test cases, defects, and configurations, stability analysis, and defect context.
-- Not available: creating a formal Test Plan entity, inspecting the live AUT UI, guaranteeing that a Run with AI session completes, and judging product or business readiness beyond test evidence.
+- Available through the Katalon MCP: project and repository discovery, iterations, requirements, test cases, suites, executions and results, metrics on requirements, test cases, defects, and configurations, stability metrics, and the defects linked to results, cases, and executions.
+- Not available: creating a formal Test Plan entity, inspecting the live AUT UI, guaranteeing that a Run with AI session completes, a count of reopened defects or release-blocking flags (take them from the tracker), and judging product or business readiness beyond test evidence.
 - If MCP tools are unavailable, give only a framework and mark confidence Low until data is verified.
 
 Read `references/capability-boundaries.md` when capability scope is unclear.
@@ -48,19 +48,28 @@ Then collect evidence. Read each tool schema before the first call. This skill d
 
 | Gate | Tool |
 |---|---|
-| Requirement coverage | `get_requirement_insights`, `find_requirements`, `find_test_cases_by_requirement` |
-| Test case quality | `get_test_case_insights`, `find_test_cases` |
-| Defect risk | `get_defect_insights` |
-| Stability | `analyze_test_case_stability`, `analyze_test_flakiness` |
-| Configuration coverage | `get_test_configuration_insights` |
-| Executions and results | `list_executions`, `read_execution`, `read_execution_test_results`, `read_test_result`, `find_test_results` |
+| Requirement coverage | `fetch_requirement_metrics`, `find_requirements`, `find_test_cases_by_requirement` |
+| Test case quality | `fetch_test_case_metrics`, `find_test_cases` |
+| Defect risk | `fetch_defect_metrics`, `fetch_defects` |
+| Stability | `fetch_test_stability_metrics` |
+| Configuration coverage | `fetch_test_configuration_metrics` |
+| Executions and results | `list_executions`, `read_execution`, `find_test_results` |
 | Suites and executable scope | `find_test_suites`, `read_test_suite`, `find_test_suite_collections` |
+
+Use these parameters, and read each tool schema before the first call.
+
+- `fetch_requirement_metrics` takes `iteration_type` (`SPRINT` or `RELEASE`) and `iteration_name`. It takes no date range. Check that the iteration exists with `find_iterations` first.
+- `fetch_defect_metrics`, `fetch_test_case_metrics`, and `fetch_test_configuration_metrics` take a `filter` object. `filter_type` is mandatory: `ITERATION`, `DATE_RANGE`, or `DEFAULT` (last 28 days). `fetch_defect_metrics` defaults `resolution_state` to `UNRESOLVED` and accepts `RESOLVED` or `UNRESOLVED`. A question about all defects needs two calls.
+- `fetch_test_configuration_metrics` also takes `configuration_type` (`OS` or `BROWSER`), `coverage_threshold` (default 0.8), `pass_threshold` (default 0.95), and `max_tests_per_platform` (default 10, 0 for all). Say the thresholds you used.
+- `fetch_test_stability_metrics` takes `filter_type` `EXECUTION` with `execution_id`, or `ITERATION` with `iteration_type` and `iteration_name`, plus optional `from_date` and `to_date`. Set `return_tests` (`FLAKY`, `ALWAYS_FAIL`, `NEW_FAILURE`, `SLOW`, or `ALL`) to get case names. Without it the call returns metrics only. It lists three cases per category unless you raise `limit_tests`. It has no minimum-run parameter, so report the window you used.
+- `find_test_results` with filter_type `EXECUTION` and `status` `FAILED` lists the failures of one execution. Its pages walk the execution's jobs. Page until the list ends.
+- `fetch_defects` takes filter_type `TEST_RESULT`, `TEST_CASE`, or `EXECUTION`. A result with an empty `defects` list has no linked defect. Use it for the failed P0 and P1 results.
 
 Use the freshest data for the release. When you report a trend or a stability figure, state the date range or lookback window.
 
 Two checks protect against bad data:
 
-- `list_executions` and `read_execution` use the numeric True Platform execution ID. `list_execution_outputs` uses the cloud (string) ID. Never swap them.
+- `list_executions` and `read_execution` use the numeric True Platform execution ID. `list_execution_outputs` uses the cloud (string) ID. Never swap them. `list_executions` defaults to the last 24 hours, so set both `start_time` and `end_time` from the real current date to cover the release.
 - A stability result with all zeros while results show failures was seen on one project in August 2026. Cross-check the counts against `find_test_results` before you call a suite stable.
 
 ## Key metrics
@@ -70,7 +79,7 @@ Report the metrics that are available and relevant:
 - Requirement coverage: total, covered, uncovered, linked test cases, and requirements without passing evidence.
 - Test coverage: total tests, automated and manual split, unexecuted, blocked, stale, and incomplete cases.
 - Execution health: latest executions, pass, fail, blocked, skipped, and not-run counts, pass rate, and failed P0 and P1 tests.
-- Defect risk: open critical and high defects, release blockers, reopened defects, failed tests with linked defects, and untriaged failures.
+- Defect risk: unresolved critical and high defects by priority and severity, failed tests with linked defects (`fetch_defects`), and untriaged failures (failed results with no linked defect). Take release blockers and reopened counts from the tracker when the metrics omit them.
 - Stability: flaky tests, repeated failures, unstable suites or configurations, and the recent trend.
 - Configuration coverage: environments, browsers, devices, OS, execution profiles, and missing target combinations.
 - Data confidence: missing MCP data, stale executions, ambiguous scope, and incomplete links.
@@ -130,7 +139,7 @@ Evidence includes execution IDs, suite names, requirement keys, defect IDs, and 
 Recommend concrete next steps:
 
 - Create or link tests for uncovered critical requirements (`create-test-cases`).
-- Rerun failed, flaky, or stale suites. `rerun_execution` consumes Test Execution - Cloud minutes and can change AUT data, so the user must agree first. `execute-test` owns the run.
+- Rerun failed, flaky, or stale suites. `rerun_execution` applies to automated executions only, needs a `read_execution` check first, consumes Test Execution - Cloud minutes, and can change AUT data, so the user must agree first. A manual TestPak restarts through `update_test_run`. `execute-test` owns both.
 - Resolve or accept named defects. Triage red results with `analyze-failures`.
 - Widen configuration coverage for missing release targets.
 - Upload external automation results with `upload-report` before the assessment.
@@ -148,7 +157,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the Katalon docs page "Katalon True Platform MCP Server" (last updated October 2026). The live tool list needs sign-in, so this page is the contract. If a tool named here is missing in your session, say so and use the closest documented tool. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -156,35 +165,37 @@ Name tools by bare name, as written here. Clients add a prefix. Claude Code uses
 
 Workspace and discovery
 - `list_projects`, `list_repositories`, `find_iterations`, `find_execution_profiles`.
-- `get_user_context` returns the signed-in user. It does not look up other users.
+- `search` runs semantic search over test cases, suites, folders, requirements, and uploaded specification documents.
+- No tool returns the signed-in user. Take the user from the client session. Ask the user for any assignee UUID.
 
 Requirements and ALM
 - `find_requirements`, `read_requirement`. Requirements are a read-only mirror of Jira or Azure DevOps.
-- `find_test_cases_by_requirement`, `link_requirements_to_test_case`, `unlink_requirements_from_test_case`.
-- `find_alm_integration_projects`, `create_defect`.
+- `find_test_cases_by_requirement`.
+- `manage_requirement_test_case_linkages` links or unlinks, many requirements to many cases, in one call.
+- `list_alm_integrations` returns the integration and connection IDs. `fetch_defects` shows the defects already linked to a result, a case, or an execution. `create_defect` files a new one.
 
 Test cases, folders, suites
-- `find_test_cases`, `read_test_case`, `create_test_case`, `update_test_case`, `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
 
 Execution
-- `read_auts`, `create_test_run` (manual and automated), `create_manual_ai_session`, `read_manual_ai_session`.
-- `read_manual_test_run_detail_by_order` finds a manual run by its order number.
+- `read_auts`, `create_test_run` (manual and automated), `update_test_run` (CONFIGURE, START, END), `read_manual_ai_session`.
+- `create_manual_ai_session` is the legacy launcher for a subset of cases. Prefer `update_test_run` with START and `KATALON_AI`.
 - `build_run_configuration`, `build_schedule`, `build_private_local_testing_config`.
-- `rerun_execution` reruns a completed execution.
+- `rerun_execution` reruns an automated execution.
 - `list_schedule`, `read_schedule_detail`, `update_schedule_configuration`.
 
 Results and evidence
-- `find_test_results`, `read_test_result`, `read_execution`, `read_execution_test_results`.
+- `find_test_results` reads results by test result, by execution, or by a common or relative filter. `read_execution`.
 - `list_executions` (numeric TestOps IDs) and `list_execution_outputs` (TestCloud string IDs and artifact URLs).
 - `update_test_results` records a manual result or reviews an automated one.
 - `prepare_artifact_upload` and `confirm_artifact_upload` attach evidence up to 10 MiB.
 
-Quality insights
-- `get_requirement_insights`, `get_defect_insights`, `get_test_case_insights`, `get_test_configuration_insights`.
-- `analyze_test_case_stability` (flaky, always failing, newly failing, slow) and `analyze_test_flakiness` (lookback window, minimum runs).
+Quality metrics
+- `fetch_requirement_metrics`, `fetch_defect_metrics`, `fetch_test_case_metrics`, `fetch_test_configuration_metrics`.
+- `fetch_test_stability_metrics` returns flaky, always failing, newly failing, and slow tests. It takes a lookback window. It has no minimum run count.
 
 Test Execution - Cloud assets and tunnels
 - `list_test_cloud_environments`, `list_test_cloud_agents`, `list_test_cloud_apps`.
@@ -194,33 +205,40 @@ Test Execution - Cloud assets and tunnels
 TrueTest
 - `list_truetest_auts`, `list_truetest_tracking_environments`, `search_truetest_sessions`, `get_truetest_session`.
 - `search_truetest_journey_maps`, `get_truetest_journey_map`, `create_truetest_journey_map`, `get_truetest_journey_map_request`.
-- `create_truetest_test_case_from_session` needs user approval and takes 1 to 25 sessions.
+- `create_truetest_test_case_from_session` takes 1 to 25 sessions. `create_truetest_test_case_from_flow` takes one journey-map flow. Both queue generation and need user approval. A flow that already has linked cases follows the backend regeneration behavior, so confirm before you run it there.
+
+Team memory (Kai)
+- `memory_list`, `memory_read`, `memory_read_page` read the conventions the team and the user taught Kai.
+- `memory_write` and `memory_forget` change that memory. Call them only when the user asks to remember or forget something. Memory is optional context. Every skill works when it is empty or unavailable.
 
 ## Not available through the MCP
 
 - Create requirements. Create them in Jira or Azure DevOps, then sync, find, and link.
 - Create a formal Test Plan entity. A named folder or suite gives an execution scope. It is no plan of record.
 - Guarantee that Run with AI finishes. The platform can block it or fail it.
-- Cancel Run with AI. You can only poll it.
-- Stop or terminate a running execution. `rerun_execution` works only on completed executions.
+- Stop a running automated execution (Studio, Katalon Test Execution - Local, or Test Execution - Cloud). `rerun_execution` starts a new one. To close a TestPak run, including a hosted Run with AI session, call `update_test_run` with END.
 - Inspect the live AUT. Use a browser tool or Playwright.
 - Look up another user to set an assignee.
+- Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, or project governance. Use the True Platform UI.
-- Self-healing, Time Capsule, and TrueTest regeneration. These are product features outside the MCP.
+- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
 ## Quirks every skill keeps
 
-- `delete_test_case` is unreliable. Prefer `update_test_case` or `move_test_case`.
-- A test case name accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A folder path can contain `/`.
+- `delete_test_case` removes a case. Ask for a yes that names the case. Read back after the delete.
+- A test case name starts with a letter or digit. It accepts letters, digits, spaces, and `( ) . , _ -`. The characters `@ : /` are rejected. A `path` for a case starts with `Test Cases`. A folder path can contain `/`.
 - `create_test_case` with type AUTOMATED creates nothing. It returns guidance only.
+- `update_test_cases` with UPDATE_CONTENT replaces all steps. Send the complete step list and keep every Call Test Case step.
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
-- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`.
-- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run assigned to you. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode`. Ask the user. Never infer it.
-- `create_defect` needs the `alm_integration_id` from `find_alm_integration_projects`. It is not the Jira connection ID.
+- Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
+- `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
+- `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
+- `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
 
 ## Terminology
@@ -237,28 +255,28 @@ Use this reference to turn Katalon MCP quality data into a release readiness dec
 
 | Gate | What to pull | Tool |
 |---|---|---|
-| Requirement coverage | Coverage for the iteration, plus the requirements and their linked cases | `get_requirement_insights`, `find_requirements`, `find_test_cases_by_requirement` |
-| Test case quality | Execution stats, automation split, stale and incomplete cases | `get_test_case_insights`, `find_test_cases` |
-| Defect risk | Defect priority and severity for the iteration or date range | `get_defect_insights` |
-| Stability | Flaky, always failing, newly failing, and slow tests | `analyze_test_case_stability`, `analyze_test_flakiness` |
-| Configuration coverage | OS and browser coverage against the target matrix | `get_test_configuration_insights` |
-| Execution health | Latest executions and per-result outcomes | `list_executions`, `read_execution`, `read_execution_test_results`, `find_test_results` |
+| Requirement coverage | Coverage for the iteration, plus the requirements and their linked cases | `fetch_requirement_metrics`, `find_requirements`, `find_test_cases_by_requirement` |
+| Test case quality | Execution stats, automation split, stale and incomplete cases | `fetch_test_case_metrics`, `find_test_cases` |
+| Defect risk | Defect priority and severity for the iteration or date range, and the defects linked to failed results | `fetch_defect_metrics`, `fetch_defects` |
+| Stability | Flaky, always failing, newly failing, and slow tests | `fetch_test_stability_metrics` with `return_tests` |
+| Configuration coverage | OS and browser coverage against the target matrix | `fetch_test_configuration_metrics` |
+| Execution health | Latest executions and per-result outcomes | `list_executions`, `read_execution`, `find_test_results` |
 
-The insight tools take an iteration. Several also take a date range. `analyze_test_flakiness` takes a lookback window and a minimum run count. See the tool schema for the exact parameters. State the iteration, date range, or window in the report.
+The metrics tools take an iteration, a date range, or both, as follows. `fetch_requirement_metrics` takes `iteration_type` and `iteration_name` only. The defect, test case, and configuration tools take a `filter` object with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, which is the last 28 days). `fetch_test_stability_metrics` takes an `EXECUTION` or an `ITERATION` plus an optional `from_date` and `to_date`. It has no minimum-run parameter. `fetch_defect_metrics` returns `UNRESOLVED` defects unless you ask for `RESOLVED`, so a question about all defects needs two calls. State the iteration, date range, or window in the report.
 
 ## Core metrics
 
 - Requirement coverage: total in-scope requirements, linked requirements, unlinked requirements, requirements with no tests, and requirements with no recent passing result.
 - Test coverage: total cases, automated and manual split when available, unexecuted tests, stale tests, and blocked tests.
 - Execution health: latest execution status, pass, fail, blocked, skipped, and not-run counts, pass rate, failed critical tests, and rerun status. A P0 or P1 test that failed and then passed on an unmodified rerun counts as a stability risk pending investigation. It is never a cleared blocker on its own.
-- Defect risk: open defects, critical and high defects, defects linked to failed tests, reopened defects, and unresolved release-blocking bugs.
+- Defect risk: unresolved defects, critical and high defects, defects linked to failed tests (`fetch_defects`), failed results with no linked defect, and unresolved release-blocking bugs. The metrics return distributions by priority and severity. Take reopened counts and blocking flags from the tracker.
 - Stability: flaky tests, repeated failures, recent pass and fail trend, and unstable configurations.
 - Configuration coverage: tested browsers, devices, environments, and OS combinations against the release target matrix.
 - Data quality: missing execution data, missing requirement links, missing ownership, incomplete steps, and ambiguous release scope.
 
 ## Evidence freshness
 
-Results are stale when they predate the latest build or the latest change to a linked requirement. If the team gave no rule, state this one as your assumption. `list_executions` defaults to a short recent window, so widen the window to cover the release before you conclude that no execution exists.
+Results are stale when they predate the latest build or the latest change to a linked requirement. If the team gave no rule, state this one as your assumption. `list_executions` defaults to the last 24 hours, so set both `start_time` and `end_time` from the real current date to cover the release before you conclude that no execution exists.
 
 ## Requirement-based impact check
 

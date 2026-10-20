@@ -1,6 +1,6 @@
 # Snapshot and trend reference
 
-The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time read. Execution records carry their own dates. Insights and stability tools return data as of the call, even when you give them an iteration or a date range. This file shows how to build a trend anyway, and how to say what you have.
+The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time read. Execution records carry their own dates. The metrics and stability tools return data as of the call, even when you give them an iteration or a date range. This file shows how to build a trend anyway, and how to say what you have.
 
 ## Contents
 
@@ -14,11 +14,11 @@ The Katalon MCP has no trend tool, no aggregation tool, and no point-in-time rea
 
 | Class | Metrics | Why |
 |---|---|---|
-| **Dated records** | pass rate, failure counts, run counts, results per suite | `find_test_results`, `list_executions`, `read_execution`, and `read_execution_test_results` return records with timestamps. History already exists. Trendable on the first run. |
-| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | The docs say these insights tools accept an iteration or a date range. The scope selects the data. The values are as of the read date. A Sprint 12 coverage figure read in October counts links added after Sprint 12. |
-| **Read-time only** | stability and flakiness | `analyze_test_case_stability` and `analyze_test_flakiness` describe now. A lookback window ends at read time. Two overlapping windows are not two periods. |
+| **Dated records** | pass rate, failure counts, run counts, results per suite | `find_test_results`, `list_executions`, and `read_execution` return records with timestamps. History already exists. Trendable on the first run. |
+| **Scoped reads** | requirement coverage, defect standing, case quality, configuration coverage | `fetch_requirement_metrics` takes an iteration. `fetch_defect_metrics`, `fetch_test_case_metrics`, and `fetch_test_configuration_metrics` take a `filter` of `ITERATION`, `DATE_RANGE`, or `DEFAULT`. The scope selects the data. The values are as of the read date. A Sprint 12 coverage figure read in October counts links added after Sprint 12. |
+| **Read-time only** | stability and flakiness | `fetch_test_stability_metrics` describes the window you pass at the time you read it. A lookback window ends at read time. Two overlapping windows are not two periods. |
 
-If the tool schema in your session shows no iteration or date parameter for a tool, treat that tool as read-time only.
+If the tool schema in your session shows no iteration or date parameter for a tool, treat that tool as read-time only. `list_executions` needs both `start_time` and `end_time` for a period, because its default is the last 24 hours.
 
 Never mix classes in one trend line without saying so. A four-sprint pass-rate trend next to a one-week coverage change is two claims sharing a bullet.
 
@@ -39,11 +39,11 @@ Write one on every run to `.katalon-reporting/<project-slug>.json` in the user's
       "period_label": "Sprint 14 start",
       "requirement_coverage": { "covered": 44, "in_scope": 61 },
       "uncovered_critical": ["CEL-88", "CEL-102"],
-      "defects": { "open": 22, "critical": 7, "high": 9, "reopened": 4 },
+      "defects": { "unresolved": 22, "critical": 7, "high": 9 },
       "flaky_cases": 11,
       "configuration_coverage": { "tested": 6, "target": 9 },
-      "source_tools": ["get_requirement_insights", "get_defect_insights",
-                       "analyze_test_case_stability", "get_test_configuration_insights"]
+      "source_tools": ["fetch_requirement_metrics", "fetch_defect_metrics",
+                       "fetch_test_stability_metrics", "fetch_test_configuration_metrics"]
     }
   ]
 }
@@ -60,8 +60,8 @@ Rules:
 ## The period loop
 
 1. Call `find_iterations` for the spine. If the team has no iterations, take explicit date ranges from the user.
-2. For each period, call the dated-record tools with that period's range.
-3. For each scoped-read tool, call it once per period if its schema takes an iteration or a date range. Otherwise call it once. Label every result "as of <read date>".
+2. For each period, call the dated-record tools with that period's range. Confirm each iteration exists with `find_iterations` first.
+3. For each scoped-read tool, call it once per period with that period's iteration (`iteration_type` and `iteration_name`) or `DATE_RANGE` filter. Label every result "as of <read date>".
 4. Call each read-time-only tool once.
 5. Read the snapshot file. Align its entries to the spine by `taken_at`.
 6. Append the new snapshot.
