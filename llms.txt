@@ -40,6 +40,6 @@
 
 - Any agent: `npx skills add katalon-labs/true-skills`
 - Claude Code: `claude plugin marketplace add katalon-labs/true-skills` then install `katalon-true-platform`
-- Codex: `codex plugin marketplace add katalon-labs/true-skills`
+- Codex: `codex plugin marketplace add katalon-labs/true-skills`, then install `katalon-true-platform` from `/plugins` and start a new session
 - Copilot / Cursor / Kiro / Cline / Continue / Gemini CLI: copy `.agents/skills/` (or `.kiro/`, `.cline/skills/`, `.continue/`); see README.
 - MCP: native remote config per client in [docs/connect.md](https://github.com/katalon-labs/true-skills/blob/main/docs/connect.md) (browser OAuth). Fallback: `npx -y mcp-remote@0.14.3 https://platform.katalon.io/mcp --transport http-first`.

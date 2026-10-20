@@ -11,7 +11,7 @@
 
 </div>
 
-A coding agent cannot see your test project. It guesses requirement keys and makes up suite names. These 19 skills give it the [Katalon MCP](https://docs.katalon.com/katalon-platform/testops-mcp-server) tools and the order to call them in, so it reads and changes the real project in [Katalon True Platform](https://katalon.com) (formerly TestOps).
+A coding agent cannot see your test project. It guesses requirement keys and makes up suite names. These 19 skills tell it which [Katalon MCP](https://docs.katalon.com/katalon-platform/testops-mcp-server) tools to call and in what order. After you connect the MCP, the agent can read and change the real project in [Katalon True Platform](https://katalon.com) (formerly TestOps).
 
 - **What it is:** 19 testing skills, one folder each under [`skills/`](skills/). They cover plan, design, manage, review, execute, analyze, and maintain.
 - **Where it runs:** in the agent you already use. Claude Code, Codex, Cursor, Copilot, Kiro, Cline, Continue, Gemini CLI, and any agent that reads [`AGENTS.md`](AGENTS.md).
@@ -50,7 +50,7 @@ npx skills add katalon-labs/true-skills
 }
 ```
 
-The first call opens a browser sign-in. You pick your workspace, and the tools appear. Reload the agent if they do not. On a dedicated Katalon domain, use `https://<your-sub-domain>.katalon.io/mcp`.
+The first call opens a browser sign-in. You pick your workspace, and the tools appear. Reload the agent if they do not. On a dedicated Katalon domain, use `https://<your.sub.domain>.katalon.io/mcp`.
 
 **3. Ask for something real.**
 
@@ -134,13 +134,20 @@ claude plugin marketplace add katalon-labs/true-skills
 claude plugin install katalon-true-platform@katalon-true-platform-marketplace
 ```
 
+Inside a Claude Code session, run the same steps as slash commands:
+
+```text
+/plugin marketplace add katalon-labs/true-skills
+/plugin install katalon-true-platform@katalon-true-platform-marketplace
+```
+
 The plugin bundles the skills and an `.mcp.json` that points at `https://platform.katalon.io/mcp`. To work from a checkout, run `claude --plugin-dir plugins/katalon-true-platform`.
 
 **Other agents.** Each row names where the skills come from. The MCP config for each client is in [`docs/connect.md`](docs/connect.md).
 
 | Agent | Skills | MCP config |
 | --- | --- | --- |
-| Codex | `codex plugin marketplace add katalon-labs/true-skills`, then install **Katalon True Platform** from **Plugins** | bundled; [`.codex/config.toml`](docs/connect.md#codex) for a project |
+| Codex | `codex plugin marketplace add katalon-labs/true-skills`. Then run `codex`, enter `/plugins`, select **Katalon True Platform**, and install it. Start a new session to load the skills. | bundled; [`.codex/config.toml`](docs/connect.md#codex) for a project |
 | Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Windsurf | copy `.agents/skills/` into your project | [connect.md](docs/connect.md) |
 | Kiro | copy `.kiro/` (`.kiro/skills/` and `.kiro/settings/mcp.json`) | [connect.md](docs/connect.md#kiro) |
 | Cline | copy `.cline/skills/` | [connect.md](docs/connect.md#cline) |
