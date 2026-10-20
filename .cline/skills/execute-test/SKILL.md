@@ -1,6 +1,6 @@
 ---
 name: execute-test
-description: Runs existing Katalon True Platform (formerly TestOps) manual cases and suites with Run with AI, starts automated suites on Katalon Test Execution - Cloud (formerly TestCloud), edits schedules, records manual results, and reports pass, fail and blocked counts. Use when the cases already exist and the job is to run them and read the outcome. Not for coded Playwright runs (use playwright-execute) or report files already on disk (use upload-report). For the manual tester.
+description: Runs existing Katalon True Platform (formerly TestOps) manual cases and suites as a TestPak, by hand or with Run with AI, starts automated suites on Katalon Test Execution - Cloud (formerly TestCloud), edits schedules, records manual results, and reports pass, fail and blocked counts. Use when the cases exist and the job is to run them. Not for coded Playwright runs (playwright-execute) or report files on disk (upload-report). For the manual tester.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
@@ -64,6 +64,16 @@ One yes covers every call in the preview. A `rerun_execution` needs its own prev
 ## Choose the executor
 
 For a bare "run this test", ask one question and wait: "Run With AI (recommended, fully autonomous), or manual testing in TestPak?" No AI request does not select manual. Never pick AI because your client has no browser tools. An explicit "run this TestPak" selects manual. An explicit "Run With AI" selects Run with AI.
+
+## TestPak lifecycle
+
+A TestPak is the manual run container. `update_test_run` drives it with one `update.action` per call.
+
+- `CONFIGURE` sets the AUT or private access before the run starts. It fails on an ended run and on a run with hosted AI. It cannot clear a saved AUT id or URL. Make a fresh run for that.
+- `START` needs the execution path first (see "Choose the executor"). `MANUAL` is the default and `KATALON_AI` launches the hosted browser. The choice is the user's. A missing AI request does not select `MANUAL`.
+- `END` closes the whole run. `unfinished_cases` defaults to `REJECT`, so unfinished cases block the END. Ask whether to skip them and wait. Send `SKIP` only after the user says yes. Never retry a blocked END with `SKIP` on your own. `SKIP` also stops hosted AI.
+- Only the person who created the run can start, record, and end it. Assigning an `executor` does not change that.
+- On an `unknown` outcome, read the run with `read_execution` before you retry.
 
 ## Manual lane with Run with AI
 

@@ -118,6 +118,24 @@ export const INTERFACE = {
     prompt: "Which cases went flaky this month, and which should we repair vs regenerate?",
     roles: ["automation tester", "test lead"],
   },
+  "truetest-journeys": {
+    title: "Katalon TrueTest Journeys",
+    short: "Turn real user traffic into coverage",
+    prompt: "Find the user flows we do not test yet from TrueTest sessions and queue cases for them.",
+    roles: ["test lead"],
+  },
+  "test-environments": {
+    title: "Katalon Test Environments",
+    short: "Make the app under test reachable and runnable",
+    prompt: "Upload my mobile app and set up a tunnel so I can run tests on a private environment.",
+    roles: [],
+  },
+  "project-memory": {
+    title: "Katalon Project Memory",
+    short: "Load and save team conventions",
+    prompt: "Load my project's saved conventions and apply them.",
+    roles: [],
+  },
   "true-platform-testing": {
     title: "Katalon True Platform Testing",
     short: "Route and run the full 7-stage testing lifecycle",
@@ -162,10 +180,12 @@ export const ORDER = [
   "test-plan",
   "test-estimation",
   "create-test-cases",
+  "truetest-journeys",
   "test-data",
   "exploratory-charter",
   "test-management",
   "test-review",
+  "test-environments",
   "execute-test",
   "upload-report",
   "test-case-to-playwright",
@@ -177,6 +197,7 @@ export const ORDER = [
   "test-maintenance",
   // Onboarding after install. Kept out of the first five so the Codex and Cursor
   // starter prompts stay on lifecycle work; the ChatGPT package runs it on install.
+  "project-memory",
   "get-started",
   "true-platform-testing",
 ];
@@ -195,6 +216,8 @@ const WRITE_POLICY_SKILLS = [
   "upload-report",
   "playwright-execute",
   "test-data",
+  "truetest-journeys",
+  "test-environments",
   "true-platform-testing",
 ];
 
@@ -205,6 +228,7 @@ export const SHARED = {
     "platform-setup",
     "release-analyze",
     "upload-report",
+    "truetest-journeys",
     "true-platform-testing",
   ],
   "istqb-coverage.md": ["create-test-cases"],

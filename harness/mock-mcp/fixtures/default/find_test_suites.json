@@ -1,0 +1,52 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 2001,
+          "name": "Authentication Regression",
+          "path": "Test Suites/Regression",
+          "testType": "MANUAL",
+          "type": "TESTOPS",
+          "source": "USER",
+          "testProjectId": 500,
+          "testFolderId": 311
+        },
+        {
+          "id": 2002,
+          "name": "Checkout Manual Suite",
+          "path": "Test Suites/Regression",
+          "testType": "MANUAL",
+          "type": "TESTOPS",
+          "source": "USER",
+          "testProjectId": 500,
+          "testFolderId": 311
+        },
+        {
+          "id": 2003,
+          "name": "Login Automated Suite",
+          "path": "Test Suites/Regression",
+          "testType": "AUTOMATED",
+          "type": "TESTOPS",
+          "source": "USER",
+          "testProjectId": 500,
+          "testFolderId": 311
+        },
+        {
+          "id": 2004,
+          "name": "Orders API Suite",
+          "path": "Test Suites/Regression",
+          "testType": "AUTOMATED",
+          "type": "TESTOPS",
+          "source": "USER",
+          "testProjectId": 500,
+          "testFolderId": 311
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 4,
+      "next_page_token": null
+    }
+  }
+]

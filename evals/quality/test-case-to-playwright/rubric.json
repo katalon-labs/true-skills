@@ -1,0 +1,26 @@
+{
+  "skill": "test-case-to-playwright",
+  "checks": [
+    {"id": "code-present", "type": "count", "desc": "At least one TypeScript code block", "params": {"pattern": "```(?:ts|typescript)\\b", "flags": "gi", "min": 1}},
+    {"id": "code-balanced", "type": "code-balanced", "desc": "Brackets and braces balance in every code block"},
+    {"id": "imports-playwright", "type": "present", "desc": "Specs import Playwright or the repository's own fixtures", "params": {"pattern": "from ['\"](@playwright/test|\\.{1,2}/[^'\"]*fixtures?[^'\"]*)['\"]"}},
+    {"id": "test-structure", "type": "present", "desc": "A test or test.describe block exists", "params": {"pattern": "\\btest(\\.describe)?\\s*\\("}},
+    {"id": "case-id-kept", "type": "contains-all", "desc": "The Katalon case ID travels into the spec for traceability", "params": {"values": "$expect.case_ids", "caseSensitive": true}},
+    {"id": "assertion-per-expected", "type": "count", "desc": "One assertion per manual expected result", "params": {"pattern": "\\bexpect[\\w.]*\\(", "flags": "g", "min": "$expect.min_assertions"}},
+    {"id": "expected-values-verbatim", "type": "contains-all", "desc": "Expected strings come from the case, character for character", "when": "verbatim", "params": {"values": "$expect.verbatim", "caseSensitive": true}},
+    {"id": "role-locators", "type": "present", "desc": "Locators prefer role, label or test id", "params": {"pattern": "getBy(Role|Label|TestId|Text)\\("}},
+    {"id": "no-xpath", "type": "absent", "desc": "No XPath selector", "params": {"pattern": "(locator\\(\\s*['\"`]\\/\\/|xpath=)"}},
+    {"id": "no-removed-apis", "type": "absent", "desc": "No removed or retired API or selector engine", "params": {"pattern": "(page\\.accessibility|_react=|_vue=)"}},
+    {"id": "no-hard-sleeps", "type": "absent", "desc": "No fixed sleeps", "params": {"pattern": "(waitForTimeout\\s*\\(|setTimeout\\s*\\()"}},
+    {"id": "no-literal-secrets", "type": "absent", "desc": "No password, token or secret literal in code", "params": {"pattern": "(password|passwd|pwd|secret|token)\\s*[:=]\\s*['\"`](?!\\$\\{)[^'\"`\\n]{3,}['\"`]"}},
+    {"id": "no-automated-register", "type": "absent", "desc": "Does not register the spec with create_test_case AUTOMATED", "params": {"pattern": "create_test_case[^.\\n]*AUTOMATED"}},
+    {"id": "page-objects-used", "type": "contains-all", "desc": "Existing page objects are reused", "when": "page_objects", "params": {"values": "$expect.page_objects", "caseSensitive": true}},
+    {"id": "scaffold-layout", "type": "present", "desc": "A new framework gets config, pages and fixtures", "when": "scaffold", "params": {"patterns": ["playwright\\.config\\.ts", "pages/", "fixtures/"]}},
+    {"id": "data-kept-in-fixture", "type": "contains-any", "desc": "Test data lives in a typed fixture, not in the spec body", "when": "data_terms", "params": {"values": "$expect.data_terms"}},
+    {"id": "missing-inputs-named", "type": "contains-all", "desc": "Missing inputs are named, not invented", "when": "missing_terms", "params": {"values": "$expect.missing_terms"}},
+    {"id": "ai-drafted-marked", "type": "present", "desc": "The spec is marked as AI-drafted for the reviewer", "params": {"pattern": "AI-drafted|drafted by (an? )?(AI|model)"}},
+    {"id": "verification-reported", "type": "present", "desc": "Reports which checks ran and which did not", "params": {"patterns": ["(tsc --noEmit|playwright test --list|npx playwright test)", "(not run|could not run|unverified|did not run|passed|failed)"]}},
+    {"id": "repeat-without-retries", "type": "near-all", "desc": "A repeat check runs with retries off", "params": {"values": ["--repeat-each"], "pattern": "--retries=0", "window": 120}},
+    {"id": "style-no-em-dash", "type": "absent", "desc": "House style: no em dash", "params": {"pattern": "\\u2014"}}
+  ]
+}

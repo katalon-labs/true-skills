@@ -1,0 +1,135 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 55001,
+          "executionId": 9001,
+          "testCaseId": 1005,
+          "testCaseName": "Login lockout after five failures",
+          "testCasePath": "Test Cases/Authentication/Login",
+          "testSuiteId": 2003,
+          "testSuiteName": "Login Automated Suite",
+          "testSuitePath": "Test Suites/Regression",
+          "status": "FAILED",
+          "startTime": "2026-10-19T18:01:10Z",
+          "jobId": "job-1"
+        },
+        {
+          "id": 55002,
+          "executionId": 9001,
+          "testCaseId": 1006,
+          "testCaseName": "Order history CSV export downloads file",
+          "testCasePath": "Test Cases/Orders",
+          "testSuiteId": 2004,
+          "testSuiteName": "Orders API Suite",
+          "testSuitePath": "Test Suites/Regression",
+          "status": "PASSED",
+          "startTime": "2026-10-19T18:03:40Z",
+          "jobId": "job-1"
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null,
+      "jobs": [
+        {
+          "jobId": "job-1",
+          "environment": "Windows 11, Chrome latest"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "TEST_RESULT",
+        "test_result_id": 55001
+      }
+    },
+    "result": {
+      "id": 55001,
+      "executionId": 9001,
+      "testCaseId": 1005,
+      "testCaseName": "Login lockout after five failures",
+      "testCasePath": "Test Cases/Authentication/Login",
+      "testSuiteId": 2003,
+      "testSuiteName": "Login Automated Suite",
+      "testSuitePath": "Test Suites/Regression",
+      "status": "FAILED",
+      "startTime": "2026-10-19T18:01:10Z",
+      "jobId": "job-1",
+      "browser": "chrome",
+      "os": "windows",
+      "profile": "default",
+      "errorDetail": "Expected account to be locked after 5 failed attempts but the login succeeded.",
+      "failedAssertions": [
+        {
+          "name": "account is locked",
+          "expected": "LOCKED",
+          "actual": "ACTIVE"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "EXECUTION",
+        "execution_id": 9003
+      }
+    },
+    "result": {
+      "items": [
+        {
+          "id": 56001,
+          "executionId": 9003,
+          "testCaseId": 1003,
+          "testCaseName": "Checkout applies valid discount code",
+          "status": "PASSED",
+          "jobId": null
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "EXECUTION",
+        "status": "FAILED"
+      }
+    },
+    "result": {
+      "items": [
+        {
+          "id": 55001,
+          "executionId": 9001,
+          "testCaseId": 1005,
+          "testCaseName": "Login lockout after five failures",
+          "testCasePath": "Test Cases/Authentication/Login",
+          "testSuiteId": 2003,
+          "testSuiteName": "Login Automated Suite",
+          "testSuitePath": "Test Suites/Regression",
+          "status": "FAILED",
+          "startTime": "2026-10-19T18:01:10Z",
+          "jobId": "job-1"
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null,
+      "jobs": [
+        {
+          "jobId": "job-1",
+          "environment": "Windows 11, Chrome latest"
+        }
+      ]
+    }
+  }
+]

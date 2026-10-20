@@ -1,8 +1,10 @@
 # Evals
 
-An agent picks one of these skills by reading its frontmatter `description` and nothing else. `evals/routing/` measures that choice: for each realistic request, did the agent pick the skill that owns the job, or stay out of the way when no Katalon skill applies? Run it before and after any change to a description, and put the before/after numbers in the pull request.
+This folder holds three eval families: routing (does the agent pick the right skill), workflow (does it follow the consent and ask-first rules against a mock Katalon MCP server), and quality (do the artifacts it writes meet a rubric). `node scripts/harness.mjs` runs the model-free part of all three. See [Harness runner](#harness-runner).
 
 ## Routing eval
+
+An agent picks one of these skills by reading its frontmatter `description` and nothing else. `evals/routing/` measures that choice: for each realistic request, did the agent pick the skill that owns the job, or stay out of the way when no Katalon skill applies? Run it before and after any change to a description, and put the before/after numbers in the pull request.
 
 | file | what it holds |
 |---|---|
@@ -54,3 +56,48 @@ The loop follows the `/claude-api hillclimb` method:
 5. Put the round table and the final test delta with its interval in the pull request. A delta inside the noise band is reported as no change.
 
 Adding cases: follow `POLICY.md`, give every new case a label, and re-draw the split only when the set changes by more than a few cases (old rounds stop being comparable).
+
+## Workflow evals
+
+`evals/workflow/` holds one JSON scenario per file: the user turns, a fixture set for the mock server, and assertions over the call log. Assertions cover these rules:
+
+- No write or run tool runs before a user confirmation turn.
+- The agent asks the required questions: `browser_profile_mode`, Run With AI versus TestPak, and a typed yes for a destructive call.
+- A write is followed by a read-back.
+- Every call names a known tool and passes valid arguments.
+- The agent hands off to the right skill.
+
+The runner is `evals/workflow/run.mjs`. It uses the mock server in `harness/mock-mcp/`, which answers from `harness/mock-mcp/fixtures/<scenario>/` and checks every call against the schemas in `harness/mcp/tools.snapshot.json`.
+
+```bash
+node scripts/harness.mjs workflow                  # --dry: replay recorded transcripts, no model
+node scripts/harness.mjs workflow --live-model     # drive `claude -p` against the mock server
+```
+
+`--dry` is the default. It tests the asserter and the scenarios without a model, so CI runs it. `--live-model` starts headless Claude Code calls and needs a logged-in `claude`.
+
+## Quality evals
+
+`evals/quality/` holds, for each artifact skill (`create-test-cases`, `test-review`, `release-analyze`, `test-estimation`, `test-case-to-playwright`, `analyze-failures`), scenarios with fixtures and a rubric of binary checks. Deterministic checks run first: format, atomic case shape, name charset, verdict vocabulary. An optional pairwise judge runs after them, with both slot orders.
+
+```bash
+node scripts/harness.mjs quality                   # deterministic self-tests, no model
+```
+
+## Harness runner
+
+`scripts/harness.mjs` is the one entry point. A model runs only when you pass `--live-model`.
+
+| command | what it does | model |
+|---|---|---|
+| `check` | validator, `sync-shared.mjs --check`, `build-adapters.mjs --check`, and a check that `harness/mcp/tools.snapshot.json` and `docs/mcp-tools.json` list the same tool names | no |
+| `mock [args]` | starts the mock Katalon MCP server | no |
+| `workflow [args]` | workflow evals, `--dry` by default | only with `--live-model` |
+| `quality [args]` | output-quality self-tests | no |
+| `routing [args]` | checks cases against labels and prints the command for `evals/routing/run.mjs` | only with `--live-model` |
+| `test` | `node --test` over every `*.test.mjs` under `harness/` and `evals/` | no |
+| `all` | `check`, `workflow` (dry), `quality`, the routing file check, and `test` | no |
+
+A missing harness file stops that command with exit 2 and a message that names the file. `all` treats a missing file as a failure. Pass `--allow-missing` to skip it with a warning while you build a harness piece by piece.
+
+CI runs `node scripts/harness.mjs all` in the `harness` job of `.github/workflows/build-check.yml`.

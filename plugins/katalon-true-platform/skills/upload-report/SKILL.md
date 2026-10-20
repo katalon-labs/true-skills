@@ -1,6 +1,6 @@
 ---
 name: upload-report
-description: Uploads finished Katalon Studio, JUnit XML, or Playwright reports to Katalon True Platform (formerly TestOps) and verifies that the run landed with matching counts. Use when a report folder or XML file already sits on disk, an auto-upload failed, or Katalon Test Execution - Local (formerly KRE) must run first. Not for a Playwright suite that has not run yet (use playwright-execute) or Run with AI (use execute-test). For the automation tester.
+description: Uploads finished Katalon Studio, JUnit XML, or Playwright reports to Katalon True Platform (formerly TestOps) and verifies that the run landed with matching counts. Use when a report folder or XML file already sits on disk, an auto-upload failed, or Katalon Test Execution - Local (formerly KRE) must run first. Not for a Playwright suite that has not run (playwright-execute) or Run with AI (execute-test). For the automation tester.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. Uploads also need Java (Report Uploader), the Katalon CLI (Studio reports), or Node.js 18 or later (Playwright reporter), by report type.
 metadata:

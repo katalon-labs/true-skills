@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Case to Studio
-description: "Converts Katalon True Platform manual test cases into Katalon Studio automation inside a local Studio Test Project, including the .tc file, its paired Groovy script, Object Repository test objects, and the data-driven suite bindings. Use when a manual case must become a Studio case, or when the question is whether a headless katalonc run is possible. It does not upload a finished report (that is upload-report) or write Playwright code (test-case-to-playwright). For the automation tester."
+description: "Converts Katalon True Platform manual test cases into Katalon Studio automation in a local Studio Test Project, covering the .tc file, its Groovy script, Object Repository test objects, and data-driven suite bindings. Use when a manual case must become a Studio case, or when the question is whether a headless katalonc run is possible. Not for uploading a finished report (upload-report) or Playwright code (test-case-to-playwright). For the automation tester."
 alwaysApply: false
 ---
 

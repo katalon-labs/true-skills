@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Reporting
-description: "Writes quality reports for stakeholders outside QA from Katalon True Platform (formerly TestOps) data. It picks at most five metrics that answer the question asked, trends them across sprints or releases, and ends with a named ask. Use when someone presents quality at a steering committee, an exec review, or a quality business review. Not for the ship call on one release (release-analyze) or a pre-pipeline suite verdict (test-review). For the test manager and the test lead."
+description: "Writes quality reports for stakeholders outside QA from Katalon True Platform (formerly TestOps) data. It picks at most five metrics that answer the question asked, trends them across sprints or releases, and ends with a named ask. Use when someone presents quality at a steering committee, exec review, or quality business review. Not for the ship call on one release (release-analyze) or a pre-pipeline verdict (test-review). For the test manager and the test lead."
 alwaysApply: false
 ---
 

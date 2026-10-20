@@ -1,0 +1,35 @@
+[
+  {
+    "result": {
+      "action": "CREATE",
+      "id": 2005,
+      "name": "Smoke Tests",
+      "path": "Test Suites/Regression",
+      "testSuiteTestType": "MANUAL",
+      "testCaseCount": 3
+    }
+  },
+  {
+    "match": {
+      "payload": {
+        "action": "ADD_TEST_CASES"
+      }
+    },
+    "result": {
+      "action": "ADD_TEST_CASES",
+      "id": 2002,
+      "added": 2
+    }
+  },
+  {
+    "match": {
+      "payload": {
+        "action": "DELETE"
+      }
+    },
+    "result": {
+      "action": "DELETE",
+      "result": "applied"
+    }
+  }
+]

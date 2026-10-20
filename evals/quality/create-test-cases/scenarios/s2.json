@@ -1,0 +1,42 @@
+{
+  "id": "s2",
+  "title": "Partly covered requirement with a title that breaks the name charset",
+  "prompt": "Cover CEL-14 with manual cases. Reuse what exists. Plan first, no writes until I confirm.",
+  "fixture": "../fixtures/s2-cel-14.md",
+  "expect": {
+    "min_cases": 4,
+    "condition_groups": [
+      [
+        "minimum",
+        "below 20",
+        "under 20"
+      ],
+      [
+        "one promo",
+        "second code",
+        "second promo",
+        "two codes",
+        "only one"
+      ],
+      [
+        "format",
+        "length",
+        "11 character",
+        "5 character"
+      ]
+    ],
+    "verbatim": [
+      "Minimum order of 20.00 required for this promo code",
+      "Only one promo code can be used per order"
+    ],
+    "reuse_ids": [
+      "TC-3101",
+      "TC-3102"
+    ],
+    "existing_titles": [
+      "Apply valid promo code to cart",
+      "Reject expired promo code"
+    ],
+    "requirement_key": "CEL-14"
+  }
+}

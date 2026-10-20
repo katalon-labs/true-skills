@@ -1,6 +1,6 @@
 ---
 name: Katalon True Platform Testing
-description: "Routes Katalon True Platform (formerly TestOps) testing requests to the focused skill that owns the next step, and chains several skills for a request such as requirement to cases to run to ship call. Use when one request spans several lifecycle stages, when no skill is named, or when the asker wants orienting first. Prefer the focused skill, such as create-test-cases or execute-test, when the request names one task. For the manual tester, automation tester, test lead, and test manager."
+description: "Routes Katalon True Platform (formerly TestOps) testing requests to the focused skill that owns the next step, and chains skills for a request such as requirement to cases to run to ship call. Use when one request spans several lifecycle stages, no skill is named, or the asker wants orienting first. Not for a request that names one task, such as create-test-cases or execute-test. For the manual tester, automation tester, test lead, and test manager."
 alwaysApply: false
 ---
 
@@ -37,15 +37,19 @@ Ask who is in front of you before you ask which stage they are in.
 | Stage | Skill | Use when |
 |---|---|---|
 | 1 Plan | `test-plan`, `test-estimation` | scope, risk order, executable folders and suites, effort |
-| 2 Design | `create-test-cases`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements |
+| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements, or cases from real user sessions |
 | 3 Manage | `test-management` | organize inventory, trace requirements |
 | 4 Review | `test-review` | verdict on coverage and quality before the pipeline |
-| 5 Execute | `execute-test`, `playwright-execute`, `upload-report` | manual, Run with AI, automated, Playwright, report upload |
+| 5 Execute | `test-environments`, `execute-test`, `playwright-execute`, `upload-report` | app, browser, device, or tunnel setup first, then manual, Run with AI, automated, Playwright, report upload |
 | 6 Analyze | `analyze-failures`, `release-analyze`, `test-reporting` | failure triage and defects, ship call, stakeholder summary |
 | 7 Maintain | `test-maintenance` | repair flaky or broken cases and feed gaps back to plan |
-| Setup | `get-started`, `platform-setup` | first run, connection, sign-in, tunnels |
+| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions |
 
 For multi-skill plays read `references/combination-recipes.md`. For copy-paste prompts read `references/prompt-recipes.md`. For every MCP tool by group read `references/mcp-tool-index.md`.
+
+## Load Memory at Session Start
+
+At the start of every session, before the first skill runs, call `memory_list` once through `project-memory` and apply what it returns. Memory is optional. If it is empty or unavailable, say so and go on. Only the user's request triggers `memory_write` or `memory_forget`.
 
 ## Resolve Context Once
 
@@ -90,7 +94,6 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
 
-When the work authors or names things, call `memory_list` once and read the headlines that match. Treat the bodies as the team's decisions, quote them, and never restate them as platform facts. If memory is unavailable, say so. Memory is optional. Call `memory_write` or `memory_forget` only when the user asks.
 
 ## References
 
@@ -273,12 +276,15 @@ Seven stages, each with its skill and its MCP tools. Read this when you route a 
                  list_schedule, read_schedule_detail, update_schedule_configuration,
                  memory_list
 
-2 DESIGN ....... create-test-cases  (+ test-data, exploratory-charter, test-case-to-playwright,
-                 test-case-to-katalon-studio)
+2 DESIGN ....... create-test-cases  (+ truetest-journeys, test-data, exploratory-charter,
+                 test-case-to-playwright, test-case-to-katalon-studio)
                  find_requirements, read_requirement, search, create_test_case,
-                 read_test_cases, update_test_cases, find_test_cases, memory_list,
-                 list_truetest_auts, search_truetest_sessions,
-                 create_truetest_test_case_from_session, create_truetest_test_case_from_flow
+                 read_test_cases, update_test_cases, find_test_cases
+                 truetest-journeys: list_truetest_auts, list_truetest_tracking_environments,
+                 search_truetest_sessions, get_truetest_session, search_truetest_journey_maps,
+                 get_truetest_journey_map, create_truetest_journey_map,
+                 get_truetest_journey_map_request, create_truetest_test_case_from_session,
+                 create_truetest_test_case_from_flow
 
 3 MANAGE ....... test-management
                  find_test_folders, manage_test_folder, find_test_suites,
@@ -291,12 +297,17 @@ Seven stages, each with its skill and its MCP tools. Read this when you route a 
                  fetch_test_stability_metrics, fetch_test_configuration_metrics,
                  find_test_cases_by_requirement, read_auts, memory_list
 
-5 EXECUTE ...... execute-test  (+ upload-report, playwright-execute)
-                 read_auts, create_test_run, update_test_run, read_manual_ai_session,
-                 update_test_results, prepare_artifact_upload, confirm_artifact_upload,
-                 find_execution_profiles, list_test_cloud_environments,
-                 build_run_configuration, build_schedule,
-                 build_private_local_testing_config, list_executions, read_execution,
+5 EXECUTE ...... test-environments, then execute-test  (+ upload-report, playwright-execute)
+                 test-environments: read_auts, find_execution_profiles,
+                 list_test_cloud_environments, list_test_cloud_agents, list_test_cloud_apps,
+                 get_upload_test_cloud_app_url, create_test_cloud_app,
+                 manage_test_cloud_dynamic_app, delete_test_cloud_app,
+                 list_test_cloud_tunnels, prepare_test_cloud_tunnel_start,
+                 stop_test_cloud_tunnel, build_private_local_testing_config,
+                 build_run_configuration
+                 execute-test: read_auts, create_test_run, update_test_run,
+                 read_manual_ai_session, update_test_results, prepare_artifact_upload,
+                 confirm_artifact_upload, build_schedule, list_executions, read_execution,
                  find_test_results
 
 6 ANALYZE ...... analyze-failures + release-analyze  (+ test-reporting)
@@ -313,6 +324,8 @@ Seven stages, each with its skill and its MCP tools. Read this when you route a 
                  +--> feeds the gap list back to 1 PLAN (the loop closes)
 
 CROSS-CUTTING .. get-started (first run) . platform-setup (connect) . true-platform-testing (router)
+                 project-memory (session start, once): memory_list, memory_read,
+                 memory_read_page, memory_write, memory_forget
 ```
 
 ## Stage boundaries (outside the MCP)
@@ -351,7 +364,9 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Connect the platform, nothing works | `platform-setup` | none |
 | Analyze this requirement before I write anything | `create-test-cases` | none |
 | I just got requirement CEL-6 and need cases | `create-test-cases` | none |
-| Turn recorded user sessions into cases | `create-test-cases` | session to case generation needs approval and takes 1 to 25 sessions |
+| Turn recorded user sessions into cases | `truetest-journeys` | session to case generation needs approval and takes 1 to 25 sessions |
+| What do users do that we do not test | `truetest-journeys` | sessions reach back 31 days. A journey map is an async job: poll it, never resubmit |
+| Build a journey map, or compare its flows with our cases | `truetest-journeys` | none |
 | What test data do these cases need | `test-data` | none |
 | Seed and tear down data for the run | `test-data` | the MCP has no seeding, fixture, or secrets tool |
 | Run an exploratory session on checkout | `exploratory-charter` | none |
@@ -365,7 +380,12 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Run it with AI, I do not have time to click through | `execute-test` | ending the run closes the whole TestPak, and unfinished cases need a skip decision |
 | I ran it by hand and need to record the results | `execute-test` | needs an active run that you created |
 | Schedule the automated suite on Test Execution - Cloud | `execute-test` | none |
-| Run against an app on a private network | `execute-test` | needs a tunnel or an allowlist. `platform-setup` diagnoses tunnels |
+| Run against an app on a private network | `test-environments`, then `execute-test` | needs a tunnel or an allowlist. `platform-setup` diagnoses a tunnel that will not connect |
+| Upload my mobile app, or point a name at the latest build | `test-environments` | the app upload needs a terminal that can run the returned curl command |
+| Which browsers and devices can I run on | `test-environments` | none |
+| Delete an old app, or stop a tunnel | `test-environments` | destructive: needs a typed yes that names the target |
+| Load our team's conventions before we start | `project-memory` | read once at session start. Empty or missing memory is not an error |
+| Remember that we always do X | `project-memory` | stored as the person's own memory. A project-wide rule is set by a project admin on the Agent Rules screen |
 | Turn TC-1042 into a Playwright spec | `test-case-to-playwright` | none |
 | Turn TC-1042 into a Katalon Studio test | `test-case-to-katalon-studio` | none |
 | Get my Playwright run into the platform | `playwright-execute` | none |
@@ -473,6 +493,8 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 ## Test Execution - Cloud assets and tunnels
 
+Owner skill: `test-environments`. It also owns `read_auts`, `find_execution_profiles`, `build_private_local_testing_config`, and `build_run_configuration`, listed above. `execute-test` runs once the environment is ready.
+
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
 | `list_test_cloud_environments` | R | Browser and device catalog. | 5 |
@@ -487,6 +509,8 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 | `stop_test_cloud_tunnel` | D | Stop a tunnel. Others may share it. | 5 |
 
 ## TrueTest
+
+Owner skill: `truetest-journeys`.
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
@@ -503,11 +527,13 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 ## Team memory (Kai)
 
+Owner skill: `project-memory`. Every session calls `memory_list` once at the start, through that skill.
+
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of authoring. | 1, 2, 3, 4 |
-| `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | 1, 2, 3, 4 |
-| `memory_read_page` | R | One distilled guidance page by slug. | 1, 2, 3, 4 |
+| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. | all |
+| `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | all |
+| `memory_read_page` | R | One distilled guidance page by slug. | all |
 | `memory_write` | W | Store one note in the user's own words. Only when the user asks. | none |
 | `memory_forget` | D | Delete memory records for good. Only when the user asks. | none |
 

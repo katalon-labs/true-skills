@@ -1,0 +1,15 @@
+[
+  {
+    "result": {
+      "agentType": "TEST_CLOUD_AGENT",
+      "browser": "chrome",
+      "browserType": "CHROME",
+      "browserVersion": "latest",
+      "os": "windows",
+      "osVersion": "11",
+      "metadata": {
+        "browserVersionType": "stable"
+      }
+    }
+  }
+]

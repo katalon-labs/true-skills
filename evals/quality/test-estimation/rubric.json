@@ -1,0 +1,234 @@
+{
+  "skill": "test-estimation",
+  "checks": [
+    {
+      "id": "range-labelled",
+      "type": "present",
+      "desc": "A best, likely and worst case are given",
+      "params": {
+        "patterns": [
+          "Best case",
+          "Likely",
+          "Worst case"
+        ]
+      }
+    },
+    {
+      "id": "range-ordered",
+      "type": "numbers-monotone",
+      "desc": "Best <= Likely <= Worst",
+      "params": {
+        "labels": [
+          "Best case",
+          "Likely",
+          "Worst case"
+        ]
+      }
+    },
+    {
+      "id": "confidence-label",
+      "type": "label-in",
+      "desc": "Confidence is High, Medium or Low",
+      "params": {
+        "label": "Confidence",
+        "allowed": [
+          "High",
+          "Medium",
+          "Low"
+        ]
+      }
+    },
+    {
+      "id": "confidence-allowed",
+      "type": "label-in",
+      "desc": "Confidence fits the inputs the human supplied",
+      "when": "confidence_allowed",
+      "params": {
+        "label": "Confidence",
+        "allowed": "$expect.confidence_allowed"
+      }
+    },
+    {
+      "id": "basis-stated",
+      "type": "present",
+      "desc": "The basis of the rates is stated with a sample size",
+      "params": {
+        "pattern": "Basis\\s*:[^\\n]*(n=\\d|sample|declar|default|assum)"
+      }
+    },
+    {
+      "id": "buckets-add-up",
+      "type": "buckets-sum",
+      "desc": "Five buckets add to the Likely total",
+      "params": {
+        "tolerance": 0.6
+      }
+    },
+    {
+      "id": "wall-clock-kept-apart",
+      "type": "present",
+      "desc": "Wall clock is reported on its own line, not added to person-hours",
+      "params": {
+        "pattern": "Wall clock[^\\n]*\\n?[^\\n]*\\d"
+      }
+    },
+    {
+      "id": "both-resourcing-answers",
+      "type": "present",
+      "desc": "Gives a headcount for a fixed window and a date for a fixed team",
+      "params": {
+        "patterns": [
+          "Fixed window",
+          "Fixed team"
+        ]
+      }
+    },
+    {
+      "id": "hours-per-day-stated",
+      "type": "present",
+      "desc": "Working days come with productive hours per day",
+      "params": {
+        "pattern": "productive hours?|6 h per|h per tester per day|hours per tester"
+      }
+    },
+    {
+      "id": "serialized-part-named",
+      "type": "present",
+      "desc": "Names the part no extra person shortens",
+      "params": {
+        "pattern": "Serialized\\s*:"
+      }
+    },
+    {
+      "id": "drivers-ranked",
+      "type": "present",
+      "desc": "Names the drivers that move the total most with a changed figure",
+      "params": {
+        "patterns": [
+          "Drivers that move the total most",
+          "\\b1\\.[^\\n]*\\d+\\s*h"
+        ]
+      }
+    },
+    {
+      "id": "exclusions-stated",
+      "type": "present",
+      "desc": "States what the estimate leaves out",
+      "params": {
+        "pattern": "Excluded\\s*:"
+      }
+    },
+    {
+      "id": "evidence-sourced",
+      "type": "present",
+      "desc": "Each figure is tagged MCP or Team",
+      "params": {
+        "patterns": [
+          "MCP\\s+(find_|fetch_|read_|list_)\\w+",
+          "^\\s*Team\\s+\\S"
+        ],
+        "flags": "im"
+      }
+    },
+    {
+      "id": "counts-used",
+      "type": "contains-all",
+      "desc": "The counts the platform returned are used",
+      "when": "counts",
+      "params": {
+        "values": "$expect.counts"
+      }
+    },
+    {
+      "id": "partial-page-disclosed",
+      "type": "present",
+      "desc": "A partial page is not reported as a total",
+      "when": "partial_page",
+      "params": {
+        "pattern": "(partial|truncated|next_page_token|first page|not a total|page 0)"
+      }
+    },
+    {
+      "id": "concurrency-team-supplied",
+      "type": "near-all",
+      "desc": "Session concurrency is tagged as team-supplied, not as a platform field",
+      "when": "concurrency",
+      "params": {
+        "values": [
+          "parallel sessions"
+        ],
+        "pattern": "team",
+        "window": 200
+      }
+    },
+    {
+      "id": "asks-for-rates",
+      "type": "present",
+      "desc": "Asks the human for the missing per-unit rates",
+      "when": "asks_rates",
+      "params": {
+        "patterns": [
+          "\\?",
+          "manual minutes per case|minutes per manual case|minutes per case"
+        ]
+      }
+    },
+    {
+      "id": "scope-change-priced",
+      "type": "contains-all",
+      "desc": "The added configurations are priced and named",
+      "when": "delta_terms",
+      "params": {
+        "values": "$expect.delta_terms"
+      }
+    },
+    {
+      "id": "no-single-number",
+      "type": "absent",
+      "desc": "Never claims exact precision",
+      "params": {
+        "pattern": "(exactly|precisely)\\s+\\d+(\\.\\d+)?\\s*(h|hours|days)"
+      }
+    },
+    {
+      "id": "no-false-precision",
+      "type": "absent",
+      "desc": "No figure with more than one decimal",
+      "params": {
+        "pattern": "\\b\\d+\\.\\d{2,}\\s*(h|hours)\\b"
+      }
+    },
+    {
+      "id": "no-quadrature",
+      "type": "absent",
+      "desc": "No root-sum-square or quadrature band",
+      "params": {
+        "pattern": "(root[- ]sum[- ]square|in quadrature|\\bRSS\\b)"
+      }
+    },
+    {
+      "id": "no-interval-claim",
+      "type": "absent",
+      "desc": "Never calls a scenario range a confidence interval",
+      "params": {
+        "pattern": "confidence interval"
+      }
+    },
+    {
+      "id": "no-effort-from-elapsed",
+      "type": "absent",
+      "desc": "Never turns run elapsed time into person effort",
+      "params": {
+        "pattern": "(elapsed|wall clock)[^\\n.]*(person-hours|effort) of"
+      }
+    },
+    {
+      "id": "style-no-em-dash",
+      "type": "absent",
+      "desc": "House style: no em dash",
+      "params": {
+        "pattern": "\\u2014"
+      }
+    }
+  ]
+}

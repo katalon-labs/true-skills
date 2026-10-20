@@ -1,6 +1,6 @@
 ---
 name: release-analyze
-description: Assesses whether a Katalon True Platform (formerly TestOps) release, sprint, iteration, or suite is ready, using requirement, test case, defect, stability, configuration, and execution data from the Katalon MCP. It returns Ready, Ready with risk, or Not ready with a confidence level, the blocking issues, and the evidence behind each. Use when someone must make or defend the ship call. Not for triaging single failures, which is analyze-failures, and not for multi-release trend reports, which is test-reporting. For the test manager and the test lead.
+description: Assesses whether a Katalon True Platform (formerly TestOps) release, sprint, iteration, or suite is ready, from requirement, case, defect, stability, configuration, and execution data. It returns Ready, Ready with risk, or Not ready with a confidence level, the blockers, and the evidence. Use when someone must make or defend the ship call. Not for single failures (analyze-failures) or multi-release trends (test-reporting). For the test manager and the test lead.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:

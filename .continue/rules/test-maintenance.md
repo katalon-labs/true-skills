@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Maintenance
-description: "Keeps a Katalon True Platform (formerly TestOps) regression suite trustworthy as the application changes. It reads stability and result history, decides per case whether to repair, regenerate, or retire, applies reviewed repairs under healing guardrails, and feeds new coverage gaps back to planning. Use when a suite has drifted over weeks or releases, tests turned flaky or stale, or a UI or requirement change broke many cases. Not for one red run, which is analyze-failures, and not for new cases, which is create-test-cases. For the automation tester and the test lead."
+description: "Keeps a Katalon True Platform (formerly TestOps) regression suite trustworthy as the application changes. It reads stability and result history, decides per case whether to repair, regenerate, or retire, applies reviewed repairs under healing guardrails, and feeds gaps back to planning. Use when a suite has drifted, tests turned flaky or stale, or a UI change broke many cases. Not for one red run (analyze-failures) or new cases (create-test-cases). For the automation tester and the test lead."
 alwaysApply: false
 ---
 

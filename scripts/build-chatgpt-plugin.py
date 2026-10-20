@@ -68,7 +68,7 @@ POINTER_LINE = (
 CHATGPT_REWRITES: Dict[str, List[Tuple[str, str]]] = {
     "get-started/SKILL.md": [
         (
-            'Use when the user has just connected Katalon, asks to get started or to pick a default project, or when no default project is stored yet.',
+            'Use when the user has just connected, asks to get started, or has no default project stored.',
             "Use only for the manifest onboarding event immediately after the user installs or connects Katalon, or an explicit user request to get started, set up Katalon, or pick/change their default project. A missing default project alone does not authorize invocation or tool calls.",
         ),
         (

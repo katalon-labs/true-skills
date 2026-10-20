@@ -24,7 +24,9 @@
  *      backticked tool-shaped name is in docs/mcp-tools.json (or the explicit nonTools list).
  *      ChatGPT-only tools appear only under chatgpt/.
  *   9. No real Katalon subdomain endpoint leaked into any published text.
- *  10. Security. No fetch-and-execute pattern (curl ... | sh and its variants).
+ *  10. Snapshot consistency. harness/mcp/tools.snapshot.json lists the same tool names as
+ *      docs/mcp-tools.json (a warning, not a failure, while the snapshot file is absent).
+ *  11. Security. No fetch-and-execute pattern (curl ... | sh and its variants).
  *
  * Exits non-zero on any error. Warnings print but do not fail. No external dependencies - Node >= 18.
  * Run: node scripts/validate-skills.mjs
@@ -452,6 +454,22 @@ const SECURITY_PATTERNS = [
 
 const RESERVED_NAME_WORDS = ["anthropic", "claude"];
 
+/**
+ * snapshotToolNames(parsed) -> string[] | null
+ * Reads tool names from harness/mcp/tools.snapshot.json. Accepts an array of tools, an object
+ * with a `tools` array, or an object with a `tools` map keyed by tool name. Returns null when
+ * the shape holds no tool list.
+ */
+export function snapshotToolNames(parsed) {
+  const list = Array.isArray(parsed) ? parsed : parsed?.tools;
+  if (Array.isArray(list)) {
+    const names = list.map((t) => (typeof t === "string" ? t : t?.name));
+    return names.every((n) => typeof n === "string" && n) ? names : null;
+  }
+  if (list && typeof list === "object") return Object.keys(list);
+  return null;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------------------------
@@ -779,6 +797,31 @@ export function validateRepo({ root = DEFAULT_ROOT, config = CONFIG, tools } = {
       }
     } catch {
       /* build-chatgpt-plugin.py reports malformed plugin.json */
+    }
+  }
+
+  // ---- snapshot consistency: harness/mcp/tools.snapshot.json names equal docs/mcp-tools.json ----
+  const snapshotPath = join(root, "harness", "mcp", "tools.snapshot.json");
+  if (tools) {
+    if (!existsSync(snapshotPath)) {
+      warn("harness/mcp/tools.snapshot.json is absent; skipping the snapshot consistency check");
+    } else {
+      let snapNames = null;
+      try {
+        snapNames = snapshotToolNames(JSON.parse(readFileSync(snapshotPath, "utf8")));
+      } catch (e) {
+        fail(`harness/mcp/tools.snapshot.json is not valid JSON (${e.message})`);
+      }
+      if (snapNames === null) {
+        if (existsSync(snapshotPath)) fail("harness/mcp/tools.snapshot.json holds no tool list; expected an array or a `tools` array with a name per tool");
+      } else {
+        const snapSet = new Set(snapNames);
+        if (snapSet.size !== snapNames.length) fail("harness/mcp/tools.snapshot.json lists a tool name more than once");
+        const onlyContract = [...toolNames].filter((n) => !snapSet.has(n)).sort();
+        const onlySnapshot = [...snapSet].filter((n) => !toolNames.has(n)).sort();
+        if (onlyContract.length) fail(`docs/mcp-tools.json names tools missing from harness/mcp/tools.snapshot.json: ${onlyContract.join(", ")}; recapture the snapshot`);
+        if (onlySnapshot.length) fail(`harness/mcp/tools.snapshot.json names tools missing from docs/mcp-tools.json: ${onlySnapshot.join(", ")}; update the contract`);
+      }
     }
   }
 

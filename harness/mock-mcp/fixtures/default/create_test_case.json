@@ -1,0 +1,24 @@
+[
+  {
+    "result": {
+      "created": true,
+      "id": 1007,
+      "name": "New test case",
+      "path": "Test Cases",
+      "status": "DRAFT",
+      "origin": "MCP_TOOL",
+      "url": "https://mock.katalon.invalid/p/28459/test-cases/1007"
+    }
+  },
+  {
+    "match": {
+      "test_case_type": "AUTOMATED"
+    },
+    "result": {
+      "created": false,
+      "id": null,
+      "message": "No test case was created. Generate the automation script, then upload it as a report.",
+      "next_action": "generate_automation_script"
+    }
+  }
+]

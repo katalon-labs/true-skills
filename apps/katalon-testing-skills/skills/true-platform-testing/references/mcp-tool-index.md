@@ -85,6 +85,8 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 ## Test Execution - Cloud assets and tunnels
 
+Owner skill: `test-environments`. It also owns `read_auts`, `find_execution_profiles`, `build_private_local_testing_config`, and `build_run_configuration`, listed above. `execute-test` runs once the environment is ready.
+
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
 | `list_test_cloud_environments` | R | Browser and device catalog. | 5 |
@@ -99,6 +101,8 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 | `stop_test_cloud_tunnel` | D | Stop a tunnel. Others may share it. | 5 |
 
 ## TrueTest
+
+Owner skill: `truetest-journeys`.
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
@@ -115,11 +119,13 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 ## Team memory (Kai)
 
+Owner skill: `project-memory`. Every session calls `memory_list` once at the start, through that skill.
+
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of authoring. | 1, 2, 3, 4 |
-| `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | 1, 2, 3, 4 |
-| `memory_read_page` | R | One distilled guidance page by slug. | 1, 2, 3, 4 |
+| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. | all |
+| `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | all |
+| `memory_read_page` | R | One distilled guidance page by slug. | all |
 | `memory_write` | W | Store one note in the user's own words. Only when the user asks. | none |
 | `memory_forget` | D | Delete memory records for good. Only when the user asks. | none |
 

@@ -1,0 +1,16 @@
+{
+  "_comment": "Fixture: what the platform returned for the Profile Smoke suite. Page 1 of 2. All data is fictional.",
+  "project": "Account Portal",
+  "repository": "Account Portal Tests",
+  "memory_list": {"available": false, "reason": "memory service did not answer"},
+  "suite": {
+    "id": 430, "name": "Profile Smoke", "lane": "automated", "page": "1 of 2", "returned_cases": 20, "total_cases": null,
+    "next_page_token": "1",
+    "cases_summary": "20 cases returned. Every case has one behaviour, a named expected value and test data. TC-6001 to TC-6020."
+  },
+  "requirement_metrics": {"iteration_type": "RELEASE", "iteration_name": "Release 7.1", "total": 9, "covered": 9, "uncovered": []},
+  "configuration_metrics": {"configuration_type": "BROWSER", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": [{"browser": "Chrome", "coverage": 0.92, "pass_rate": 1.0}, {"browser": "Firefox", "coverage": 0.85, "pass_rate": 1.0}]},
+  "stability": {"filter_type": "ITERATION", "return_tests": ["FLAKY", "ALWAYS_FAIL", "NEW_FAILURE"], "flaky": [], "always_fail": [], "new_failure": []},
+  "history": "40 runs per case in the window, zero failures in the whole history.",
+  "auts": [{"name": "Account Portal", "environments": ["staging"]}]
+}

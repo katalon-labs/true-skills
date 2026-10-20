@@ -1,0 +1,24 @@
+[
+  {
+    "result": {
+      "action": "CREATE",
+      "id": "app-dyn-02",
+      "name": "My Dynamic App",
+      "pointer_app_id": "app-7c1e90",
+      "status": "READY"
+    }
+  },
+  {
+    "match": {
+      "payload": {
+        "action": "UPDATE"
+      }
+    },
+    "result": {
+      "action": "UPDATE",
+      "id": "app-dyn-01",
+      "pointer_app_id": "app-7c1e90",
+      "status": "READY"
+    }
+  }
+]

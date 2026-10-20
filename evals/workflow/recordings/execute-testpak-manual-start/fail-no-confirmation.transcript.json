@@ -1,0 +1,58 @@
+{
+  "scenario": "execute-testpak-manual-start",
+  "kind": "fail-no-confirmation",
+  "expect": "fail",
+  "violates": [
+    "confirm-before-write",
+    "auts-first",
+    "environment-asked",
+    "run-read-back"
+  ],
+  "note": "Creates the run at once: no AUT read, no environment question, no preview, no read-back.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Create a TestPak for the Authentication Regression suite. I will test it by hand.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "assistant",
+      "text": "Creating the TestPak now."
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__create_test_run",
+      "args": {
+        "mode": "manual",
+        "name": "Auth TestPak",
+        "project_id": 28459,
+        "test_project_id": 500,
+        "manual": {
+          "test_suite_ids": [
+            2001
+          ]
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"executionId\":9101,\"name\":\"Mock TestPak\",\"executionPath\":\"/executions/9101\",\"manualExecutionId\":7101,\"testSuites\":[{\"testSuiteId\":2001,\"testProjectId\":500}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Done: /executions/9101."
+    }
+  ]
+}

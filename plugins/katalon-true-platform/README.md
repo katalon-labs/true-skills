@@ -2,7 +2,7 @@
 
 # Katalon True Platform Plugin
 
-Plugin for Claude Code, Codex, and Cursor. It bundles 19 Katalon True Platform (formerly TestOps) testing skills. The manifests live in `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, and the standard `plugin.json`. The `skills/` and `assets/` folders are shared.
+Plugin for Claude Code, Codex, and Cursor. It bundles 22 Katalon True Platform (formerly TestOps) testing skills. The manifests live in `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, and the standard `plugin.json`. The `skills/` and `assets/` folders are shared.
 
 ## Included skills
 
@@ -10,10 +10,12 @@ Plugin for Claude Code, Codex, and Cursor. It bundles 19 Katalon True Platform (
 - `test-plan` - Plan and prioritize Katalon testing.
 - `test-estimation` - Size and resource a test cycle.
 - `create-test-cases` - Create and link Katalon manual tests.
+- `truetest-journeys` - Turn real user traffic into coverage.
 - `test-data` - Design, seed, and tear down test data.
 - `exploratory-charter` - Charter and run an exploratory session.
 - `test-management` - Organize and trace Katalon test assets.
 - `test-review` - Review coverage and quality before the pipeline.
+- `test-environments` - Make the app under test reachable and runnable.
 - `execute-test` - Run Katalon cases or suites.
 - `upload-report` - Upload and verify Katalon reports.
 - `test-case-to-playwright` - Generate Playwright from Katalon cases.
@@ -23,6 +25,7 @@ Plugin for Claude Code, Codex, and Cursor. It bundles 19 Katalon True Platform (
 - `release-analyze` - Assess release testing readiness.
 - `test-reporting` - Metrics and stakeholder reporting.
 - `test-maintenance` - Repair and evolve the regression suite.
+- `project-memory` - Load and save team conventions.
 - `get-started` - Connect and pick a default project.
 - `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
 

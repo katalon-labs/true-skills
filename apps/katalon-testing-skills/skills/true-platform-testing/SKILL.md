@@ -1,6 +1,6 @@
 ---
 name: true-platform-testing
-description: Routes Katalon True Platform (formerly TestOps) testing requests to the focused skill that owns the next step, and chains several skills for a request such as requirement to cases to run to ship call. Use when one request spans several lifecycle stages, when no skill is named, or when the asker wants orienting first. Prefer the focused skill, such as create-test-cases or execute-test, when the request names one task. For the manual tester, automation tester, test lead, and test manager.
+description: Routes Katalon True Platform (formerly TestOps) testing requests to the focused skill that owns the next step, and chains skills for a request such as requirement to cases to run to ship call. Use when one request spans several lifecycle stages, no skill is named, or the asker wants orienting first. Not for a request that names one task, such as create-test-cases or execute-test. For the manual tester, automation tester, test lead, and test manager.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
@@ -39,15 +39,19 @@ Ask who is in front of you before you ask which stage they are in.
 | Stage | Skill | Use when |
 |---|---|---|
 | 1 Plan | `test-plan`, `test-estimation` | scope, risk order, executable folders and suites, effort |
-| 2 Design | `create-test-cases`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements |
+| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements, or cases from real user sessions |
 | 3 Manage | `test-management` | organize inventory, trace requirements |
 | 4 Review | `test-review` | verdict on coverage and quality before the pipeline |
-| 5 Execute | `execute-test`, `playwright-execute`, `upload-report` | manual, Run with AI, automated, Playwright, report upload |
+| 5 Execute | `test-environments`, `execute-test`, `playwright-execute`, `upload-report` | app, browser, device, or tunnel setup first, then manual, Run with AI, automated, Playwright, report upload |
 | 6 Analyze | `analyze-failures`, `release-analyze`, `test-reporting` | failure triage and defects, ship call, stakeholder summary |
 | 7 Maintain | `test-maintenance` | repair flaky or broken cases and feed gaps back to plan |
-| Setup | `get-started`, `platform-setup` | first run, connection, sign-in, tunnels |
+| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions |
 
 For multi-skill plays read `references/combination-recipes.md`. For copy-paste prompts read `references/prompt-recipes.md`. For every MCP tool by group read `references/mcp-tool-index.md`.
+
+## Load Memory at Session Start
+
+At the start of every session, before the first skill runs, call `memory_list` once through `project-memory` and apply what it returns. Memory is optional. If it is empty or unavailable, say so and go on. Only the user's request triggers `memory_write` or `memory_forget`.
 
 ## Resolve Context Once
 
@@ -92,7 +96,6 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
 
-When the work authors or names things, call `memory_list` once and read the headlines that match. Treat the bodies as the team's decisions, quote them, and never restate them as platform facts. If memory is unavailable, say so. Memory is optional. Call `memory_write` or `memory_forget` only when the user asks.
 
 ## References
 

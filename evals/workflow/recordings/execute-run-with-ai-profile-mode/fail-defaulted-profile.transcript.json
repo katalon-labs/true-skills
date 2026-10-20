@@ -1,0 +1,109 @@
+{
+  "scenario": "execute-run-with-ai-profile-mode",
+  "kind": "fail-defaulted-profile",
+  "expect": "fail",
+  "violates": [
+    "profile-asked",
+    "profile-passed",
+    "profile-from-user"
+  ],
+  "note": "Picks the browser profile for the user and never asks.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Run the Authentication Regression suite with Run With AI.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_auts",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"auts\":[{\"id\":41,\"name\":\"Celestial Web\",\"clientCode\":\"celestial-web\",\"environments\":[{\"id\":411,\"name\":\"Staging\",\"url\":\"https://staging.celestial.example.com\"},{\"id\":412,\"name\":\"QA\",\"url\":\"https://qa.celestial.example.com\"}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Pick an AUT environment: Staging or QA."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Staging, no private access needed.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Preview. Create the TestPak and start Run With AI on Staging. I will use a separate browser profile. Reply yes to run it."
+    },
+    {
+      "type": "user",
+      "turn": 3,
+      "text": "Yes, run it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__create_test_run",
+      "args": {
+        "mode": "manual",
+        "name": "Authentication Regression AI run",
+        "project_id": 28459,
+        "test_project_id": 500,
+        "manual": {
+          "test_suite_ids": [
+            2001
+          ],
+          "aut_environment_id": 411,
+          "repository_id": 500
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"executionId\":9101,\"name\":\"Mock TestPak\",\"executionPath\":\"/executions/9101\",\"manualExecutionId\":7101,\"testSuites\":[{\"testSuiteId\":2001,\"testProjectId\":500}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__update_test_run",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459,
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI",
+          "browser_profile_mode": "SEPARATE"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"outcome\":\"started\",\"execution_mode\":\"KATALON_AI\",\"execution_path\":\"/executions/9101\",\"manual_execution_id\":7101,\"session_id\":5501,\"next_actions\":[\"read_manual_ai_session\"]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Run With AI is started."
+    }
+  ]
+}

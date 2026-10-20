@@ -110,6 +110,43 @@
 - test-reporting: trends use the insights tools per iteration or date range, labeled "as of" the read date. The snapshot file keeps the view as it stood then, and the skill states the cohort-maturity limit.
 - test-reporting: effort and duration questions route to test-estimation. New reference `worked-example.md`.
 
+### New skills
+
+- Add the `truetest-journeys` skill. It turns real user traffic captured by TrueTest into test coverage. It lists linked AUTs and tracking environments, searches sessions (31-day window), reads and builds journey maps, compares flows with existing cases, and queues case generation from sessions or one flow after explicit approval. It owns all 10 TrueTest tools.
+- The skill polls async map builds with the exact `request_id` and never resubmits after an error or timeout. It treats `STARTED` as queued and reads back before it reports cases.
+- New skill `test-environments`: prepares the AUT, browsers, devices, agents, mobile apps and private access before a run. Covers 14 live tools (`read_auts`, `find_execution_profiles`, `list_test_cloud_environments`, `list_test_cloud_agents`, `list_test_cloud_apps`, `get_upload_test_cloud_app_url`, `create_test_cloud_app`, `manage_test_cloud_dynamic_app`, `delete_test_cloud_app`, `list_test_cloud_tunnels`, `prepare_test_cloud_tunnel_start`, `stop_test_cloud_tunnel`, `build_private_local_testing_config`, `build_run_configuration`).
+- `test-environments` asks for a typed YES before an app delete, and an explicit yes naming the target before a tunnel stop or a dynamic app UPDATE.
+- `test-environments` warns that tunnel setup text can contain API keys and must not be saved, and that the dynamic app UPDATE schema requires `app_name`.
+- Add `project-memory` skill: loads team and personal memory once per session with `memory_list`, reads policy and needed records, and applies them with conflict reporting (agent rule over personal memory, then newer record).
+- `project-memory` writes memory only when the user asks, in the user's own words, reports `redacted` and `duplicate` results, and points project-wide rules to the Agent Rules screen.
+- `project-memory` handles `memory_forget` as a two-step, named, permanent delete and handles truncated listings and `available` false without claiming the team has no conventions.
+- Added `truetest-journeys`, `test-environments`, and `project-memory` to the skills config (interface, order) and the shared-reference map. The skill count is now 22.
+- The router now tells every session to call `memory_list` once at the start through `project-memory`, and lists the three new skills in its lifecycle table.
+- Router references: the lifecycle map and the MCP tool index now route to the new skills. Private-network runs go to `test-environments` first.
+- `execute-test` gained a TestPak lifecycle block: `CONFIGURE` limits, the execution-path choice before `START`, `END` defaults to `REJECT`, and no retry with `SKIP` without a yes.
+- Shortened 12 skill descriptions so all 22 stay under the 10,000-character budget.
+- README skill counts, skills table, and role notes, and `llms.txt`, list the 22 skills.
+
+### Harnesses
+
+- Add `harness/mcp/tools.snapshot.json`: the full input schemas and descriptions of all 74 live Katalon True Platform MCP tools, read from the live connector on 2026-10-20.
+- Add a mock Katalon MCP server, `harness/mock-mcp/server.mjs`. It has no dependencies, speaks stdio and Streamable HTTP, validates every call against the tool schema, answers from fixtures and writes a JSONL call log.
+- Add default fixtures for all 74 tools (two projects, requirements CEL-6 to CEL-9, test cases, suites, executions with one failed result, TestCloud environments and apps, a TrueTest map with one uncovered flow, project memory).
+- Add `harness/mock-mcp/server.test.mjs` (22 `node:test` tests) and `harness/README.md` with the Claude Code config and isolation flags.
+- Add workflow evals in `evals/workflow/`: 17 scenarios (`scenarios/*.json`) that check whether an agent follows the consent and ask-first rules of the skills against the mock Katalon MCP server. They cover execute-test (manual TestPak, Run With AI with `browser_profile_mode`, the Run With AI or TestPak question, ending a TestPak with `SKIP`, rerun), create-test-cases, test-management (link, delete), analyze-failures (defect filing, hand-off), test-environments (app delete, tunnel stop, tunnel pick), truetest-journeys (flow, sessions, hand-off) and project-memory (write on request, no write unasked).
+- Add `evals/workflow/assert.mjs`. Four rules run on every scenario: no write or destructive tool before a confirming user turn, no unknown tool, valid arguments per the live snapshot, and a call log that matches the transcript. Scenario assertions add ordering, asked-before, user-said-before, read-back, hand-off, called, not-called and says checks.
+- Add `evals/workflow/run.mjs`. `--dry` replays 35 recorded runs (17 passing, 18 failing) so CI proves the asserter catches each violation without a model. `--live-model --model <id>` drives `claude -p` against the mock with the plugin dir and the same isolation flags as the routing eval. It never runs by default.
+- Add `evals/workflow/assert.test.mjs` (41 `node:test` tests), `evals/workflow/make-recordings.mjs` (regenerates the recordings from the real mock) and `evals/workflow/README.md`.
+- Added output-quality evals in `evals/quality/` for create-test-cases, test-review, release-analyze, test-estimation, test-case-to-playwright and analyze-failures. Each skill has 3 scenarios with a fixture file and a rubric of binary checks.
+- Added `evals/quality/check.mjs`. It runs the deterministic checks over a saved agent output (markdown or JSON) and prints PASS, FAIL or SKIP for each check. Checks cover the output template, verdict words, case name charset, case shape, grounding of IDs in the fixture, estimation arithmetic, and house style.
+- Added `evals/quality/judge.mjs`. It compares two outputs through the command in `QUALITY_JUDGE_CMD`, runs both slot orders, and reports a weighted preference with the slot bias. It gives no absolute score and exits 3 when no judge is configured.
+- Added golden samples and a self-test. Each scenario has a good sample that must pass. Each skill has a defective sample that must fail exactly the planted checks. Run `node --test evals/quality/quality.test.mjs`.
+- Added 36 routing cases and labels for the new skills truetest-journeys, test-environments and project-memory. Each new skill has 8 owned cases, 2 boundary cases that belong to a neighbouring skill, and 2 near-miss negatives.
+- Add `node scripts/harness.mjs` with the subcommands `check`, `mock`, `workflow`, `quality`, `routing`, `test`, and `all`. Every model-free harness runs from one command. A model runs only with `--live-model`.
+- The validator now checks that `harness/mcp/tools.snapshot.json` and `docs/mcp-tools.json` list the same tool names. It warns and skips while the snapshot file is absent.
+- CI gains a `harness` job that runs `node scripts/harness.mjs all` and the harness and eval unit tests.
+- `evals/README.md` documents the workflow, quality, and routing evals and the runner. `CONTRIBUTING.md` gains a Harness section.
+
 ### Adapters, packaging, and CI
 
 - New `.agents/skills/` folder. Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Junie, Factory, Augment, Roo, and Windsurf or Devin Desktop read it with no more setup.

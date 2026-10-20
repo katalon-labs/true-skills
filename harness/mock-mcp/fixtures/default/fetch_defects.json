@@ -1,0 +1,77 @@
+[
+  {
+    "result": {
+      "executionId": 9001,
+      "testCases": [
+        {
+          "testCaseId": 1005,
+          "testResults": [
+            {
+              "testResultId": 55001,
+              "defects": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "TEST_RESULT",
+        "test_result_ids": [
+          55002
+        ]
+      }
+    },
+    "result": {
+      "testCases": [
+        {
+          "testCaseId": 1006,
+          "testResults": [
+            {
+              "testResultId": 55002,
+              "defects": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "after": {
+      "tool": "create_defect",
+      "match": {
+        "test_result_id": 55001
+      }
+    },
+    "match": {
+      "filter": {
+        "filter_type": "TEST_RESULT",
+        "test_result_ids": [
+          55001
+        ]
+      }
+    },
+    "result": {
+      "executionId": 9001,
+      "testCases": [
+        {
+          "testCaseId": 1005,
+          "testResults": [
+            {
+              "testResultId": 55001,
+              "defects": [
+                {
+                  "defectKey": "CEL-231",
+                  "summary": "Defect for Login lockout after five failures",
+                  "url": "https://celestial.atlassian.net/browse/CEL-231"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

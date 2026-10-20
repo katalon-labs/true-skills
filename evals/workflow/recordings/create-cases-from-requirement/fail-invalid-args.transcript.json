@@ -1,0 +1,102 @@
+{
+  "scenario": "create-cases-from-requirement",
+  "kind": "fail-invalid-args",
+  "expect": "fail",
+  "violates": [
+    "valid-args"
+  ],
+  "note": "Leaves out required test_case fields. The mock rejects the call.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Design manual test cases for requirement CEL-9, customer export of order history to CSV. Put them in Celestial Web Tests.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:create-test-cases"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_requirement",
+      "args": {
+        "project_id": 28459,
+        "key": "CEL-9"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"id\":88604,\"key\":\"CEL-9\",\"summary\":\"Customer can export order history to CSV\",\"status\":\"Open\",\"assignee\":null,\"externalIssueId\":140186,\"source\":\"JIRA\",\"description\":\"Customer can export order history to CSV.\",\"customFields\":[{\"name\":\"Acceptance criteria\",\"value\":\"Given the feature \\\"Customer can export order history to CSV\\\", the main flow and one failure path are covered.\"}],\"attachments\":[]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__find_test_cases_by_requirement",
+      "args": {
+        "project_id": 28459,
+        "key": "CEL-9"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"items\":[],\"page_number\":0,\"page_size\":20,\"total\":0,\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "Plan: 1 case for CEL-9. Create it?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Yes, create those cases.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__create_test_case",
+      "args": {
+        "project_id": 28459,
+        "repository_id": 500,
+        "test_case": {
+          "name": "Export order history to CSV downloads a file"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": true,
+      "text": "{\"error\":\"INVALID_ARGUMENTS\",\"tool\":\"create_test_case\",\"violations\":[{\"path\":\"/test_case/description\",\"message\":\"is required\"},{\"path\":\"/test_case/preCondition\",\"message\":\"is required\"},{\"path\":\"/test_case/priority\",\"message\":\"is required\"},{\"path\":\"/test_case/assigneeUUID\",\"message\":\"is required\"},{\"path\":\"/test_case/content\",\"message\":\"is required\"},{\"path\":\"/test_case/linkedRequirementIds\",\"message\":\"is required\"},{\"path\":\"/test_case/featureAreas\",\"message\":\"is required\"},{\"path\":\"/test_case/customTestTypes\",\"message\":\"is required\"},{\"path\":\"/test_case/path\",\"message\":\"is required\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t5",
+      "name": "mcp__katalon__find_test_cases_by_requirement",
+      "args": {
+        "project_id": 28459,
+        "key": "CEL-9"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t5",
+      "isError": false,
+      "text": "{\"items\":[],\"page_number\":0,\"page_size\":20,\"total\":0,\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "The case was not created."
+    }
+  ]
+}

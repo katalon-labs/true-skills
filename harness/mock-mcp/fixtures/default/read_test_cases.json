@@ -1,0 +1,431 @@
+[
+  {
+    "match": {
+      "test_case_ids": [
+        1001
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500,
+          "description": "Password reset sends email link",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Open the login page and choose Forgot password",
+              "context": {
+                "expectedResult": "Reset form is shown",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Enter the registered email and submit",
+              "context": {
+                "expectedResult": "Confirmation message is shown",
+                "data": "qa.user@example.com"
+              }
+            },
+            {
+              "stepNumber": 3,
+              "name": "Open the email and follow the reset link",
+              "context": {
+                "expectedResult": "New password form is shown",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_case_ids": [
+        1002
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500,
+          "description": "Password reset rejects expired link",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Request a reset link and wait for it to expire",
+              "context": {
+                "expectedResult": "Link is older than its lifetime",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Follow the expired link",
+              "context": {
+                "expectedResult": "Page says the link has expired and offers a new one",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_case_ids": [
+        1003
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500,
+          "description": "Checkout applies valid discount code",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Add one item to the cart",
+              "context": {
+                "expectedResult": "Cart shows one item",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Apply code SAVE10",
+              "context": {
+                "expectedResult": "Total drops by 10 percent",
+                "data": "SAVE10"
+              }
+            },
+            {
+              "stepNumber": 3,
+              "name": "Complete checkout",
+              "context": {
+                "expectedResult": "Order confirmation shows the discounted total",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_case_ids": [
+        1004
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500,
+          "description": "Checkout rejects expired discount code",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Add one item to the cart",
+              "context": {
+                "expectedResult": "Cart shows one item",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Apply expired code OLD20",
+              "context": {
+                "expectedResult": "Error says the code has expired",
+                "data": "OLD20"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_case_ids": [
+        1005
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1005,
+          "name": "Login lockout after five failures",
+          "path": "Test Cases/Authentication/Login",
+          "status": "PUBLISHED",
+          "priority": "CRITICAL",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_COMPLETE",
+          "testProjectId": 500,
+          "description": "Login lockout after five failures",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Submit a wrong password five times",
+              "context": {
+                "expectedResult": "Fifth attempt is rejected",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Submit the correct password",
+              "context": {
+                "expectedResult": "Account is locked and the login is refused",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_case_ids": [
+        1006
+      ]
+    },
+    "result": {
+      "testCases": [
+        {
+          "id": 1006,
+          "name": "Order history CSV export downloads file",
+          "path": "Test Cases/Orders",
+          "status": "DRAFT",
+          "priority": "LOW",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_IN_PROGRESS",
+          "testProjectId": 500,
+          "description": "Order history CSV export downloads file",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Open Order history",
+              "context": {
+                "expectedResult": "Order list is shown",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Choose Export CSV",
+              "context": {
+                "expectedResult": "A CSV file downloads",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "result": {
+      "testCases": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500,
+          "description": "Password reset sends email link",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Open the login page and choose Forgot password",
+              "context": {
+                "expectedResult": "Reset form is shown",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Enter the registered email and submit",
+              "context": {
+                "expectedResult": "Confirmation message is shown",
+                "data": "qa.user@example.com"
+              }
+            },
+            {
+              "stepNumber": 3,
+              "name": "Open the email and follow the reset link",
+              "context": {
+                "expectedResult": "New password form is shown",
+                "data": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500,
+          "description": "Password reset rejects expired link",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Request a reset link and wait for it to expire",
+              "context": {
+                "expectedResult": "Link is older than its lifetime",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Follow the expired link",
+              "context": {
+                "expectedResult": "Page says the link has expired and offers a new one",
+                "data": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500,
+          "description": "Checkout applies valid discount code",
+          "preCondition": "User account exists",
+          "assigneeUUID": null,
+          "featureAreas": [],
+          "linkedRequirementIds": [],
+          "version": 3,
+          "steps": [
+            {
+              "stepNumber": 1,
+              "name": "Add one item to the cart",
+              "context": {
+                "expectedResult": "Cart shows one item",
+                "data": ""
+              }
+            },
+            {
+              "stepNumber": 2,
+              "name": "Apply code SAVE10",
+              "context": {
+                "expectedResult": "Total drops by 10 percent",
+                "data": "SAVE10"
+              }
+            },
+            {
+              "stepNumber": 3,
+              "name": "Complete checkout",
+              "context": {
+                "expectedResult": "Order confirmation shows the discounted total",
+                "data": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "after": {
+      "tool": "delete_test_case",
+      "match": {
+        "test_case_id": 1004
+      }
+    },
+    "match": {
+      "test_case_ids": [
+        1004
+      ]
+    },
+    "result": {
+      "testCases": [],
+      "not_found": [
+        1004
+      ]
+    }
+  }
+]

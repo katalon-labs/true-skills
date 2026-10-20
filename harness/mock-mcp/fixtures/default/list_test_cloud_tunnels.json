@@ -1,0 +1,25 @@
+[
+  {
+    "result": {
+      "tunnels": [
+        {
+          "id": "tun-5d2c",
+          "startedBy": "dana.reyes",
+          "status": "ACTIVE",
+          "startedAt": "2026-10-20T07:55:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "after": {
+      "tool": "stop_test_cloud_tunnel",
+      "match": {
+        "tunnel_id": "tun-5d2c"
+      }
+    },
+    "result": {
+      "tunnels": []
+    }
+  }
+]

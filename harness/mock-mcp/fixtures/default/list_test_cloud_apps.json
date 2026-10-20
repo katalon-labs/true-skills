@@ -1,0 +1,109 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": "app-7c1e90",
+          "name": "Orbit Mobile",
+          "platform": "android",
+          "status": "READY",
+          "fileName": "orbit-1.4.2.apk",
+          "metadata": {
+            "identifier": "com.orbit.app",
+            "version": "1.4.2",
+            "versionCode": "142"
+          },
+          "createdDate": "2026-10-15T10:00:00Z"
+        },
+        {
+          "id": "app-dyn-01",
+          "name": "Orbit Latest",
+          "platform": "android",
+          "status": "READY",
+          "fileName": null,
+          "refSource": {
+            "appId": "app-7c1e90"
+          },
+          "metadata": {
+            "identifier": "com.orbit.app",
+            "version": "1.4.2",
+            "versionCode": "142"
+          },
+          "createdDate": "2026-10-16T09:00:00Z"
+        }
+      ],
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "rsql_filter": "id==app-7c1e90"
+    },
+    "result": {
+      "items": [
+        {
+          "id": "app-7c1e90",
+          "name": "Orbit Mobile",
+          "platform": "android",
+          "status": "READY",
+          "fileName": "orbit-1.4.2.apk",
+          "metadata": {
+            "identifier": "com.orbit.app",
+            "version": "1.4.2",
+            "versionCode": "142"
+          },
+          "createdDate": "2026-10-15T10:00:00Z"
+        }
+      ],
+      "next_page_token": null
+    }
+  },
+  {
+    "after": {
+      "tool": "delete_test_cloud_app",
+      "match": {
+        "app_ids": [
+          "app-7c1e90"
+        ]
+      }
+    },
+    "match": {
+      "rsql_filter": "id==app-7c1e90"
+    },
+    "result": {
+      "items": [],
+      "next_page_token": null
+    }
+  },
+  {
+    "after": {
+      "tool": "delete_test_cloud_app",
+      "match": {
+        "app_ids": [
+          "app-7c1e90"
+        ]
+      }
+    },
+    "result": {
+      "items": [
+        {
+          "id": "app-dyn-01",
+          "name": "Orbit Latest",
+          "platform": "android",
+          "status": "READY",
+          "fileName": null,
+          "refSource": {
+            "appId": "app-7c1e90"
+          },
+          "metadata": {
+            "identifier": "com.orbit.app",
+            "version": "1.4.2",
+            "versionCode": "142"
+          },
+          "createdDate": "2026-10-16T09:00:00Z"
+        }
+      ],
+      "next_page_token": null
+    }
+  }
+]

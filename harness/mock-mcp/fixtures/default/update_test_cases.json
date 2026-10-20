@@ -1,0 +1,13 @@
+[
+  {
+    "result": {
+      "results": [
+        {
+          "id": 1004,
+          "action": "UPDATE_STATUS",
+          "status": "applied"
+        }
+      ]
+    }
+  }
+]

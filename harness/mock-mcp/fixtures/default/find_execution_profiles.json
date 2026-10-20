@@ -1,0 +1,22 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 201,
+          "name": "default",
+          "isDefault": true
+        },
+        {
+          "id": 202,
+          "name": "staging",
+          "isDefault": false
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  }
+]

@@ -67,6 +67,27 @@ The validator runs in CI before the build. It checks frontmatter, folder and `na
 
 First check whether the agent reads `.agents/skills/` or its own skills folder. Most do, and then no new adapter is needed. For the MCP config, add one entry to the `CLIENTS` table in `scripts/build-adapters.mjs`. That one entry writes the shipped file (if any) and the snippet in `docs/connect.md`. Keep generation deterministic (no timestamps, sorted output) so the build stays idempotent. Then document the install path in `README.md`.
 
+## Harness
+
+The harnesses prove that the skills and the tool contract hold up without a live Katalon tenant. One command runs them:
+
+```bash
+node scripts/harness.mjs all      # every model-free part, unit tests included
+node scripts/harness.mjs test     # only the unit tests for harness/ and evals/
+```
+
+| Folder | What it holds |
+| --- | --- |
+| `harness/mcp/tools.snapshot.json` | Full live input schemas and descriptions for every tool, with the capture date. `docs/mcp-tools.json` stays the classed contract. Both must list the same names. |
+| `harness/mock-mcp/` | A zero-dependency mock Katalon MCP server (stdio and Streamable HTTP). It checks every call against the snapshot schemas, answers from `fixtures/<scenario>/`, and logs calls to JSONL. |
+| `evals/workflow/` | Scenario files and a runner that assert consent, ask-first, read-back, and handoff rules over the mock server's call log. |
+| `evals/quality/` | Rubrics and deterministic checks for the artifact skills. |
+| `evals/routing/` | Labeled requests that measure skill choice. Needs a model. |
+
+When you change a tool contract, recapture the snapshot and update `docs/mcp-tools.json` in the same change. The validator fails when the two disagree. When you add a skill that writes or runs something, add a workflow scenario for it. Never point a harness at a real tenant: the mock server is the only server the evals use.
+
+A model runs only with `--live-model` (`workflow` and `routing`). CI never passes it. See `evals/README.md` for each eval.
+
 ## Checks
 
 CI runs these steps in order and fails if any one fails:
@@ -75,6 +96,7 @@ CI runs these steps in order and fails if any one fails:
 2. `node scripts/validate-skills.mjs`.
 3. `node scripts/build-adapters.mjs --check`, then a rebuild and a clean-tree check.
 4. The ChatGPT package tests and build.
+5. The `harness` job: `node scripts/harness.mjs all`, which includes the unit tests.
 
 Two advisory jobs never block a merge: `claude plugin validate --strict` (the CLI may be missing on a runner) and `npx skills add ./ --list` (checks that the skills CLI finds every skill). Run the blocking steps locally before you push:
 

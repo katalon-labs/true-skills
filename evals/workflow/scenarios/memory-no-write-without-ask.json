@@ -1,0 +1,39 @@
+{
+  "id": "memory-no-write-without-ask",
+  "skill": "project-memory",
+  "description": "A passing remark about a naming habit. The agent loads memory once, applies it, may offer to save in one line, and writes nothing because the user never asked.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Load our team conventions for this project, then draft names for three login test cases. We usually put the feature area first in test case names."
+    },
+    {
+      "text": "No, do not save anything. Just the names."
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "project-memory"
+    },
+    {
+      "id": "memory-loaded-once",
+      "type": "called",
+      "tool": "memory_list",
+      "max": 1
+    },
+    {
+      "id": "no-memory-write",
+      "type": "not-called",
+      "tools": [
+        "memory_write",
+        "memory_forget"
+      ]
+    },
+    {
+      "id": "read-only",
+      "type": "no-writes"
+    }
+  ]
+}

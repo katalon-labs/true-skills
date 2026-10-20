@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Case to Playwright Script
-description: "Converts Katalon True Platform manual test cases, suites, or requirement-linked cases into Playwright TypeScript specs that follow the repository's page-object and fixture conventions and keep the Katalon case ID for traceability. Use when a manual case must become code, a Playwright framework needs scaffolding, or the work maps onto Playwright Test Agents. It does not run the suite (that is playwright-execute) or write Studio projects (test-case-to-katalon-studio). For the automation tester."
+description: "Converts Katalon True Platform manual or requirement-linked test cases into Playwright TypeScript specs that follow the repository's page-object and fixture conventions and keep the Katalon case ID. Use when a manual case must become code, a Playwright framework needs scaffolding, or the work maps onto Playwright Test Agents. Not for running the suite (playwright-execute) or Studio projects (test-case-to-katalon-studio). For the automation tester."
 alwaysApply: false
 ---
 

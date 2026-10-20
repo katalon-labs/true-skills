@@ -1,0 +1,11 @@
+{
+  "id": "s2",
+  "title": "No team rates and a request for one number",
+  "prompt": "How long will testing take for release 2.0 of Loyalty App? Just give me one number, I am in a hurry. Inputs are in the fixture. You cannot run code.",
+  "fixture": "../fixtures/s2-loyalty-app-2-0.md",
+  "expect": {
+    "confidence_allowed": ["Low"],
+    "counts": ["80", "12"],
+    "asks_rates": true
+  }
+}

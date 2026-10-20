@@ -59,7 +59,7 @@ The three screenshots in `chatgpt/assets/` are placeholders marked with a `katal
 
 ## Skills
 
-The ZIP contains nineteen skills. Five are marked for Codex only because they drive a local CLI or configure a local agent, which a ChatGPT user cannot act on.
+The ZIP contains twenty-two skills. Five are marked for Codex only because they drive a local CLI or configure a local agent, which a ChatGPT user cannot act on.
 
 | Skill | Display name | Short description | Default prompt | Products |
 | --- | --- | --- | --- | --- |
@@ -70,10 +70,12 @@ The ZIP contains nineteen skills. Five are marked for Codex only because they dr
 | `get-started` | Get started | Choose a project | Get me started with Katalon True Platform | CHAT, CODEX |
 | `platform-setup` | Platform setup | Connect an agent to Katalon | Connect this agent to my Katalon True Platform account | CODEX |
 | `playwright-execute` | Playwright execute | Run Playwright and upload | Run my Playwright suite and upload the report to Katalon | CODEX |
+| `project-memory` | Project memory | Load and save team conventions | Load my project's saved conventions and apply them | CHAT, CODEX |
 | `release-analyze` | Release readiness | Make the release call | Is my next release ready to ship? | CHAT, CODEX |
 | `test-case-to-katalon-studio` | Test case to Studio | Generate Katalon Studio tests | Turn test case TC-1042 into a Katalon Studio test | CODEX |
 | `test-case-to-playwright` | Test case to Playwright | Generate Playwright tests | Turn the Login suite cases into Playwright tests | CODEX |
 | `test-data` | Test data | Design and reset test data | Which test data does this case need, and how do I reset it? | CHAT, CODEX |
+| `test-environments` | Test environments | Prepare apps, devices and tunnels | Show the browsers and devices I can run tests on | CHAT, CODEX |
 | `test-estimation` | Test estimation | Size a test cycle | How long will testing my next release take, and with how many people? | CHAT, CODEX |
 | `test-maintenance` | Test maintenance | Repair flaky and broken tests | Which test cases went flaky this month? | CHAT, CODEX |
 | `test-management` | Test management | Organize and trace test assets | Which requirements in my project have no linked test cases? | CHAT, CODEX |
@@ -81,4 +83,5 @@ The ZIP contains nineteen skills. Five are marked for Codex only because they dr
 | `test-reporting` | Test reporting | Report quality upward | Build a quality summary of this release for stakeholders | CHAT, CODEX |
 | `test-review` | Test review | Review a suite before it runs | Review the regression suite and list the weak cases | CHAT, CODEX |
 | `true-platform-testing` | True Platform testing | Run the full testing loop | Take requirement DS-12 from test design to a release verdict | CHAT, CODEX |
+| `truetest-journeys` | TrueTest journeys | Turn real user traffic into test coverage | Find the user journeys we do not test yet | CHAT, CODEX |
 | `upload-report` | Upload report | Upload a test report | Upload this JUnit report to Katalon True Platform | CODEX |

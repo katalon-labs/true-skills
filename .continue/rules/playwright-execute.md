@@ -1,6 +1,6 @@
 ---
 name: Katalon Playwright Execute
-description: "Runs a Playwright test or suite, uploads the report to Katalon True Platform (formerly TestOps) with @katalon/playwright-reporter, and verifies the run landed. Use when the Playwright run has not happened yet and the results must reach the platform with trace and error evidence. Not for a report that already exists or another framework (use upload-report), and not for converting manual cases to code (use test-case-to-playwright). For the automation tester."
+description: "Runs a Playwright test or suite, uploads the report to Katalon True Platform (formerly TestOps) with @katalon/playwright-reporter, and verifies the run landed. Use when the Playwright run has not happened yet and results must reach the platform with trace and error evidence. Not for an existing report or another framework (upload-report) or for converting cases to code (test-case-to-playwright). For the automation tester."
 alwaysApply: false
 ---
 

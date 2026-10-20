@@ -1,0 +1,113 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "type": "desktop_browser",
+          "platform": "windows",
+          "platformName": "Windows",
+          "platformVersion": "11",
+          "browser": "chrome",
+          "browserName": "Chrome",
+          "browserVersion": "latest",
+          "browserVersionType": "stable"
+        },
+        {
+          "type": "desktop_browser",
+          "platform": "windows",
+          "platformName": "Windows",
+          "platformVersion": "11",
+          "browser": "firefox",
+          "browserName": "Firefox",
+          "browserVersion": "latest",
+          "browserVersionType": "stable"
+        },
+        {
+          "type": "desktop_browser",
+          "platform": "macos",
+          "platformName": "macOS",
+          "platformVersion": "14",
+          "browser": "safari",
+          "browserName": "Safari",
+          "browserVersion": "17",
+          "browserVersionType": "stable"
+        },
+        {
+          "type": "desktop_browser",
+          "platform": "linux",
+          "platformName": "Linux",
+          "platformVersion": "",
+          "browser": "chrome",
+          "browserName": "Chrome",
+          "browserVersion": "latest",
+          "browserVersionType": "stable"
+        },
+        {
+          "type": "mobile_device",
+          "platform": "ios",
+          "platformName": "iOS",
+          "platformVersion": "17.5",
+          "device": {
+            "deviceId": "apple_iphone_15_pro",
+            "deviceName": "Apple iPhone 15 Pro",
+            "deviceFamily": "iPhone",
+            "formFactor": "PHONE",
+            "manufacturer": "Apple"
+          },
+          "capabilities": {
+            "automation": {
+              "supported": true,
+              "devicePoolType": "main_shared_pool",
+              "availability": "HIGH"
+            }
+          }
+        },
+        {
+          "type": "mobile_device",
+          "platform": "android",
+          "platformName": "Android",
+          "platformVersion": "14",
+          "device": {
+            "deviceId": "google_pixel_8",
+            "deviceName": "Google Pixel 8",
+            "deviceFamily": "Google",
+            "formFactor": "PHONE",
+            "manufacturer": "Google"
+          },
+          "capabilities": {
+            "automation": {
+              "supported": true,
+              "devicePoolType": "main_shared_pool",
+              "availability": "MEDIUM"
+            }
+          }
+        }
+      ],
+      "count": 6,
+      "page_token": null,
+      "next_offset": null
+    }
+  },
+  {
+    "match": {
+      "rsql_filter": "platform==windows and browser==firefox"
+    },
+    "result": {
+      "items": [
+        {
+          "type": "desktop_browser",
+          "platform": "windows",
+          "platformName": "Windows",
+          "platformVersion": "11",
+          "browser": "firefox",
+          "browserName": "Firefox",
+          "browserVersion": "latest",
+          "browserVersionType": "stable"
+        }
+      ],
+      "count": 1,
+      "page_token": null,
+      "next_offset": null
+    }
+  }
+]

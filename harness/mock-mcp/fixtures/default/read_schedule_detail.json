@@ -1,0 +1,28 @@
+[
+  {
+    "result": {
+      "id": 4001,
+      "name": "Nightly Regression",
+      "active": true,
+      "configType": "AUTOMATION_UI",
+      "testType": "DESKTOP_AND_MOBILE_BROWSER",
+      "ksVersion": "latest",
+      "timeOut": 180,
+      "schedule": {
+        "repeatEnable": true,
+        "startTime": "2026-10-21T18:00:00Z",
+        "interval": 1,
+        "intervalUnit": "DAY",
+        "timeZone": "Asia/Ho_Chi_Minh"
+      },
+      "runConfigurationEntries": [
+        {
+          "entityType": "TEST_SUITE_COLLECTION",
+          "entityId": 3001,
+          "executionMode": "SEQUENTIAL",
+          "profileId": 201
+        }
+      ]
+    }
+  }
+]

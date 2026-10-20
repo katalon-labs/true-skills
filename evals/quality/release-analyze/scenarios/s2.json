@@ -1,0 +1,26 @@
+{
+  "id": "s2",
+  "title": "No hard blocker, a known flaky P2 case and two unexecuted low-priority requirements",
+  "prompt": "Release 5.0 of Travel Booking Web, our thresholds are 90% requirement coverage and 95% pass rate. Ready to go?",
+  "fixture": "../fixtures/s2-release-5-0.json",
+  "expect": {
+    "verdict": "Ready with risk",
+    "confidence_allowed": [
+      "High",
+      "Medium"
+    ],
+    "risks": [
+      "TC-7410",
+      "CHK-305"
+    ],
+    "evidence_ids": [
+      "9201"
+    ],
+    "iteration": "5.0",
+    "window_start": "2026-10-05"
+  },
+  "idKeys": [
+    "risks",
+    "evidence_ids"
+  ]
+}

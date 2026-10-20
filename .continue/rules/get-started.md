@@ -1,6 +1,6 @@
 ---
 name: Katalon Get Started
-description: "Onboards a person to Katalon True Platform (formerly TestOps) right after the connection succeeds, confirming it with a project list and choosing the default project, repository, and Run with AI target with at most two questions. Use when the user has just connected Katalon, asks to get started or to pick a default project, or when no default project is stored yet. Not for installing or configuring an MCP client, which belongs to platform-setup, and not for designing or running tests."
+description: "Onboards a person to Katalon True Platform (formerly TestOps) right after the connection succeeds, confirming it with a project list and choosing the default project, repository, and Run with AI target in at most two questions. Use when the user has just connected, asks to get started, or has no default project stored. Not for installing or configuring an MCP client (platform-setup) or for designing or running tests."
 alwaysApply: false
 ---
 

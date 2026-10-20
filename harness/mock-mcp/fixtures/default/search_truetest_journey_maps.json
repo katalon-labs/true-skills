@@ -1,0 +1,17 @@
+[
+  {
+    "result": {
+      "maps": [
+        {
+          "map_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+          "status": "active",
+          "web_url": "https://mock.katalon.invalid/truetest/maps/6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+          "tracked_data_start_time": "2026-09-18T00:00:00Z",
+          "tracked_data_end_time": "2026-10-18T00:00:00Z",
+          "creator_email": "dana.reyes@example.com"
+        }
+      ],
+      "next_page_token": null
+    }
+  }
+]

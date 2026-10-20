@@ -1,0 +1,105 @@
+{
+  "id": "execute-testpak-end-skip-unfinished",
+  "skill": "execute-test",
+  "description": "Closing a TestPak with unfinished cases. END is blocked by default. The agent asks whether to skip, and sends SKIP only after the user says yes.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "I am done with TestPak run 9101. Close it."
+    },
+    {
+      "text": "Yes, close it.",
+      "confirms": true
+    },
+    {
+      "text": "Yes, skip the unfinished cases.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "execute-test"
+    },
+    {
+      "id": "end-tried",
+      "type": "called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "END"
+        }
+      }
+    },
+    {
+      "id": "skip-asked",
+      "type": "asked-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "END",
+          "unfinished_cases": "SKIP"
+        }
+      },
+      "question": [
+        "skip"
+      ]
+    },
+    {
+      "id": "skip-authorized",
+      "type": "user-said-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "END",
+          "unfinished_cases": "SKIP"
+        }
+      },
+      "patterns": [
+        "skip"
+      ]
+    },
+    {
+      "id": "skip-once",
+      "type": "called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "END",
+          "unfinished_cases": "SKIP"
+        }
+      },
+      "max": 1
+    },
+    {
+      "id": "no-start",
+      "type": "not-called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START"
+        }
+      }
+    },
+    {
+      "id": "end-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "update_test_run",
+        "match": {
+          "update": {
+            "action": "END"
+          }
+        }
+      },
+      "reads": [
+        "read_execution",
+        "list_executions"
+      ],
+      "resultMustMatch": [
+        "\"status\":\\s*\"ENDED\""
+      ]
+    }
+  ]
+}

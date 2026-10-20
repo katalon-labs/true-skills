@@ -1,0 +1,89 @@
+{
+  "id": "environments-private-aut-tunnel-pick",
+  "skill": "test-environments",
+  "description": "Private access for an intranet AUT. The agent lists active tunnels, asks the private-access question, then the tunnel pick (one tunnel, still no auto-pick), and builds the tunnel payload only after the pick. It creates nothing.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "I need to run my suite against our intranet staging site. Set up private access."
+    },
+    {
+      "text": "Use Katalon Tunnel."
+    },
+    {
+      "text": "Use tunnel tun-5d2c."
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "test-environments"
+    },
+    {
+      "id": "tunnels-listed-first",
+      "type": "order",
+      "before": {
+        "tool": "list_test_cloud_tunnels"
+      },
+      "after": {
+        "tool": "build_private_local_testing_config"
+      }
+    },
+    {
+      "id": "private-choice-asked",
+      "type": "asked-before",
+      "tool": "build_private_local_testing_config",
+      "question": [
+        "No private access needed",
+        "Use Katalon Tunnel",
+        "Use IP Whitelisting"
+      ]
+    },
+    {
+      "id": "pick-asked",
+      "type": "asked-before",
+      "tool": "build_private_local_testing_config",
+      "match": {
+        "mode": "tunnel"
+      },
+      "question": [
+        "tun-5d2c",
+        "auto-select|auto select|automatic"
+      ]
+    },
+    {
+      "id": "pick-from-user",
+      "type": "user-said-before",
+      "tool": "build_private_local_testing_config",
+      "match": {
+        "mode": "tunnel"
+      },
+      "patterns": [
+        "tun-5d2c|auto"
+      ]
+    },
+    {
+      "id": "tunnel-payload",
+      "type": "called",
+      "tool": "build_private_local_testing_config",
+      "match": {
+        "mode": "tunnel",
+        "selected_tunnel": "tun-5d2c"
+      }
+    },
+    {
+      "id": "no-run-started",
+      "type": "not-called",
+      "tools": [
+        "create_test_run",
+        "update_test_run",
+        "create_manual_ai_session"
+      ]
+    },
+    {
+      "id": "read-only",
+      "type": "no-writes"
+    }
+  ]
+}

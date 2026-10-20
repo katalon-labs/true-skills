@@ -1,6 +1,6 @@
 ---
 name: analyze-failures
-description: Diagnoses one red Katalon True Platform (formerly TestOps) run. It classifies each failed result as a product defect, an automation defect, or an environment issue, clusters failures by signature, and files ALM-linked defects for confirmed product bugs. Use when a run or suite has failures and the question is whether the application broke or the test did. Not for the ship call, which is release-analyze, and not for suite repair over time, which is test-maintenance. For the manual tester and the automation tester.
+description: Diagnoses one red Katalon True Platform (formerly TestOps) run. It classifies each failed result as a product defect, an automation defect, or an environment issue, clusters failures by signature, and files ALM-linked defects for confirmed bugs. Use when a run has failures and the question is whether the app broke or the test did. Not for the ship call (release-analyze) or suite repair (test-maintenance). For the manual tester and the automation tester.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:

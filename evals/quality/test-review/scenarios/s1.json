@@ -1,0 +1,11 @@
+{
+  "id": "s1",
+  "title": "Flaky case in the smoke core and a critical requirement with no case",
+  "prompt": "Review the Checkout Smoke suite before we wire it into the pipeline. Give me the verdict and the weak cases. Read only, do not run anything.",
+  "fixture": "../fixtures/s1-checkout-smoke.json",
+  "expect": {
+    "verdict": "Reject for pipeline",
+    "weak_cases": ["TC-4012"],
+    "orphans": ["CHK-88"]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "s1",
+  "title": "One case into an existing page-object framework",
+  "prompt": "Turn TC-2101 into a Playwright test in our existing framework. The case and a scan of the workspace are in the fixture. You cannot run commands here, so report what you did not verify.",
+  "fixture": "../fixtures/s1-tc-2101.md",
+  "expect": {
+    "case_ids": ["TC-2101"],
+    "min_assertions": 4,
+    "verbatim": ["Added to cart", "Orbit X2"],
+    "page_objects": ["CatalogPage", "CartPage"]
+  }
+}

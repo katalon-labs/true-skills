@@ -1,0 +1,13 @@
+{
+  "id": "s2",
+  "title": "No framework in the workspace",
+  "prompt": "Convert TC-2144 into Playwright automation. There is no framework yet, so set one up. The case and a scan of the workspace are in the fixture. You cannot run commands here, so report what you did not verify.",
+  "fixture": "../fixtures/s2-tc-2144.md",
+  "expect": {
+    "case_ids": ["TC-2144"],
+    "min_assertions": 3,
+    "verbatim": ["3 results"],
+    "scaffold": true,
+    "data_terms": ["testData", "test-data", "fixtures/"]
+  }
+}

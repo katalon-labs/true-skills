@@ -1,0 +1,158 @@
+{
+  "scenario": "execute-bare-run-asks-path",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Run the Authentication Regression suite.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_projects",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"projects\":[{\"id\":28459,\"name\":\"Celestial Web App\",\"key\":\"CEL\",\"role\":\"OWNER\"},{\"id\":28460,\"name\":\"Orbit Mobile\",\"key\":\"ORB\",\"role\":\"MEMBER\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__find_test_suites",
+      "args": {
+        "project_id": 28459,
+        "repository_id": 500,
+        "filter": {
+          "filter_type": "COMMON",
+          "name": "Authentication Regression"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"items\":[{\"id\":2001,\"name\":\"Authentication Regression\",\"path\":\"Test Suites/Regression\",\"testType\":\"MANUAL\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2002,\"name\":\"Checkout Manual Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"MANUAL\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2003,\"name\":\"Login Automated Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"AUTOMATED\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2004,\"name\":\"Orders API Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"AUTOMATED\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311}],\"page_number\":0,\"page_size\":20,\"total\":4,\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "Run With AI (recommended, fully autonomous), or manual testing in TestPak?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Manual testing in TestPak.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__read_auts",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"auts\":[{\"id\":41,\"name\":\"Celestial Web\",\"clientCode\":\"celestial-web\",\"environments\":[{\"id\":411,\"name\":\"Staging\",\"url\":\"https://staging.celestial.example.com\"},{\"id\":412,\"name\":\"QA\",\"url\":\"https://qa.celestial.example.com\"}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Suite 2001 will run as a TestPak by hand. Pick an AUT environment: Staging or QA."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "QA.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Preview. Create the TestPak for suite 2001 on QA and start it in manual mode. Reply yes to run it."
+    },
+    {
+      "type": "user",
+      "turn": 3,
+      "text": "Yes, go ahead.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t5",
+      "name": "mcp__katalon__create_test_run",
+      "args": {
+        "mode": "manual",
+        "name": "Authentication Regression TestPak",
+        "project_id": 28459,
+        "test_project_id": 500,
+        "manual": {
+          "test_suite_ids": [
+            2001
+          ],
+          "aut_environment_id": 412,
+          "repository_id": 500
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t5",
+      "isError": false,
+      "text": "{\"executionId\":9101,\"name\":\"Mock TestPak\",\"executionPath\":\"/executions/9101\",\"manualExecutionId\":7101,\"testSuites\":[{\"testSuiteId\":2001,\"testProjectId\":500}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t6",
+      "name": "mcp__katalon__update_test_run",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459,
+        "update": {
+          "action": "START",
+          "execution_mode": "MANUAL"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t6",
+      "isError": false,
+      "text": "{\"outcome\":\"started\",\"execution_mode\":\"MANUAL\",\"execution_path\":\"/executions/9101\",\"manual_execution_id\":7101,\"execution_test_case_id\":8801,\"steps\":[{\"step_number\":1,\"name\":\"Open the login page and choose Forgot password\",\"expected\":\"Reset form is shown\"},{\"step_number\":2,\"name\":\"Enter the registered email and submit\",\"expected\":\"Confirmation message is shown\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t7",
+      "name": "mcp__katalon__read_execution",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t7",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"name\":\"Nightly Regression 2026-10-19\",\"status\":\"FAILED\",\"executionType\":\"AUTOMATED\",\"startTime\":\"2026-10-19T18:00:00Z\",\"passed\":1,\"failed\":1,\"total\":2,\"executionPath\":\"/executions/9001\",\"projectId\":28459}"
+    },
+    {
+      "type": "assistant",
+      "text": "The TestPak is started: /executions/9101. Step 1 is \"Open the login page and choose Forgot password\"."
+    }
+  ]
+}

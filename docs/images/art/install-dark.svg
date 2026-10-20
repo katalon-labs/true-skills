@@ -22,5 +22,5 @@ text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono
 <g class="fr f0"><text x="168" y="46.4" xml:space="preserve">$ npx skills add _</text></g>
 <g class="fr f1"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/_</text></g>
 <g class="fr f2"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/true-skills</text><text x="168" y="75.4" xml:space="preserve"><tspan class="m">&gt; detected: claude-code codex cursor kiro</tspan></text></g>
-<g class="fr f3"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/true-skills</text><text x="168" y="75.4" xml:space="preserve"><tspan class="m">&gt; detected: claude-code codex cursor kiro</tspan></text><text x="168" y="104.4" xml:space="preserve">&gt; 19 skills installed  [ ok ]</text></g>
+<g class="fr f3"><text x="168" y="46.4" xml:space="preserve">$ npx skills add katalon-labs/true-skills</text><text x="168" y="75.4" xml:space="preserve"><tspan class="m">&gt; detected: claude-code codex cursor kiro</tspan></text><text x="168" y="104.4" xml:space="preserve">&gt; 22 skills installed  [ ok ]</text></g>
 </svg>

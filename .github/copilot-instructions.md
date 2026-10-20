@@ -2,7 +2,7 @@
 
 # Katalon True Platform - Copilot instructions
 
-This repository holds 19 Katalon True Platform (formerly TestOps) testing skills in `.agents/skills/`. Copilot loads the matching skill when a request fits its description.
+This repository holds 22 Katalon True Platform (formerly TestOps) testing skills in `.agents/skills/`. Copilot loads the matching skill when a request fits its description.
 
 ## Katalon MCP server
 

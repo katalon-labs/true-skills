@@ -2,7 +2,7 @@
 
 # AGENTS.md - Katalon True Platform skills
 
-This repo holds 19 testing skills for Katalon True Platform (formerly TestOps). Each skill is a folder with a `SKILL.md`. The source is `skills/<name>/SKILL.md`. Agents that scan `.agents/skills/` load the skills without more setup. Otherwise read a skill's `SKILL.md` when a request matches its `description`.
+This repo holds 22 testing skills for Katalon True Platform (formerly TestOps). Each skill is a folder with a `SKILL.md`. The source is `skills/<name>/SKILL.md`. Agents that scan `.agents/skills/` load the skills without more setup. Otherwise read a skill's `SKILL.md` when a request matches its `description`.
 
 ## Where to start
 
@@ -15,7 +15,7 @@ This repo holds 19 testing skills for Katalon True Platform (formerly TestOps). 
 | --- | --- |
 | Manual tester | `create-test-cases`, `test-data`, `exploratory-charter`, `execute-test`, `analyze-failures` |
 | Automation tester | `test-data`, `upload-report`, `test-case-to-playwright`, `test-case-to-katalon-studio`, `playwright-execute`, `analyze-failures`, `test-maintenance` |
-| Test lead | `test-plan`, `test-estimation`, `test-management`, `test-review`, `release-analyze`, `test-reporting`, `test-maintenance` |
+| Test lead | `test-plan`, `test-estimation`, `truetest-journeys`, `test-management`, `test-review`, `release-analyze`, `test-reporting`, `test-maintenance` |
 | Test manager | `test-estimation`, `release-analyze`, `test-reporting` |
 
 ## Katalon MCP server

@@ -1,0 +1,30 @@
+[
+  {
+    "result": {
+      "session_id": "cust-sess-1001",
+      "start_time": "2026-10-18T09:12:00Z",
+      "steps": [
+        {
+          "step": 1,
+          "action": "navigate",
+          "target": "/cart"
+        },
+        {
+          "step": 2,
+          "action": "click",
+          "target": "Apply discount"
+        },
+        {
+          "step": 3,
+          "action": "type",
+          "target": "Discount code"
+        },
+        {
+          "step": 4,
+          "action": "click",
+          "target": "Checkout"
+        }
+      ]
+    }
+  }
+]

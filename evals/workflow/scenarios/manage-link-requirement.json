@@ -1,0 +1,73 @@
+{
+  "id": "manage-link-requirement",
+  "skill": "test-management",
+  "description": "Link two cases to a requirement. The agent resolves the requirement, previews the link set, links once after a yes, and reads the coverage back.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Link test cases 1003 and 1004 to requirement CEL-9."
+    },
+    {
+      "text": "Yes, link them.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "test-management"
+    },
+    {
+      "id": "requirement-resolved",
+      "type": "order",
+      "before": {
+        "tools": [
+          "read_requirement",
+          "find_requirements"
+        ]
+      },
+      "after": {
+        "tool": "manage_requirement_test_case_linkages"
+      }
+    },
+    {
+      "id": "link-called",
+      "type": "called",
+      "tool": "manage_requirement_test_case_linkages",
+      "match": {
+        "action": "link",
+        "requirement_ids": [
+          88604
+        ]
+      }
+    },
+    {
+      "id": "no-unlink",
+      "type": "not-called",
+      "tool": "manage_requirement_test_case_linkages",
+      "match": {
+        "action": "unlink"
+      }
+    },
+    {
+      "id": "link-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "manage_requirement_test_case_linkages"
+      },
+      "reads": [
+        "find_test_cases_by_requirement"
+      ],
+      "sameArgs": [
+        "project_id"
+      ],
+      "entity": {
+        "write": "test_case_ids[]"
+      },
+      "resultMustMatch": [
+        "\"id\":\\s*{entity}\\b"
+      ]
+    }
+  ]
+}

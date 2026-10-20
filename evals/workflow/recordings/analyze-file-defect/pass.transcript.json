@@ -1,0 +1,183 @@
+{
+  "scenario": "analyze-file-defect",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Triage failed execution 9001. If you find a product bug, I want a defect filed for it.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:analyze-failures"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_projects",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"projects\":[{\"id\":28459,\"name\":\"Celestial Web App\",\"key\":\"CEL\",\"role\":\"OWNER\"},{\"id\":28460,\"name\":\"Orbit Mobile\",\"key\":\"ORB\",\"role\":\"MEMBER\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__read_execution",
+      "args": {
+        "execution_id": 9001,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"name\":\"Nightly Regression 2026-10-19\",\"status\":\"FAILED\",\"executionType\":\"AUTOMATED\",\"startTime\":\"2026-10-19T18:00:00Z\",\"passed\":1,\"failed\":1,\"total\":2,\"executionPath\":\"/executions/9001\",\"projectId\":28459}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__find_test_results",
+      "args": {
+        "project_id": 28459,
+        "filter": {
+          "filter_type": "EXECUTION",
+          "execution_id": 9001
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"items\":[{\"id\":55001,\"executionId\":9001,\"testCaseId\":1005,\"testCaseName\":\"Login lockout after five failures\",\"testCasePath\":\"Test Cases/Authentication/Login\",\"testSuiteId\":2003,\"testSuiteName\":\"Login Automated Suite\",\"testSuitePath\":\"Test Suites/Regression\",\"status\":\"FAILED\",\"startTime\":\"2026-10-19T18:01:10Z\",\"jobId\":\"job-1\"},{\"id\":55002,\"executionId\":9001,\"testCaseId\":1006,\"testCaseName\":\"Order history CSV export downloads file\",\"testCasePath\":\"Test Cases/Orders\",\"testSuiteId\":2004,\"testSuiteName\":\"Orders API Suite\",\"testSuitePath\":\"Test Suites/Regression\",\"status\":\"PASSED\",\"startTime\":\"2026-10-19T18:03:40Z\",\"jobId\":\"job-1\"}],\"page_number\":0,\"page_size\":20,\"total\":2,\"next_page_token\":null,\"jobs\":[{\"jobId\":\"job-1\",\"environment\":\"Windows 11, Chrome latest\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t5",
+      "name": "mcp__katalon__find_test_results",
+      "args": {
+        "project_id": 28459,
+        "filter": {
+          "filter_type": "TEST_RESULT",
+          "test_result_id": 55001
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t5",
+      "isError": false,
+      "text": "{\"id\":55001,\"executionId\":9001,\"testCaseId\":1005,\"testCaseName\":\"Login lockout after five failures\",\"testCasePath\":\"Test Cases/Authentication/Login\",\"testSuiteId\":2003,\"testSuiteName\":\"Login Automated Suite\",\"testSuitePath\":\"Test Suites/Regression\",\"status\":\"FAILED\",\"startTime\":\"2026-10-19T18:01:10Z\",\"jobId\":\"job-1\",\"browser\":\"chrome\",\"os\":\"windows\",\"profile\":\"default\",\"errorDetail\":\"Expected account to be locked after 5 failed attempts but the login succeeded.\",\"failedAssertions\":[{\"name\":\"account is locked\",\"expected\":\"LOCKED\",\"actual\":\"ACTIVE\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t6",
+      "name": "mcp__katalon__fetch_defects",
+      "args": {
+        "project_id": 28459,
+        "filter": {
+          "filter_type": "TEST_RESULT",
+          "test_result_ids": [
+            55001
+          ]
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t6",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"testCases\":[{\"testCaseId\":1005,\"testResults\":[{\"testResultId\":55001,\"defects\":[]}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Result 55001 \"Login lockout after five failures\" failed and its history points to a product defect. It has no linked defect. What summary should the defect have? I suggest \"Defect for Login lockout after five failures\"."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "The lockout failure is a real product bug. Use the suggested title.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t7",
+      "name": "mcp__katalon__list_alm_integrations",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t7",
+      "isError": false,
+      "text": "{\"integrations\":[{\"id\":11,\"type\":\"JIRA\",\"name\":\"Celestial Jira\",\"connections\":[{\"id\":12,\"name\":\"celestial.atlassian.net\"}],\"defectFieldMappings\":[{\"field\":\"Priority\",\"default\":\"High\"},{\"field\":\"Component\",\"default\":\"Web\"}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Preview. File one Jira bug through Celestial Jira. Summary \"Defect for Login lockout after five failures\". Linked to test result 55001. Reply yes to file it."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "Yes, file it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t8",
+      "name": "mcp__katalon__create_defect",
+      "args": {
+        "project_id": 28459,
+        "alm_integration_id": 11,
+        "alm_connection_id": 12,
+        "test_result_id": 55001,
+        "payload": {
+          "summary": "Defect for Login lockout after five failures",
+          "description": "The account does not lock after five failed logins. Seen in execution 9001."
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t8",
+      "isError": false,
+      "text": "{\"created\":true,\"defectKey\":\"CEL-231\",\"summary\":\"Defect for Login lockout after five failures\",\"linkedTestResultId\":55001,\"url\":\"https://celestial.atlassian.net/browse/CEL-231\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t9",
+      "name": "mcp__katalon__fetch_defects",
+      "args": {
+        "project_id": 28459,
+        "filter": {
+          "filter_type": "TEST_RESULT",
+          "test_result_ids": [
+            55001
+          ]
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t9",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"testCases\":[{\"testCaseId\":1005,\"testResults\":[{\"testResultId\":55001,\"defects\":[{\"defectKey\":\"CEL-231\",\"summary\":\"Defect for Login lockout after five failures\",\"url\":\"https://celestial.atlassian.net/browse/CEL-231\"}]}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Filed CEL-231: https://celestial.atlassian.net/browse/CEL-231. The read-back lists it on result 55001."
+    }
+  ]
+}

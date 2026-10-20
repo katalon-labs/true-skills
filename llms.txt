@@ -1,6 +1,6 @@
 # Katalon True Skills
 
-> Agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Nineteen skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Cline, Continue, the shared `.agents/skills/` folder, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
+> Agent-neutral AI testing skills for Katalon True Platform (TestOps / TrueTest). Twenty-two skills cover the full software testing lifecycle - test plan, test design, test management and requirement traceability, test review, test execution and environments, real-user coverage from TrueTest, saved team conventions, failure analysis and release readiness, and test maintenance - operated from any AI coding agent's chat through the Katalon MCP server. Author the skill bodies once in `skills/`; a deterministic build generates native config for Claude Code, Codex, GitHub Copilot, Cursor, Kiro, Cline, Continue, the shared `.agents/skills/` folder, and any agent that reads AGENTS.md. Works on any model tier, from the largest models down to small ones, because every skill uses deterministic tool order, explicit stop conditions, and stated capability boundaries.
 
 ## Start here
 
@@ -11,14 +11,17 @@
 ## Skills (single source of truth: skills/)
 
 - [platform-setup](https://github.com/katalon-labs/true-skills/blob/main/skills/platform-setup/SKILL.md): install, connect, and verify the Katalon MCP; diagnose auth/access. Start here.
+- [project-memory](https://github.com/katalon-labs/true-skills/blob/main/skills/project-memory/SKILL.md): load the team's saved conventions once at session start; save a new note only when the user asks.
 - [get-started](https://github.com/katalon-labs/true-skills/blob/main/skills/get-started/SKILL.md): after connecting, confirm the signed-in account and pick a default project.
 - [test-plan](https://github.com/katalon-labs/true-skills/blob/main/skills/test-plan/SKILL.md): stage 1 - scope, risk-prioritized planning, and the folder+suite that holds the execution scope.
 - [test-estimation](https://github.com/katalon-labs/true-skills/blob/main/skills/test-estimation/SKILL.md): stage 1 - size and resource a test cycle as best, likely, and worst cases.
 - [create-test-cases](https://github.com/katalon-labs/true-skills/blob/main/skills/create-test-cases/SKILL.md): stage 2 - design atomic manual test cases from requirements (ISTQB as reference), avoid duplicates, import and link.
+- [truetest-journeys](https://github.com/katalon-labs/true-skills/blob/main/skills/truetest-journeys/SKILL.md): stage 2 - turn real TrueTest user sessions and journey maps into coverage; queue cases for uncovered flows after approval.
 - [test-data](https://github.com/katalon-labs/true-skills/blob/main/skills/test-data/SKILL.md): stage 2 - design, seed, and tear down the data a case or suite runs on.
 - [exploratory-charter](https://github.com/katalon-labs/true-skills/blob/main/skills/exploratory-charter/SKILL.md): stage 2 - write and run an exploratory charter, then promote findings into defects and cases.
 - [test-management](https://github.com/katalon-labs/true-skills/blob/main/skills/test-management/SKILL.md): stage 3 - organize inventory and produce a requirement-to-test traceability report with coverage and orphans.
 - [test-review](https://github.com/katalon-labs/true-skills/blob/main/skills/test-review/SKILL.md): stage 4 - pre-pipeline coverage/quality/flakiness review returning an Approve / Approve-with-fixes / Reject verdict.
+- [test-environments](https://github.com/katalon-labs/true-skills/blob/main/skills/test-environments/SKILL.md): stage 5 - browsers, devices, mobile app uploads and aliases, and tunnel or allowlist access for a private app, before a run.
 - [execute-test](https://github.com/katalon-labs/true-skills/blob/main/skills/execute-test/SKILL.md): stage 5 - manual runs, Run with AI, and automated runs; summarize pass/fail/blocked.
 - [upload-report](https://github.com/katalon-labs/true-skills/blob/main/skills/upload-report/SKILL.md): stage 5/6 - upload and verify Katalon Studio, JUnit, or Playwright reports.
 - [test-case-to-playwright](https://github.com/katalon-labs/true-skills/blob/main/skills/test-case-to-playwright/SKILL.md): convert Katalon manual cases into Playwright TypeScript (Page Object Model + fixtures).

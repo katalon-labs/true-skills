@@ -1,0 +1,27 @@
+{
+  "id": "s1",
+  "title": "Open critical defect and a failed P0 payment case",
+  "prompt": "Can we ship Release 4.2 of Payments Web? I have to defend the call on Thursday. Use the fixture as the platform data.",
+  "fixture": "../fixtures/s1-release-4-2.json",
+  "expect": {
+    "verdict": "Not ready",
+    "verdict_not": "Ready",
+    "confidence_allowed": [
+      "High",
+      "Medium"
+    ],
+    "blockers": [
+      "DEF-912",
+      "TC-7001"
+    ],
+    "evidence_ids": [
+      "9120"
+    ],
+    "iteration": "4.2",
+    "window_start": "2026-09-14"
+  },
+  "idKeys": [
+    "blockers",
+    "evidence_ids"
+  ]
+}

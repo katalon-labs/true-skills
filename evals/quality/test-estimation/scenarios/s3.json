@@ -1,0 +1,21 @@
+{
+  "id": "s3",
+  "title": "Scope change, truncated case list, extra manual configurations",
+  "prompt": "We have 2 testers and the sprint ends on the 27th. If we add Safari and Android Chrome to the manual lane, does the scope still fit, and what would I cut? Inputs are in the fixture. You cannot run code.",
+  "fixture": "../fixtures/s3-ride-booking-3-4.md",
+  "expect": {
+    "confidence_allowed": [
+      "Medium",
+      "Low"
+    ],
+    "counts": [
+      "140"
+    ],
+    "partial_page": true,
+    "delta_terms": [
+      "Safari",
+      "Android Chrome",
+      "0.7"
+    ]
+  }
+}

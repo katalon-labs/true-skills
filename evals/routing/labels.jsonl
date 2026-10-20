@@ -178,3 +178,39 @@
 {"id":"c6-neg-pytest-rounding","accept":["none"],"primary":"none","why":"generic CI unit-test triage with no Katalon, True Platform or TestOps signal and no platform artifact"}
 {"id":"c6-neg-grafana-slo","accept":["none"],"primary":"none","why":"service reliability reporting for executives with no Katalon signal; sprint trend and exec wording mimic test-reporting"}
 {"id":"c6-neg-cypress-ship","accept":["none"],"primary":"none","why":"generic CI ship question with no Katalon project, run or artifact; the release-readiness wording is the over-trigger risk flagged for release-analyze"}
+{"id":"c7-tj-free-uncovered-flows","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"asks what users do that no case covers, which is the journey map comparison of flows against existing cases"}
+{"id":"c7-tj-free-long-sessions-to-cases","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"session search with step filters, a shortlist for approval, then generation from named sessions; all in the session path"}
+{"id":"c7-tj-bnd-build-map-staging","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"sounds like case management, but building a map from a time window and reading its linked cases is the journey map path"}
+{"id":"c7-tj-role-test-lead-real-behaviour","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"role word with a concrete task: find uncovered real-traffic flows and queue generation; the router would only orient, the task has one owner"}
+{"id":"c7-tj-bnd-regenerate-flow","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"generation from one flow with a regeneration warning belongs to truetest-journeys; create-test-cases only refines what exists"}
+{"id":"c7-tj-free-es-recorridos","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"Spanish; uncovered flows from captured traffic, same job as the English cases (rule 8)"}
+{"id":"c7-tj-bnd-session-window","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"the 31-day session window and the map alternative are in this skill's boundary and session path"}
+{"id":"c7-tj-free-sessions-by-attribute","accept":["truetest-journeys"],"primary":"truetest-journeys","why":"session search with an attribute filter and the replay table is the session path"}
+{"id":"c7-tj-bnd-refine-generated","accept":["create-test-cases"],"primary":"create-test-cases","why":"mentions TrueTest, but generation is done; splitting, renaming and linking requirements is refinement, which truetest-journeys hands to create-test-cases"}
+{"id":"c7-tj-bnd-orphan-drafts","accept":["test-management"],"primary":"test-management","why":"traceability audit and moving cases is inventory hygiene; the cases already exist"}
+{"id":"c7-tj-neg-sentry-replay","accept":["none"],"primary":"none","why":"session replay in a third-party tool with no Katalon or True Platform signal (rule 6)"}
+{"id":"c7-tj-neg-ga4-funnel","accept":["none"],"primary":"none","why":"web analytics funnel with no platform artifact; sounds like user journeys but no Katalon skill applies (rule 6)"}
+{"id":"c7-te-free-upload-apk","accept":["test-environments"],"primary":"test-environments","why":"app upload and a readiness check; the user keeps the run for themselves, so no execute-test work"}
+{"id":"c7-te-free-move-alias","accept":["test-environments"],"primary":"test-environments","why":"dynamic app alias update is a write in this skill, with a named alias and target"}
+{"id":"c7-te-bnd-private-staging","accept":["test-environments"],"primary":"test-environments","why":"choosing and building private access for the AUT is the private-aut path; no run is requested"}
+{"id":"c7-te-role-qa-lead-catalog","accept":["test-environments"],"primary":"test-environments","why":"role word with a concrete task: read the browser catalog and build the run configuration"}
+{"id":"c7-te-free-delete-old-ios","accept":["test-environments"],"primary":"test-environments","why":"app removal is a destructive path in this skill with a typed yes naming the targets"}
+{"id":"c7-te-bnd-stop-tunnel","accept":["test-environments"],"primary":"test-environments","why":"stopping a named tunnel is a destructive tool owned here; connection troubleshooting is not the job"}
+{"id":"c7-te-free-pt-app-nativo","accept":["test-environments"],"primary":"test-environments","why":"Portuguese; native app upload and device choice, same job as the English cases (rule 8)"}
+{"id":"c7-te-free-agents-profiles","accept":["test-environments"],"primary":"test-environments","why":"reading agents and execution profiles for an automated run is the profile and agent path"}
+{"id":"c7-te-bnd-run-smoke-now","accept":["execute-test"],"primary":"execute-test","why":"sounds like cloud environment work, but the environment is only named; the job is to start the run, which execute-test owns"}
+{"id":"c7-te-bnd-auth-error-cloud-apps","accept":["platform-setup"],"primary":"platform-setup","why":"names test cloud, but the symptom is an auth failure on the MCP connection, which is setup (rule 7)"}
+{"id":"c7-te-neg-ngrok-local","accept":["none"],"primary":"none","why":"tunnel for local development with no Katalon signal (rule 6)"}
+{"id":"c7-te-neg-browserstack-ipa","accept":["none"],"primary":"none","why":"another vendor's cloud and a framework script with no Katalon signal (rule 6)"}
+{"id":"c7-pm-free-remember-folders","accept":["project-memory"],"primary":"project-memory","why":"a standing naming rule the user asks to keep, which is the remember path"}
+{"id":"c7-pm-free-forget-suite-dates","accept":["project-memory"],"primary":"project-memory","why":"asks to remove a saved rule; the forget path lists, confirms and deletes by name"}
+{"id":"c7-pm-bnd-load-conventions","accept":["project-memory"],"primary":"project-memory","why":"loading standing conventions at the start of a session is the first section of this skill; no design or search is requested"}
+{"id":"c7-pm-role-analyst-personal-pref","accept":["project-memory"],"primary":"project-memory","why":"role word with a concrete task: store a personal preference in the user's own words"}
+{"id":"c7-pm-bnd-team-rule-request","accept":["project-memory"],"primary":"project-memory","why":"asks for a project rule; this skill stores the person's own memory and points to the Agent Rules screen, so the request still lands here"}
+{"id":"c7-pm-free-ja-verb-names","accept":["project-memory"],"primary":"project-memory","why":"Japanese; remember a naming rule, same job as the English cases (rule 8)"}
+{"id":"c7-pm-bnd-conflict","accept":["project-memory"],"primary":"project-memory","why":"conflict between a personal memory and an agent rule is resolved by this skill's apply section"}
+{"id":"c7-pm-free-list-conventions","accept":["project-memory"],"primary":"project-memory","why":"reading and listing saved records is the load and apply path"}
+{"id":"c7-pm-bnd-design-with-convention","accept":["create-test-cases"],"primary":"create-test-cases","why":"mentions saved conventions, but the job is case design; create-test-cases reads memory itself as one step"}
+{"id":"c7-pm-bnd-audit-names","accept":["test-management"],"primary":"test-management","why":"applying a convention across existing cases is inventory hygiene, not storing or loading memory"}
+{"id":"c7-pm-neg-claude-md","accept":["none"],"primary":"none","why":"agent configuration file for a code repo with no Katalon signal (rule 6)"}
+{"id":"c7-pm-neg-chatgpt-memory","accept":["none"],"primary":"none","why":"another product's memory feature, outside testing entirely (rule 6)"}

@@ -1,0 +1,104 @@
+{
+  "id": "environments-stop-tunnel",
+  "skill": "test-environments",
+  "description": "Stop an active tunnel. The agent lists tunnels, names the tunnel ID and who started it, warns that runs on it stop, and stops it only after a yes.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Stop the tunnel, I am done testing."
+    },
+    {
+      "text": "Yes, stop tun-5d2c.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "test-environments"
+    },
+    {
+      "id": "tunnels-listed-first",
+      "type": "order",
+      "before": {
+        "tool": "list_test_cloud_tunnels"
+      },
+      "after": {
+        "tool": "stop_test_cloud_tunnel"
+      }
+    },
+    {
+      "id": "tunnel-named",
+      "type": "asked-before",
+      "tool": "stop_test_cloud_tunnel",
+      "question": [
+        "tun-5d2c",
+        "dana\\.reyes",
+        "\\bruns?\\b"
+      ]
+    },
+    {
+      "id": "stop-authorized",
+      "type": "user-said-before",
+      "tool": "stop_test_cloud_tunnel",
+      "patterns": [
+        "\\byes\\b",
+        "tun-5d2c"
+      ]
+    },
+    {
+      "id": "one-tunnel-stopped",
+      "type": "called",
+      "tool": "stop_test_cloud_tunnel",
+      "match": {
+        "tunnel_id": "tun-5d2c"
+      },
+      "max": 1
+    },
+    {
+      "id": "tunnels-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "stop_test_cloud_tunnel"
+      },
+      "reads": [
+        "list_test_cloud_tunnels"
+      ],
+      "sameArgs": [
+        "project_id"
+      ],
+      "entity": {
+        "write": "tunnel_id"
+      },
+      "resultMustMatch": [
+        "\"tunnels\""
+      ],
+      "resultMustNotMatch": [
+        "\"id\":\\s*\"{entity}\"[^}]*\"status\":\\s*\"ACTIVE\""
+      ]
+    },
+    {
+      "id": "tunnel-stopped-reported",
+      "type": "says",
+      "scope": "final",
+      "pattern": [
+        {
+          "re": "tun-5d2c[^.\\n]{0,80}\\bstopped\\b|\\bstopped\\b[^.\\n]{0,80}tun-5d2c",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": "no-failure-claim",
+      "type": "never-says",
+      "scope": "final",
+      "pattern": [
+        {
+          "re": "\\b(not|never|failed|unable|couldn'?t|could not|still)\\b[^.\\n]{0,60}\\b(stopped|stop|running|active)\\b",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

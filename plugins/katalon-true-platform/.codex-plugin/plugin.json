@@ -44,7 +44,7 @@
       "Plan testing for this sprint: show coverage gaps and build the executable suite.",
       "How long will testing this release take, and with how many people?",
       "Design and import manual test cases from requirement CEL-6.",
-      "Which data does this case need, and how do I seed and reset it?"
+      "Find the user flows we do not test yet from TrueTest sessions and queue cases for them."
     ],
     "brandColor": "#00A3A3",
     "composerIcon": "./assets/katalon-logo.svg",

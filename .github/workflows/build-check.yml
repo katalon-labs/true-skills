@@ -1,7 +1,7 @@
 name: build-check
 
 # Verifies that shared references and generated agent adapters are in sync with skills/.
-# Blocking jobs: adapters-in-sync, chatgpt-package.
+# Blocking jobs: adapters-in-sync, chatgpt-package, harness.
 # Advisory jobs (continue-on-error): claude-plugin-validate, skills-cli-discovery.
 
 on:
@@ -53,6 +53,18 @@ jobs:
         run: python3 -m unittest discover -s tests
       - name: Build and validate the ChatGPT plugin package
         run: python3 scripts/build-chatgpt-plugin.py
+
+  # Model-free harnesses: snapshot consistency, mock MCP server, workflow evals (dry replay),
+  # output-quality self-tests, routing case and label consistency. No model call, no secrets.
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run every model-free harness
+        run: node scripts/harness.mjs all
 
   # The Claude Code CLI may be missing on a runner, so this job installs it and
   # never blocks a merge. A failure here is a signal to run the check locally.

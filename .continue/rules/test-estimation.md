@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Estimation
-description: "Estimates the effort, duration, and headcount for a Katalon True Platform (formerly TestOps) test cycle as scenario ranges with a confidence label. It counts cases and failures from platform data and takes per-unit rates from the team. Use when someone asks how long testing will take, how many testers it needs, or what a scope change costs. Not for deciding what to test (test-plan) or judging a finished cycle (release-analyze). For the test lead and the test manager."
+description: "Estimates the effort, duration, and headcount for a Katalon True Platform (formerly TestOps) test cycle as scenario ranges with a confidence label. It counts cases and failures from platform data and takes per-unit rates from the team. Use when someone asks how long testing will take, how many testers it needs, or what a scope change costs. Not for what to test (test-plan) or a finished cycle (release-analyze). For the test lead and the test manager."
 alwaysApply: false
 ---
 
