@@ -69,6 +69,8 @@ manual retest     = failing manual cases x execution minutes / 60  -> bucket B
 
 Flaky cases inflate the failing count without indicating product defects. Use the unstable-case count as the driver of `P` rather than of `M`, since a flake may or may not fire on any given run.
 
+Environment and infrastructure errors inflate the failing count the same way and are not a product-defect signal either. Separate them from the pass rate feeding bucket C's product-defect triage, but still count their rerun or setup effort as a named risk in the estimate.
+
 ## Resourcing arithmetic
 
 ```text

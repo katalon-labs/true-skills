@@ -27,6 +27,7 @@ Take the highest rung that works.
 - **Teardown is scoped to this run's stamp.** Never delete by a broad pattern in a shared environment.
 - **Leave nothing behind that changes another test's outcome**, including cart state, session state, and feature-flag overrides.
 - **A nightly cleanup job is not teardown.** It hides the defect until the day it does not run.
+- **A missing-teardown failure on one case usually means the fixture itself is broken.** Check whether sibling cases share the same fixture before patching just this one; fix the fixture once.
 
 ## Manual lane pattern
 

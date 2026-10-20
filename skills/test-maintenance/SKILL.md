@@ -35,7 +35,7 @@ Use this skill for the **maintenance** stage: keep the regression suite healthy 
    - **Regenerate** — behavior changed enough that the case should be re-derived (TrueTest regeneration / re-author) -> hand to `create-test-cases`; narrate the TrueTest boundary.
    - **Retire** — behavior removed: unlink/retire (prefer update/flag over unreliable `delete_test_case`); get approval.
 3. **Repair (MCP-legal edits only).** Pass all intended updates in one `update_test_case` call. Do not claim to have self-healed locators/objects — that is Studio.
-4. **Validate.** Re-run through `execute-test` and confirm via `find_test_results` / `read_execution`.
+4. **Validate.** Re-run through `execute-test` and confirm via `find_test_results` / `read_execution`. A green rerun alone is not confirmation: check the new result against the `read_test_result` that triggered the repair, to confirm the fix still exercises the original failure path.
 5. **Feed back.** Emit the refreshed coverage gap list to `test-plan` so maintenance closes the loop instead of dead-ending.
 
 ## Prompt recipes

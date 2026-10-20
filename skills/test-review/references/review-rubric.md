@@ -6,7 +6,9 @@
 |---|---|---|
 | Coverage | `fetch_requirement_data`, `find_test_cases_by_requirement`, `fetch_test_configuration_data` | orphan requirements; under-covered browsers/platforms/OS |
 | Quality | `fetch_test_case_data`, `read_test_case` | non-atomic cases; missing negative/boundary variants; vague or non-observable expected results; duplicate coverage |
-| Reliability | `fetch_test_stability_data`, `find_test_results` | probabilistically flaky cases; cases with erratic recent history; long-broken cases |
+| Reliability | `fetch_test_stability_data`, `find_test_results` | probabilistically flaky cases; cases with erratic recent history; long-broken cases; suites with zero failures across their available stability or result history (no proof they can fail) |
+
+Give a stability signal a run-count floor before it drives a verdict: label one or two failures over fewer than about 10 recent runs as unconfirmed and say so in the fix list.
 
 ## Verdict decision table
 

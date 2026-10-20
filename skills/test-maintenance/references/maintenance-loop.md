@@ -15,6 +15,7 @@ stability/history  ->  per-case decision  ->  MCP-legal edit  ->  re-run  ->  ga
 | step/element gone from app | repair or retire | `update_test_case` to match new flow; retire with approval |
 | duplicate/near-duplicate drift | consolidate | `duplicate_test_case` base + `move_test_case`; keep one canonical |
 | wrong folder/suite after refactor | reorganize | `move_test_case`, `manage_test_suite` |
+| always passes, zero failures across full stability history | review for saturation, confirm it still exercises the risk path | `fetch_test_stability_data` to confirm; `update_test_case` to strengthen or `duplicate_test_case`/`move_test_case` to consolidate |
 
 ## Boundaries to narrate (never claim as MCP)
 

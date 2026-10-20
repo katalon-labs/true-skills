@@ -15,6 +15,8 @@
 | Configuration coverage | `fetch_test_configuration_data` | Under-covered browsers/platforms are planning risk. |
 | Test stability | `fetch_test_stability_data` | Unstable areas need re-planning, not just re-run (defer detail to test-review). |
 
+Rank an area as unstable only once the signal comes from about 10 or more recent runs; a handful of runs is too thin to trust as a hot spot.
+
 Do not fabricate production traffic, change frequency, or defect rates the MCP does not expose. If the user supplies them (from TrueTest Test Gap Analysis, PostHog, or Jira), use them and cite the source.
 
 ## The executable "test plan" structure

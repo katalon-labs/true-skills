@@ -93,7 +93,9 @@ Report:
 - Platform upload status: verified, importing, failed, or not verifiable.
 - Platform report/run URL for the user to open when returned or discoverable; if no exact URL is available, provide the closest project reports/executions URL and state why it is not exact.
 - Passed, failed, skipped, and timed-out counts when available.
+- If zero tests ran (for example an empty grep/filter match), report that explicitly; do not fold it into a "0 failed" or all-passed summary.
 - Failed tests with concise reasons.
+- Separate failures caused by setup or environment (browser launch, global setup, a timed-out fixture or server) from assertion failures; keep environment errors out of the product-failure count.
 - Any required follow-up: missing API key, missing project ID, install blocked, config permission missing, upload failed, or MCP verification unavailable.
 
 Do not claim success if Playwright ran locally but the Katalon upload did not happen or cannot be verified.

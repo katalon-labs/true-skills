@@ -92,5 +92,7 @@ await checkout.expectOrderSummaryTotal(expectedTotal);
 After writing scripts:
 
 - Run the narrowest available check: TypeScript compile, lint, Playwright list, or a targeted `npx playwright test`.
+- Run a new or changed spec more than once (`--repeat-each=2` or two sequential runs) before calling it verified; a pass that does not repeat is not a pass.
 - If the test cannot run because credentials, AUT access, or dependencies are missing, report the exact blocker and what remains unverified.
+- Confirm a new assertion can fail when safe and practical: temporarily break the expected condition and rerun once to see it fail, then restore it and confirm the restoration before reporting. An assertion that passes either way checks nothing.
 - Report created/updated files, mapped Katalon cases, commands run, and any manual inputs still needed.

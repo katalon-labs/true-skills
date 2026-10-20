@@ -61,3 +61,4 @@ Run this before declaring a data design done.
 - [ ] No credential, token, or real personal detail appears anywhere in the contract.
 - [ ] Every seed has a teardown written at the same time.
 - [ ] The design says which environment it targets, and it is not production.
+- [ ] The boundary pair produces different expected outcomes; if the just-below and at-the-boundary values are expected to reach the same result, the values do not exercise the boundary.

@@ -6,7 +6,7 @@ Use this reference to turn Katalon MCP quality data into a release readiness ass
 
 - Requirement coverage: total in-scope requirements, linked requirements, unlinked requirements, requirements with no tests, and requirements with no recent passing result.
 - Test coverage: total test cases, automated/manual split when available, unexecuted tests, stale tests, and blocked tests.
-- Execution health: latest execution status, pass/fail/blocked/skipped/not-run counts, pass rate, failed critical tests, and rerun status.
+- Execution health: latest execution status, pass/fail/blocked/skipped/not-run counts, pass rate, failed critical tests, and rerun status. A P0/P1 test that failed then passed on an unmodified rerun counts as a stability risk pending investigation, never as a cleared blocker on its own.
 - Defect risk: open defects, critical/high defects, defects linked to failed tests, reopened defects, and unresolved release-blocking bugs.
 - Stability: flaky tests, repeated failures, recent pass/fail trend, and unstable configurations.
 - Configuration coverage: tested browsers/devices/environments/OS combinations versus the release target matrix.
@@ -70,3 +70,4 @@ Evidence:
 - Do not mark a release Ready when MCP data is unavailable; mark confidence Low and say what must be verified.
 - If thresholds are not provided, use risk-based judgment and state assumptions.
 - If a release/sprint/version scope is unclear, ask for it before making a final readiness call.
+- A pass rate at or near 100% needs a spot check before it counts as readiness evidence: confirm the test count and configuration coverage actually reflect what changed in this release.

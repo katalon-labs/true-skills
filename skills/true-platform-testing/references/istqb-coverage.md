@@ -23,6 +23,7 @@ For each requirement, identify:
 - Role/permission coverage when roles exist.
 - Data setup and cleanup assumptions.
 - Requirement-to-test traceability.
+- At least one case per recurring defect pattern still relevant to this feature area (`fetch_defect_data`), in addition to checklist-derived risks.
 
 ## Coverage Output Format
 

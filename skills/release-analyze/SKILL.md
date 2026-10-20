@@ -77,6 +77,7 @@ Never mark `Ready` when:
 
 - Critical/high release-blocking defects remain open.
 - P0/P1 tests are failed, blocked, or not run without accepted risk.
+- A failed P0/P1 test that matches a known environment or infrastructure signature (timeout, service outage, account/data issue) remains an untriaged evidence blocker until `analyze-failures` confirms an accepted environment cause.
 - Critical requirements have no tests or no passing evidence.
 - Required target configurations are untested.
 - MCP data is unavailable or too incomplete to support confidence.

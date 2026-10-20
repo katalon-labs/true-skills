@@ -19,7 +19,7 @@ If the request is genuinely two questions, write two reports or ask which one ma
 
 | Metric | Derived from | Claims | Does **not** claim |
 |---|---|---|---|
-| **Pass rate** | `find_test_results` over a date range; passed / total | how the suite behaved in that window | that the product is good. A narrow suite passes easily |
+| **Pass rate** | `find_test_results` over a date range; passed / total | how the suite behaved in that window | that the product is good, or that a failure is a product regression rather than an infra or environment blip. A narrow suite passes easily |
 | **Requirement coverage** | `fetch_requirement_data`; covered / in-scope. Confirm with `find_test_cases_by_requirement` before naming a requirement uncovered | that a linked case exists | that the case is good, or that it passed. Link is not evidence |
 | **Uncovered critical requirements** | the uncovered set from `fetch_requirement_data`, filtered by the requirement's own priority | the specific keys nobody is testing | completeness, if requirement priority is not maintained in the ALM |
 | **Open critical defects** | `fetch_defect_data`, filtered to critical and high | current standing risk | escape to production. There is no such field |

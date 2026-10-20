@@ -55,6 +55,7 @@ Rules that make the sheet worth keeping:
 - **Name the broken oracle inside the `BUG` note**, not later. A `BUG` that cannot name its oracle is an `OBS` that got excited.
 - **Log out-of-scope discoveries as `OBS` and keep going.** That is what the out-of-scope field is for.
 - **Evidence capture is on the tester.** The MCP has no attachment upload, so screenshots and recordings go in the ALM ticket, not the platform.
+- **A `BUG` note records the end state left behind.** Check what data now exists or is missing (the order record, the cart content, the balance), the same way BUG-1 in the worked example checks Orders and the provider dashboard alongside the blank page.
 
 ## Timebox accounting
 

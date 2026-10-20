@@ -9,7 +9,7 @@ Use this skill for the **failure-analysis** part of the report/analysis stage: t
 
 ## Availability Boundary
 
-- **Available via MCP:** read results (`read_test_result`, `read_execution_test_results`, `find_test_results`, `read_execution`), defect context (`fetch_defect_data`), ALM discovery + filing (`find_alm_integration_projects`, `create_defect`).
+- **Available via MCP:** read results (`read_test_result`, `read_execution_test_results`, `find_test_results`, `read_execution`), stability history (`fetch_test_stability_data`), defect context (`fetch_defect_data`), ALM discovery + filing (`find_alm_integration_projects`, `create_defect`).
 - **Not directly available:** AI root-cause summarization and automation-error-pattern analytics are TestOps/Studio product features, not MCP calls — narrate their availability, do not claim to call them. `create_defect` requires a **known failed test result ID** and ALM integration details; there is no ID-less defect creation.
 
 ## Triage Workflow
@@ -29,10 +29,12 @@ Use this skill for the **failure-analysis** part of the report/analysis stage: t
 ## Steps and tool rules
 
 1. **Collect the failures.** `find_test_results` (recent/specific) or `read_execution_test_results` for a run; `read_test_result` per failed case for detail.
+   A result with no verdict (blocked, not executed, an AI session stuck in TODO/IN_TESTING) is not a failure; list it separately rather than forcing it into a product/automation/environment bucket.
 2. **Classify each failure** into one bucket:
    - **Product defect** — the application behaved wrong (assertion on real behavior failed, unexpected error/state). Candidate for a filed defect.
    - **Automation defect** — the test is wrong (bad locator, timing, stale data, broken step). Route to `test-maintenance`.
    - **Environment / data** — infra, account, network, fixture, or AUT-state issue. Route to re-run after fix.
+   - Before locking in **Product defect** for a case with no other recent failures, check `fetch_test_stability_data` or its result history via `find_test_results`; a case that passed 8+ of its last 10 runs needs rerun or stability evidence before filing as a product defect.
 3. **Cluster by signature.** Group failures with the same error message / step / object so one root cause is not filed as N defects.
 4. **Check existing defects.** `fetch_defect_data` to avoid duplicate filings.
 5. **File defects only when asked and only for product defects.** `find_alm_integration_projects` -> `create_defect` with the failed result ID. Ask before creating unless the user explicitly requested defect filing.

@@ -19,6 +19,7 @@ Use this format when generating cases for Katalon True Platform.
 - Use visible labels and URLs, not implementation selectors.
 - Put validations in Expected Results, not the action.
 - Avoid "verify everything looks correct"; specify what must be visible or changed.
+- For the last step of a flow, assert the durable end state it leaves behind (the record, balance, or list entry), not only the on-screen confirmation shown at that instant.
 - Split long end-to-end flows when setup makes individual failures hard to diagnose.
 
 ## Katalon Import Notes

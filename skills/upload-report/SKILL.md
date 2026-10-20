@@ -165,6 +165,7 @@ For current Katalon True Platform:
 4. Use MCP result tools after the run to find/read the new execution or test results.
 5. If the platform shows the run as importing, poll practical intervals when a read/poll tool exists.
 6. If auto-upload fails but local report files exist, state the available manual upload path and do not claim the upload succeeded.
+7. Treat a `read_execution_test_results` count of zero, or a count that disagrees with the local report's count, as unverified rather than verified uploaded, even when the CLI/uploader call itself returned success.
 
 ## Report Back
 

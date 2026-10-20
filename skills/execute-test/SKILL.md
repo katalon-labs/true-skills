@@ -83,8 +83,11 @@ After execution, report:
 - Run name and link when returned.
 - Final status.
 - Passed, failed, blocked/incomplete, and not-run counts.
+- Route a failure where `read_test_result` shows an environment/infra error (AUT unreachable, session timeout) into blocked/incomplete; do not count it under failed.
 - Failed cases with concise failure reasons.
+- For a passed case, check `find_test_results` for its most recent prior result; if that prior result was a failure, flag it in the summary as passed after a recent failure, so a fix and a flake are not reported the same way.
 - Defects created or recommended.
 - Gaps, skipped cases, and manual follow-up required.
+- If every case passed, check `fetch_test_stability_data`; when the suite has no failure history, flag it as an always-green saturation risk for follow-up review, not as a health judgment on the execution.
 
 Ask before creating ALM-linked defects unless the user explicitly requested defect creation for failures.

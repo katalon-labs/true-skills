@@ -20,6 +20,7 @@ Each recipe chains several skills and MCP tools into one end-to-end play. Trigge
 - **Skills:** `analyze-failures` (classify automation defects) -> `test-maintenance` (repair/regenerate) -> `test-review` (re-approve).
 - **Tools:** `find_test_results`, `read_test_result`, `fetch_test_stability_data`, `update_test_case`, `move_test_case`, then re-run + `fetch_test_stability_data` again.
 - **Stop when:** flaky cases in the critical path are repaired or retired and the suite re-approves.
+- **Boundary:** a stability-data improvement inside its noise floor (for example, under about 15 points on a suite of around 40 results) does not count as a confirmed fix.
 
 ## R4 — Manual to automation graduation  (stages 2->5)
 - **Trigger:** "turn these manual cases into automation and run them into the platform."

@@ -220,6 +220,7 @@ Rules:
 - After any manual test execution is created, start Run with AI automatically unless the user explicitly says not to. Do not ask whether to continue with AI.
 - Before `create_manual_ai_session`, call `read_test_suite` for every suite from the manual run and pass non-empty test case lists.
 - Poll `read_manual_ai_session` until all items are no longer TODO/IN_TESTING. If the session stays queued or running for a long time, keep polling at practical intervals and report an in-progress state only when the user asks for status or an external platform timeout/error is observed.
+- Before reporting a case as passed, check `read_manual_ai_session` or `find_test_results` for that case; if it passed only on a retry in the same session, report it as pass-on-retry; if it failed in a recent earlier run, report it as passed after a recent failure.
 
 Read `references/execution-workflow.md` before creating executions.
 
@@ -256,6 +257,7 @@ Report in chat with:
 - Failed cases and concise failure reason.
 - Defects created or recommended.
 - Gaps, skipped items, and what needs manual follow-up.
+- If `fetch_test_stability_data` shows a suite has not failed across its recent runs, flag it as always-green saturation risk; review coverage strength before treating the pass rate as evidence.
 
 ## Defects
 
