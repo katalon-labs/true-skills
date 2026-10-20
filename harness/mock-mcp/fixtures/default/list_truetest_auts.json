@@ -1,0 +1,18 @@
+[
+  {
+    "result": {
+      "auts": [
+        {
+          "platform_aut_id": 91,
+          "client_code": "celestial-web",
+          "display_name": "Celestial Web",
+          "aut_project_id": 7,
+          "project_id": 28459,
+          "test_project_id": 500,
+          "readiness": "READY"
+        }
+      ],
+      "next_page_token": null
+    }
+  }
+]

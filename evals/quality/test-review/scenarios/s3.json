@@ -1,0 +1,12 @@
+{
+  "id": "s3",
+  "title": "Healthy suite, partial page, no memory, no failures ever",
+  "prompt": "Review Profile Smoke for the pipeline gate.",
+  "fixture": "../fixtures/s3-profile-smoke.json",
+  "expect": {
+    "verdict": "Approve",
+    "partial_page": true,
+    "zero_failures": true,
+    "memory_unavailable": true
+  }
+}

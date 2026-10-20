@@ -1,22 +1,31 @@
-# Playwright Katalon Reporting
+# Playwright and Katalon reporting
 
-## Official References
+Read this before you edit Playwright config, write a run or upload command, or collect failure evidence.
 
-- Playwright Integration: https://docs.katalon.com/katalon-platform/integrations/testing-framework/playwright-integration
-- Katalon API Key: https://docs.katalon.com/katalon-platform/administer/profile/katalon-api-key-in-katalon-testops
-- Katalon CLI Integration: https://docs.katalon.com/katalon-platform/integrations/ci-cd/katalon-cli-integration
+## Version pin
+
+Checked 2026-10-20 against the npm registry:
+
+- `@playwright/test`: 1.64.0 released 2026-10-07. `latest` was 1.64.1.
+- `@katalon/playwright-reporter`: 0.0.3, last modified 2026-03-27. Peer dependency `@playwright/test` `^1.0.0`.
+
+This skill was written against Playwright 1.64. Features below name the release that added them. If the repo pins an older Playwright, skip the feature. Install a newer Playwright only when the user asks.
+
+## Official references
+
+- Playwright integration: https://docs.katalon.com/katalon-platform/integrations/testing-framework/playwright-integration
+- Katalon API key: https://docs.katalon.com/katalon-platform/administer/profile/katalon-api-key-in-katalon-testops
+- Katalon CLI integration: https://docs.katalon.com/katalon-platform/integrations/ci-cd/katalon-cli-integration
+- Playwright release notes: https://playwright.dev/docs/release-notes
 
 ## Dependencies
 
-Required:
+- Node.js 18 or later.
+- `@playwright/test`.
+- `@katalon/playwright-reporter`.
+- `KATALON_API_KEY` and `KATALON_PROJECT_ID` for upload.
 
-- Node.js 18+
-- `@playwright/test` 1.0+
-- `@katalon/playwright-reporter`
-- `KATALON_API_KEY` for upload
-- `KATALON_PROJECT_ID` for upload
-
-Install with the repo package manager:
+Install with the package manager the repo already uses:
 
 ```bash
 npm install --save-dev @katalon/playwright-reporter
@@ -24,21 +33,19 @@ pnpm add -D @katalon/playwright-reporter
 yarn add -D @katalon/playwright-reporter
 ```
 
-Use the package manager already used by the repo. Do not install dependencies globally unless the repo already does that.
+Do not install packages globally unless the repo already does.
 
-## API Key Check
-
-Before running or uploading, check whether the API key is already available:
+## API key check
 
 ```bash
 test -n "$KATALON_API_KEY" && echo "KATALON_API_KEY is set" || echo "KATALON_API_KEY is missing"
 ```
 
-Do not print the key value. If missing, ask the user to provide it through a secure environment variable or secret mechanism, for example by setting `KATALON_API_KEY` in the shell/session. Stop before upload until the key is available.
+Never print the key. If it is missing, ask the user to set it through an environment variable or secret store. Stop before the upload.
 
-## Playwright Config Pattern
+## Config pattern
 
-Add the reporter without removing existing reporters:
+Add the reporter and keep the reporters already present:
 
 ```ts
 import { defineConfig } from '@playwright/test';
@@ -66,11 +73,13 @@ export default defineConfig({
 });
 ```
 
-When an existing `globalSetup` exists, preserve it. If combining setup is non-trivial, ask before editing and prefer separate upload after execution.
+If a `globalSetup` already exists, keep it. If combining them is hard, ask before you edit, and prefer a separate upload after the run.
 
-## Run Commands
+Playwright 1.63 added `--add-reporter`. It may let the Katalon reporter attach without a config edit. This was not tested with the reporter. Try it on a throwaway run first. If the upload does not appear, edit the config instead.
 
-Run the user's target command when provided. Otherwise use the narrowest Playwright command:
+## Run commands
+
+Run the user's command. If none was given, use the narrowest one:
 
 ```bash
 npx playwright test
@@ -79,7 +88,7 @@ npx playwright test --grep "TC-07"
 npx playwright test --project chromium
 ```
 
-Upload during execution:
+Upload during the run:
 
 ```bash
 KATALON_API_KEY="$KATALON_API_KEY" \
@@ -88,11 +97,9 @@ KATALON_BASE_URL="<platform_url>" \
 npx playwright test <target>
 ```
 
-Omit `KATALON_BASE_URL` when the default Katalon endpoint is correct.
+Leave out `KATALON_BASE_URL` when the default endpoint is right.
 
-## Separate Upload
-
-Use this when the report already exists or when run and upload are separate:
+## Separate upload
 
 ```bash
 npx playwright test <target>
@@ -103,31 +110,52 @@ playwright-reporter upload \
   --base-url "<platform_url>"
 ```
 
-Omit `--base-url` when the default endpoint is correct.
+Leave out `--base-url` when the default endpoint is right.
 
-## Secret Handling
+## Run before report
+
+1. Run the real command. Read the exit code and the output.
+2. Check how many tests ran. Zero tests is a result to report on its own line. Do not fold it into a pass.
+3. A failure that passes on retry is flaky. Report it with the failure.
+4. Playwright 1.62 added `retryStrategy: 'isolated'`. It helps tell a flaky test from a test that depends on state left by an earlier one. This was not tested with the reporter. Try it on a throwaway run first, and check the option in the pinned Playwright version.
+5. Playwright 1.61 added `failOnFlakyTests` to the config. Suggest it for CI when the team wants flaky tests to fail the build. Do not set it without asking. This was not tested with the reporter. Try it on a throwaway run first.
+6. Do not rerun an unchanged failing test to turn it green.
+
+## Failure evidence
+
+Collect these for each failed test and keep them beside the report:
+
+- The trace file. Read it with `npx playwright trace` (Playwright 1.59).
+- The `errorContext` of the failure. From Playwright 1.60 it includes an aria snapshot of the page.
+- Console messages and page errors, from `page.consoleMessages()` and `page.pageErrors()` (Playwright 1.56). On an older pinned version, or if those methods are missing, collect them with the `page.on('console')` and `page.on('pageerror')` listeners instead.
+- Screenshots and videos, when the config records them.
+
+Mask personal data before you share any of these. Never upload secrets.
+
+## Secret handling
 
 - Never print `KATALON_API_KEY` or auth tokens.
-- Do not write API keys to `playwright.config.*`, `package.json`, logs, reports, or skill files.
-- Prefer environment variables, shell secret injection, or the platform's secure secret mechanism.
-- Redact secret-like values before summarizing command output.
+- Never write keys into `playwright.config.*`, `package.json`, logs, reports, or skill files.
+- Use environment variables or the platform's secret mechanism.
+- Hide secret-like values in any output you quote.
 
-## Result URL
+## Result link
 
-After upload, return a URL the user can open:
+After the upload, give the user a link:
 
-- Prefer an exact URL returned by `@katalon/playwright-reporter` or `playwright-reporter upload`.
-- If MCP can find the execution/report, use that execution/report path.
-- If only `project_id` is known, provide the closest Platform project reports or executions URL and mark it as a fallback.
-- For custom Platform domains, build links from `KATALON_BASE_URL`; otherwise use the default Katalon Platform base URL expected by the reporter.
+- Prefer the exact URL from the reporter or from `playwright-reporter upload`.
+- Else use the link from the platform read tools. Their `resource_url` host can fail on `.katalon.io` tenants. Then build the link from the tenant host and say so.
+- For a custom domain, build links from `KATALON_BASE_URL`.
+- With only the project ID, give the project reports link and mark it as a fallback.
 
-Do not finish with only "uploaded successfully"; include the result URL or explicitly state why no URL could be resolved.
+Never end with only "uploaded".
 
-## Common Failure Handling
+## Common failures
 
-- Missing dependency: install `@katalon/playwright-reporter` only with permission to modify dependencies.
-- Missing API key: stop before upload and ask for a secure secret source.
-- Missing project ID: use Katalon MCP `list_projects`; ask only if multiple possible projects remain.
-- Playwright test failures: still upload reports if artifacts exist.
-- Reporter output missing: inspect Playwright config and stdout; do not run separate upload without an output directory.
-- Upload returns success but MCP cannot find a run: report upload output and state that Platform verification is not available from current tools.
+- Missing dependency: install the reporter only with permission to change dependencies.
+- Missing API key: stop and ask for a secure source.
+- Missing project ID: call `list_projects`. Ask only when several projects fit.
+- Test failures: upload the report anyway when files exist.
+- No reporter output: check the config and stdout. Do not run a separate upload without an output directory.
+- Upload printed success but `list_executions` shows no run: report the upload output and say that platform verification failed.
+- A JUnit file from Playwright 1.59 or later can hold `error` elements where older files held `failure` elements. If you upload JUnit instead of using the reporter, compare failed plus errored counts.

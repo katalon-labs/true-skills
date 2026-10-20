@@ -1,0 +1,16 @@
+{
+  "id": "s2",
+  "title": "Flaky case, newly failing case, and a failure that already has a defect",
+  "prompt": "File defects for the confirmed product bugs in execution 9055. The platform data is in the fixture. Show me what you would file before you file it.",
+  "fixture": "../fixtures/s2-execution-9055.json",
+  "expect": {
+    "min_clusters": 3,
+    "max_clusters": 3,
+    "classification": {"TC-6201": "automation", "TC-6202": "product", "TC-6203": "product"},
+    "flaky_cases": ["TC-6201"],
+    "defect_targets": ["TC-6202"],
+    "already_linked": ["TC-6203"],
+    "nonproduct_ids": ["TC-6201"],
+    "idKeys": ["defect_targets", "already_linked"]
+  }
+}

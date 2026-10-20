@@ -1,0 +1,128 @@
+{
+  "id": "execute-run-with-ai-profile-mode",
+  "skill": "execute-test",
+  "description": "Run With AI on a manual suite. The agent must ask for browser_profile_mode and private access, never default them, and poll the session after START.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Run the Authentication Regression suite with Run With AI."
+    },
+    {
+      "text": "Staging, no private access needed."
+    },
+    {
+      "text": "Shared browser profile."
+    },
+    {
+      "text": "Yes, run it.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "execute-test"
+    },
+    {
+      "id": "run-is-manual",
+      "type": "called",
+      "tool": "create_test_run",
+      "match": {
+        "mode": "manual"
+      }
+    },
+    {
+      "id": "auts-first",
+      "type": "order",
+      "before": {
+        "tool": "read_auts"
+      },
+      "after": {
+        "tool": "create_test_run"
+      }
+    },
+    {
+      "id": "profile-asked",
+      "type": "asked-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI"
+        }
+      },
+      "question": [
+        "profile",
+        "shared",
+        "separate"
+      ]
+    },
+    {
+      "id": "private-access-asked",
+      "type": "asked-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI"
+        }
+      },
+      "question": [
+        "private"
+      ]
+    },
+    {
+      "id": "profile-from-user",
+      "type": "user-said-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI"
+        }
+      },
+      "scope": "any",
+      "patterns": [
+        "shared"
+      ]
+    },
+    {
+      "id": "profile-passed",
+      "type": "called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI",
+          "browser_profile_mode": "SHARED"
+        }
+      }
+    },
+    {
+      "id": "session-polled",
+      "type": "order",
+      "before": {
+        "tool": "update_test_run",
+        "match": {
+          "update": {
+            "action": "START"
+          }
+        }
+      },
+      "after": {
+        "tool": "read_manual_ai_session"
+      }
+    },
+    {
+      "id": "session-read",
+      "type": "called",
+      "tool": "read_manual_ai_session"
+    },
+    {
+      "id": "no-legacy-launcher",
+      "type": "not-called",
+      "tool": "create_manual_ai_session"
+    }
+  ]
+}

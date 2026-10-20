@@ -1,26 +1,20 @@
 {
   "name": "katalon-true-platform-marketplace",
-  "interface": {
-    "displayName": "Katalon True Platform"
-  },
   "owner": {
     "name": "katalon-labs",
     "url": "https://github.com/katalon-labs"
   },
+  "metadata": {
+    "description": "Katalon True Platform skills marketplace for Cursor",
+    "version": "0.5.0"
+  },
   "plugins": [
     {
       "name": "katalon-true-platform",
-      "source": {
-        "source": "local",
-        "path": "./plugins/katalon-true-platform"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity",
-      "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
-      "version": "0.4.0"
+      "source": "plugins/katalon-true-platform",
+      "description": "Agent-neutral AI testing skills for Katalon True Platform (formerly TestOps) covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance. The skills operate through the Katalon MCP.",
+      "version": "0.5.0",
+      "category": "Productivity"
     }
   ]
 }

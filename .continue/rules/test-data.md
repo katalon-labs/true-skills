@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Data
-description: "Design, source, seed, and tear down the test data a Katalon True Platform test case or an automated suite runs on. Use when the steps are already settled and the blocker is the values, for example which data classes a case needs, which records must exist before a run, how to keep literals out of the step text and into the Test Data column or a fixture, and how to reset state afterwards so the next run starts clean. Covers choosing between static, generated, and cloned production data, keeping credentials out of test data, and the boundary that the Katalon MCP has no test data, fixture, seeding, or secrets tool of its own. If the cases do not exist yet, start at create-test-cases. Written for the manual tester filling in a case's Test Data column and precondition, and the automation tester wiring fixtures and teardown for a suite."
+description: "Designs the data a Katalon True Platform (formerly TestOps) test case runs on. Covers which values and records a case needs, keeping literals and credentials out of steps, and how to seed and reset state for manual and automated lanes. Use when the steps are settled and values, fixtures, or cleanup block the run. Not for writing steps (create-test-cases) or code (test-case-to-playwright). For the manual tester and the automation tester."
 alwaysApply: false
 ---
 
@@ -8,26 +8,27 @@ alwaysApply: false
 
 # Katalon Test Data
 
-Use this skill for the **data** half of test design: which values a case runs on, which records must already exist when it starts, and what has to be true again when it finishes. The steps belong to `create-test-cases`; the code belongs to `test-case-to-playwright`; the values, the state, and the cleanup belong here.
+This skill covers the data half of test design: which values a case runs on, which records must exist when it starts, and what must be true again when it ends. The steps belong to `create-test-cases`. The code belongs to `test-case-to-playwright`. The values, the state, and the cleanup belong here. Tool names below are bare. Clients add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-One artifact serves both lanes. Call it the **data contract**: what must exist, which values, and who resets it. A manual case carries the contract in its Pre-condition and per-step Test Data column. An automated suite carries the same contract in a fixture plus a teardown. Design it once, write it down twice.
+One artifact serves both lanes. Call it the data contract: what must exist, which values, and who resets it. A manual case carries the contract in its Pre-condition and per-step Test Data column. An automated suite carries the same contract in a fixture plus a teardown. Design it once. Write it down twice.
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-State this before promising anything, because three different things in the Katalon world are called "test data" and the MCP reaches only one of them.
+Three different things in the Katalon world are called "test data". The MCP reaches only one of them.
 
-- **Available via MCP:** resolve scope (`list_projects`, `list_repositories`); read the requirement the data must satisfy (`find_requirements`, `read_requirement`); find the cases the data belongs to (`find_test_cases`, `find_test_cases_by_requirement`, `read_test_case`); write the Pre-condition and the per-step Test Data column into a case (`create_test_case`, `update_test_case`); read the target environment (`read_auts`); group data-dependent cases so they run together (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
-- **Not available via MCP, at all:**
-  - **No test-data entity, data file, or data binding.** The standalone Test Data object (CSV, Excel, internal, database) is a **Katalon Studio desktop** artifact. The MCP does not create, read, or bind it.
-  - **No secrets or variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings -> Configurations -> Secrets & Variables, are referenced in steps as `{KEY}`, apply to cloud-hosted execution only, and are scoped to the project. There is no tool to read or write them.
-  - **No seeding, no teardown, no database access, no API-call tool.** Nothing in the MCP can create or destroy application state.
-  - **No requirement creation.** Requirements sync from Jira or Azure; create them there, then find and link.
-- **Do not invent tools.** `manage_test_data`, `create_test_data`, `read_secrets`, `seed_data`, `reset_environment`, and `query_database` **do not exist**. If a workflow seems to need one, use the workaround below and say the boundary out loud.
-- **Run with AI reads the case body and nothing else.** Data that is not in the Pre-condition or the Test Data column does not reach the AI runner. This is why the placement rule below is not a style preference.
-- **Workaround, the MCP-legal data contract:**
-  - Manual lane: the case's **Pre-condition + per-step Test Data column**, written through `update_test_case`, is the data contract of record.
-  - Automation lane: a **checked-in fixture or factory**, plus the **seed command named in the case Pre-condition** so the manual and coded lanes agree on the same starting state.
-  - Either way the contract is versioned, reviewable, and needs no tool that does not exist.
+- **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `search`, `read_test_cases`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_cases`), read the target environment (`read_auts`), read the team's saved data conventions (`memory_list`, `memory_read`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
+- **Cannot, at all:**
+  - **Test-data entities.** A standalone Test Data object (CSV, Excel, internal, database) is a Katalon Studio desktop artifact. The MCP does not create, read, or bind it.
+  - **Secrets and variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings, Configurations, Secrets & Variables. Steps reference them as `{KEY}`. They apply to cloud-hosted execution only and are scoped to the project. No tool reads or writes them.
+  - **Seeding, teardown, database access, or API calls.** Nothing in the MCP creates or destroys application state.
+  - **Requirement creation.** Requirements sync from Jira or Azure DevOps. Create them there, then find and link.
+- **Do not invent tools.** No tool exists for test data, fixtures, secrets, seeding, environment reset, or database queries. When a workflow seems to need one, use the workaround below and state the boundary.
+- **Run with AI reads the case body only.** Data that is missing from the Pre-condition and the Test Data column never reaches the AI runner. The placement rule below follows from this.
+- **Workaround, the data contract that needs no missing tool:**
+  - Manual lane: the Pre-condition plus the per-step Test Data column (`context.data` on each step), written with `update_test_cases`.
+  - Automation lane: a checked-in fixture or factory, plus the seed command named in the case Pre-condition so both lanes start from the same state.
+
+Read `references/write-policy.md` before you change cases.
 
 ## Workflow
 
@@ -44,12 +45,13 @@ State this before promising anything, because three different things in the Kata
 
 ## Steps and tool rules
 
-1. **Resolve scope.** `list_projects` -> `list_repositories`. If exactly one matches the user's wording or context, use it. Call `read_auts` to learn which environment the data has to exist in; data designed for the wrong environment is worse than no data.
-2. **Derive the data classes, do not guess values.** Read the requirement (`read_requirement`) and the cases (`find_test_cases_by_requirement`, then `read_test_case` on each). Turn each condition in the requirement into a data class using equivalence partitioning and boundary value analysis, exactly as `create-test-cases` does for coverage. One class per case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
-3. **Choose the strategy per class.** Static, generated, or cloned from production, decided per class and never by default. The trade-offs and the decision table are in `references/data-design.md`. Say which one you chose and why in the report.
-4. **Place the data.** Apply the placement rule below. This is the step that stops data rotting inside step text.
-5. **Plan seed and teardown together.** Never design a seed without its teardown in the same breath. Use the seeding ladder in `references/seed-and-teardown.md`: application API first, CLI or SQL second, UI last. Record the seed command in the case Pre-condition so both lanes start from the same state.
-6. **Verify, then run it twice.** `read_test_case` to confirm the data actually landed in the case. Then the real check: the suite must pass **twice in a row from the state the first run left behind**, with no manual reset in between. A second-run failure is a data defect, not a flaky test.
+1. **Resolve scope.** Call `list_projects`, then `list_repositories`. If exactly one matches the user's wording, use it. Call `read_auts` to learn which environment the data must exist in. Data built for the wrong environment is worse than none.
+2. **Derive the data classes. Do not guess values.** Read the requirement with `read_requirement`. Read the cases with `find_test_cases_by_requirement`, then one `read_test_cases` call with `content_type` `FLOW` for all of them. Call `memory_list` once and read matching headlines with `memory_read`: the team may have saved data conventions. Quote a record when you follow it, and never present it as a platform fact. If `available` is false, say memory is unavailable. Never call `memory_write` or `memory_forget` unless the user asks. Turn each condition into a data class. Rank the conditions by risk first. Use equivalence partitioning and boundary values as tools to find the classes. One class maps to one case, matching the atomic-case rule. Read `references/data-design.md` before deriving classes for a non-trivial requirement.
+3. **Choose the strategy per class.** Pick static, generated, or cloned from production for each class. Never use one strategy by default. The trade-offs are in `references/data-design.md`. Say which you chose and why.
+4. **Place the data.** Apply the placement rule below.
+5. **Plan seed and teardown together.** Use the seeding ladder in `references/seed-and-teardown.md`: application API first, CLI or SQL second, UI last. Record the seed command in the case Pre-condition.
+6. **Write the changes.** List every case you will update and the fields that change. Show the list. Get one confirmation for the set. Then call `update_test_cases` with every edit to one case in the same call, because actions run in order and separate calls to one case race. Follow `references/write-policy.md`.
+7. **Verify, then run twice.** Call `read_test_cases` with `content_type` `FLOW` for each updated case and confirm the data landed. Then run the real check through `execute-test`: preview the run and get explicit consent first, as `references/write-policy.md` § Execution consent requires, because each run uses Test Execution - Cloud minutes and can change data in the AUT. A confirmation covers one run, so ask again for the second. The suite must pass twice in a row from the state the first run left behind, with no manual reset. A second-run failure is a data defect.
 
 ## The placement rule
 
@@ -57,38 +59,38 @@ Concrete values do not belong in step text or in a spec file. They belong in a n
 
 | Data | Manual lane | Automation lane |
 |---|---|---|
-| Values the step consumes | per-step **Test Data** column | typed fixture or factory module |
-| State that must pre-exist | case **Pre-condition**, with the seed command named | `globalSetup` or a fixture that creates it |
+| Values the step consumes | per-step Test Data column | typed fixture or factory module |
+| State that must pre-exist | case Pre-condition, with the seed command named | `globalSetup` or a fixture that creates it |
 | Environment or AUT URL | Pre-condition, or the AUT environment from `read_auts` | config or env var, never a literal in a spec |
 | Credentials and tokens | `{KEY}` reference to Secrets & Variables | environment variable, never checked in |
-| Cleanup | an explicit reset step in the Pre-condition or final step | teardown in the same fixture that created the state |
+| Cleanup | an explicit reset step in the Pre-condition or final step | teardown in the fixture that created the state |
 
-Two rules that follow from it:
+Two rules follow from it.
 
-- **A step reads `Enter the loyalty email`, not `Enter qa+cel9@example.com`.** The value goes in the Test Data column so the same step survives a data change.
-- **A fixture owns creation and destruction of the same record.** If one function creates it and a different one deletes it, they will drift and the second run will fail.
+- A step reads `Enter the loyalty email`. It never reads `Enter qa+cel9@example.com`. The value goes in the Test Data column, so the step survives a data change.
+- A fixture owns creation and destruction of the same record. If one function creates it and a different one deletes it, they drift and the second run fails.
 
 ## Credentials are not test data
 
-This is a hard rule, not a preference.
+This rule is hard.
 
-- **Never** write a password, token, API key, cookie, JWT, or MFA code into a step, a Test Data column, a fixture file, a Pre-condition, or the chat.
-- Reference a platform secret as `{KEY}` and tell the human to create it in Settings -> Configurations -> Secrets & Variables. That page is UI-only; there is no MCP tool for it.
-- In code, read from an environment variable and commit only the variable's name.
-- If a user pastes a real credential, do not store it in a case or a file. Ask them to add it as a secret and use the `{KEY}` reference instead.
-- Production clones carry real people's data. Mask or synthesize personally identifying fields before anything is written into a case, a fixture, or a report. Details in `references/data-design.md`.
+- Never write a password, token, API key, cookie, JWT, or MFA code into a step, a Test Data column, a fixture file, a Pre-condition, or the chat.
+- Reference a platform secret as `{KEY}`. Tell the human to create it in Settings, Configurations, Secrets & Variables. That page is UI-only.
+- In code, read from an environment variable. Commit only the variable name.
+- If a user pastes a real credential, do not store it in a case or a file. Ask them to add it as a secret and use the `{KEY}` reference.
+- Production clones carry real people's data. Mask or synthesize identifying fields before anything goes into a case, a fixture, or a report. Details are in `references/data-design.md`.
 
 ## Seed and teardown
 
-The short version; the full ladder, idempotency rules, and per-lane patterns are in `references/seed-and-teardown.md`.
+The full ladder, idempotency rules, and per-lane patterns are in `references/seed-and-teardown.md`. The short version:
 
-- **Prefer the application's own API** to create state. It is fast, it is the same code path the product uses, and it fails loudly.
-- **Fall back to CLI or SQL** when no API exists, and say in the report that the seed bypasses application rules.
-- **Seed through the UI only as a last resort**, and never inside the test that is measuring the behaviour, or a setup failure will be reported as a product failure.
-- **Make every seed idempotent.** Running it twice must leave one record, not two.
-- **Make every key unique per run.** A run stamp such as `qa+cel9-20260810-1432@example.com` prevents cross-run collisions and lets teardown find exactly what it created.
-- **Tear down what you created, in the place that created it.** Not in a nightly cleanup job, not by hand.
-- **Never seed or clean a production environment.** Confirm the target from `read_auts` before any destructive step.
+- Prefer the application's own API. It is fast, it uses the product's code path, and it fails loudly.
+- Fall back to a CLI or SQL when no API exists. Say in the report that the seed bypasses application rules.
+- Seed through the UI only as a last resort. Never seed inside the test that measures the behavior. A setup failure would read as a product failure.
+- Make every seed idempotent. Running it twice leaves one record.
+- Make every key unique per run. A run stamp such as `qa+cel9-20260810-1432@example.com` prevents collisions and lets teardown find what it created.
+- Tear down what you created, in the place that created it. A nightly cleanup job does not count.
+- Never seed or clean a production environment. Confirm the target with `read_auts` before any destructive step.
 
 ## Worked example
 
@@ -96,7 +98,7 @@ The short version; the full ladder, idempotency rules, and per-lane patterns are
 
 > A returning shopper whose loyalty tier is Silver or above receives 10% off when the cart subtotal reaches $500. The discount applies once per order and never applies to gift cards.
 
-`find_test_cases_by_requirement(requirement = "CEL-9")` returns three existing cases with empty Test Data columns:
+Call `find_test_cases_by_requirement` with the key `CEL-9`. It returns three existing cases with empty Test Data columns:
 
 ```text
 TC-2101  Apply loyalty discount at the subtotal threshold
@@ -104,7 +106,7 @@ TC-2102  No loyalty discount below the subtotal threshold
 TC-2103  Loyalty discount excludes gift cards
 ```
 
-**Step 2 output, the data classes.** Four conditions in the requirement, so four classes, plus the two boundary values the threshold demands:
+**Step 2 output, the data classes.** The requirement states four conditions, so there are four classes. The threshold adds boundary values.
 
 | Class | Account | Cart | Expected |
 |---|---|---|---|
@@ -113,9 +115,9 @@ TC-2103  Loyalty discount excludes gift cards
 | At threshold, ineligible tier | Bronze | subtotal 500.00 | no discount |
 | Gift card in cart | Silver | 1 gift card 500.00 | no discount |
 
-**Step 3 output, the strategy.** Generated, not static and not cloned. Loyalty tier and order history are mutated by the test, so a shared static account goes stale after the first run, and cloned production accounts carry real customer PII for no benefit.
+**Step 3 output, the strategy.** Generated per run. The test mutates loyalty tier and order history, so a shared static account goes stale after the first run. Cloned production accounts carry real customer PII for no benefit.
 
-**Step 4 output, the manual lane.** One `update_test_case` call per case, all edits in a single call. For `TC-2101`:
+**Step 4 output, the manual lane.** After the user confirms the update set, send one `update_test_cases` call with the actions for each case. For `TC-2101` that is `UPDATE_PRECONDITION` plus `UPDATE_CONTENT`. `UPDATE_CONTENT` replaces all steps, so send the complete step list from the `FLOW` read, keep any Call Test Case steps, and put each value in the step's `context.data`. Never send `context: {}`. The result for `TC-2101`:
 
 ```text
 Pre-condition:
@@ -134,7 +136,7 @@ Teardown: delete the seeded account with
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-**Expected output of the verification call.** `read_test_case(id = "TC-2101")` returns the case with a non-empty `testData` value on steps 1 to 3, the seed command inside `precondition`, `{LOYALTY_PASSWORD}` as a reference rather than a literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land; re-issue the single `update_test_case` call rather than creating a second case.
+**Expected output of the verification.** `read_test_cases` with `content_type` `FLOW` on `TC-2101` returns a non-empty Test Data value on steps 1 to 3, the seed command inside the pre-condition, `{LOYALTY_PASSWORD}` as a reference with no literal, and the requirement link to `CEL-9` intact. If the Test Data column comes back empty, the update did not land. Re-issue the single update call. Never create a second case.
 
 **Step 4 output, the automation lane.** The same contract as a typed factory, with creation and destruction in one place:
 
@@ -156,17 +158,17 @@ export const CART = {
 };
 ```
 
-**Expected report to the user.** Name every one of these; a report missing the boundary line is incomplete:
+**Expected report to the user.** Name each item. A report with no boundary line is incomplete.
 
 ```text
 Data contract for CEL-9, 4 classes across 3 cases.
 Strategy: generated per run. Reason: the test mutates tier and order history.
-Manual lane: TC-2101, TC-2102, TC-2103 updated. Pre-condition carries the seed command, Test Data column carries the values.
+Manual lane: TC-2101, TC-2102, TC-2103 updated after your confirmation. Pre-condition carries the seed command, Test Data column carries the values.
 Automation lane: fixtures/loyalty-data.ts creates and tears down the shopper in one factory.
 Credentials: LOYALTY_PASSWORD referenced as {LOYALTY_PASSWORD} and as an env var. Not stored in any case or file.
 Second-run check: pending. Run the suite twice with no reset between runs before trusting these cases.
 Boundary: the Katalon MCP has no test-data, seeding, or secrets tool. {LOYALTY_PASSWORD} must be created by hand
-  in Settings -> Configurations -> Secrets & Variables, which is UI-only and applies to cloud-hosted runs only.
+  in Settings, Configurations, Secrets & Variables, which is UI-only and applies to cloud-hosted runs only.
 ```
 
 ## Prompt recipes
@@ -179,14 +181,14 @@ Boundary: the Katalon MCP has no test-data, seeding, or secrets tool. {LOYALTY_P
 
 ## Hand-offs
 
-- No cases exist yet -> `create-test-cases`, then come back for the data.
-- Turning the case into code, where the fixture will live -> `test-case-to-playwright`.
-- Running the cases once the data exists -> `execute-test`, or `playwright-execute` for the coded lane.
-- A red run that may be a data problem rather than a product problem -> `analyze-failures`, which routes "environment / data" failures back here.
-- Cases that keep breaking on stale data -> `test-maintenance`.
-- Scoping the cycle before any of this -> `test-plan`.
+- No cases exist yet: `create-test-cases`, then come back for the data.
+- Turning the case into code, where the fixture lives: `test-case-to-playwright`.
+- Running the cases once the data exists: `execute-test`, or `playwright-execute` for the coded lane.
+- A red run that may be a data problem: `analyze-failures`. It routes environment and data failures back here.
+- Cases that keep breaking on stale data: `test-maintenance`.
+- Scoping the cycle before any of this: `test-plan`.
 
-Read `references/data-design.md` before deriving data classes or choosing a strategy. Read `references/seed-and-teardown.md` before writing any seed or teardown. Read the orchestrator's `true-platform-testing/references/unavailable-capabilities.md` when the user asks "can Katalon manage test data?".
+Read `references/data-design.md` before deriving data classes or choosing a strategy. Read `references/seed-and-teardown.md` before writing any seed or teardown.
 
 ---
 
@@ -204,10 +206,11 @@ _The reference material the skill points to is inlined below so this file is sel
 The steps come from the requirement's actions. The data comes from its **conditions**. Read the requirement once for each and do not mix the passes.
 
 1. List every condition the requirement states: thresholds, statuses, roles, tiers, quantities, dates, formats, and exclusions.
-2. Partition each condition into equivalence classes. One class is one case, matching the atomic-case rule in `create-test-cases`.
-3. Add boundary values for every ordered condition: at the boundary, one below, one above. A threshold of "500 or more" produces 499.99, 500.00, and 500.01, not "a big number".
-4. Add the exclusions the requirement names explicitly. "Never applies to gift cards" is a data class, not an edge case to remember later.
-5. Stop when every condition has at least one class. Combinatorial explosion is handled by pairwise reduction, not by inventing more accounts.
+2. Rank the conditions by risk (impact times likelihood of failure). Spend the most classes on the highest-risk conditions. Equivalence partitioning and boundary values are tools for finding classes. They do not prove the set is complete.
+3. Partition each condition into equivalence classes. One class is one case, matching the atomic-case rule in `create-test-cases`.
+4. Add boundary values for every ordered condition: at the boundary, one below, one above. A threshold of "500 or more" produces 499.99, 500.00, and 500.01. "A big number" is not a boundary value.
+5. Add the exclusions the requirement names explicitly. "Never applies to gift cards" is a data class. Do not leave it as an edge case to remember later.
+6. Stop when every condition has at least one class. Use pairwise reduction to control combinatorial growth. Do not invent more accounts.
 
 Write the classes as a table with the account state, the input values, and the expected outcome, and confirm it with the user before touching a single case.
 
@@ -236,7 +239,8 @@ A step that reads `Enter the loyalty email` survives a data change. A step that 
 ## Personally identifying data
 
 - **Never** copy real names, emails, phone numbers, addresses, payment details, or government identifiers into a test case, a fixture, a screenshot, or a report.
-- Mask or synthesize before the data leaves the source system, not after it has been written somewhere.
+- Captured user sessions (for example from TrueTest) hold real user input. Treat them as production data. Replace the values with reserved ones before they enter a case.
+- Mask or synthesize before the data leaves the source system. Masking after the write is too late.
 - Use reserved, non-routable values: `@example.com` for email, documented reserved ranges for phone numbers, and test card numbers published by the payment provider.
 - Production clones are the highest-risk path in this whole skill. If a clone is unavoidable, name in the report what was masked, what was not, and who approved it.
 
@@ -253,13 +257,14 @@ Credentials are not test data and never live with it.
 Run this before declaring a data design done.
 
 - [ ] Every requirement condition maps to at least one data class.
-- [ ] Every ordered condition has its boundary values, not just a representative value.
-- [ ] Every class names its expected outcome, not just its inputs.
+- [ ] Every ordered condition has its boundary values, and a representative value alone does not count.
+- [ ] Every class names its expected outcome as well as its inputs.
 - [ ] No value that the test mutates is shared between cases.
 - [ ] Every key that must be unique carries a run stamp.
 - [ ] No credential, token, or real personal detail appears anywhere in the contract.
 - [ ] Every seed has a teardown written at the same time.
 - [ ] The design says which environment it targets, and it is not production.
+- [ ] The boundary pair produces different expected outcomes; if the just-below and at-the-boundary values are expected to reach the same result, the values do not exercise the boundary.
 
 ### references/seed-and-teardown.md
 
@@ -278,7 +283,7 @@ Take the highest rung that works.
 
 ## Rules that make a seed trustworthy
 
-- **Idempotent.** Running it twice leaves one record, not two, and does not error on the second run.
+- **Idempotent.** Running it twice leaves one record and does not error on the second run.
 - **Unique per run.** Stamp every key that must be unique: `qa+cel9-20260810-1432@example.com`, `ORDER-<stamp>`. The stamp is what teardown searches for.
 - **Self-describing.** A seeded record should be identifiable as test data by looking at it, so a human who finds one in a shared environment knows what it is.
 - **Scoped to what the case needs.** Seeding a hundred orders to test one discount makes the failure harder to read and the teardown slower.
@@ -292,6 +297,7 @@ Take the highest rung that works.
 - **Teardown is scoped to this run's stamp.** Never delete by a broad pattern in a shared environment.
 - **Leave nothing behind that changes another test's outcome**, including cart state, session state, and feature-flag overrides.
 - **A nightly cleanup job is not teardown.** It hides the defect until the day it does not run.
+- **A missing-teardown failure on one case usually means the fixture itself is broken.** Check whether sibling cases share the same fixture before patching just this one; fix the fixture once.
 
 ## Manual lane pattern
 
@@ -308,7 +314,7 @@ Teardown:
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-Write it into the case with a single `update_test_case` call containing every edit, then confirm with `read_test_case`. If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
+Write it into the case with a single `update_test_cases` call containing every edit (`UPDATE_PRECONDITION` and `UPDATE_CONTENT`, which needs the complete step list), then confirm with `read_test_cases` (`content_type` `FLOW`). If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
 
 ## Automation lane pattern
 
@@ -331,7 +337,7 @@ export const test = base.extend<Fixtures>({
 });
 ```
 
-Use `globalSetup` only for state that is genuinely shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
+Use `globalSetup` only for state that is shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
 
 ## The acceptance test for any data design
 
@@ -346,3 +352,67 @@ A second-run failure is a data defect and it has exactly three causes:
 | Passes alone, fails in the suite | One test depends on another's state | Give each test its own seeded record |
 
 Report this check by name. If it has not been run, say so rather than implying the data design is proven.
+
+### references/write-policy.md
+
+<!-- GENERATED from shared/references/write-policy.md - edit the source -->
+# Write Policy, Execution Consent, and Session Rules
+
+These rules apply to every agent and every skill that changes data on Katalon True Platform (formerly TestOps).
+
+## Write policy
+
+1. Resolve the project and repository first.
+2. Preview the full mutation set in chat. List each create, update, move, link, and delete with its target.
+3. Ask for one confirmation for the whole set.
+4. Run the writes.
+5. Read back each changed item with a read tool and report what the platform now holds.
+
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
+
+A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
+
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
+
+Two more rules for bulk work:
+- Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
+- If a write fails part way, stop. Report which items changed and which did not. Do not retry blindly. Do not create a duplicate to replace a failed create. Search first.
+
+## Execution consent
+
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
+- the suite or cases,
+- the AUT environment,
+- the mode (manual, Run with AI, or automated),
+- the schedule if one exists,
+- and any private network setup.
+
+A confirmation covers one run. Ask again for the next run.
+
+## Stateless MCP
+
+The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
+- Never rely on a server prompt or on sampling. Ask the user in chat.
+- Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
+- Prefer structured fields in a tool result. If they are missing, parse the text block.
+- Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
+
+## Terminology
+
+Katalon True Platform (formerly TestOps). Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE). Katalon Test Execution - Cloud (formerly TestCloud). On first mention, give both names. Use one name for one thing after that.

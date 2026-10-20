@@ -1,0 +1,22 @@
+{
+  "_comment": "Fixture: what the platform returned for execution 8842. All data is fictional.",
+  "project": "Checkout Web", "repository": "Checkout Web Tests",
+  "execution": {"id": 8842, "cloud_execution_id": "cx-7f3a91", "name": "Checkout Regression Nightly", "type": "AUTOMATED", "build": "2026.10.4", "configurations": ["Chrome 143 on macOS", "Safari 19 on macOS"]},
+  "failed_results": [
+    {"result_id": 770101, "test_case": "TC-6101", "name": "Pay with card", "step": "Click Pay now", "error": "Timeout 30000ms exceeded waiting for locator '#pay-now'", "config": "Chrome", "last_10_runs_on_previous_build": "10 pass"},
+    {"result_id": 770102, "test_case": "TC-6102", "name": "Pay with saved card", "step": "Click Pay now", "error": "Timeout 30000ms exceeded waiting for locator '#pay-now'", "config": "Chrome", "last_10_runs_on_previous_build": "10 pass"},
+    {"result_id": 770105, "test_case": "TC-6105", "name": "Pay with a gift card", "step": "Click Pay now", "error": "Timeout 30000ms exceeded waiting for locator '#pay-now'", "config": "Safari", "last_10_runs_on_previous_build": "9 pass 1 fail"},
+    {"result_id": 770108, "test_case": "TC-6108", "name": "Pay and print the receipt", "step": "Click Pay now", "error": "Timeout 30000ms exceeded waiting for locator '#pay-now'", "config": "Safari", "last_10_runs_on_previous_build": "10 pass"},
+    {"result_id": 770110, "test_case": "TC-6110", "name": "Show the shipping price", "step": "Open the cart", "error": "HTTP 502 Bad Gateway from /api/cart/price", "config": "Chrome", "time": "02:14 UTC", "last_10_runs_on_previous_build": "10 pass"},
+    {"result_id": 770111, "test_case": "TC-6111", "name": "Update the quantity", "step": "Open the cart", "error": "HTTP 502 Bad Gateway from /api/cart/price", "config": "Chrome", "time": "02:19 UTC", "last_10_runs_on_previous_build": "10 pass"},
+    {"result_id": 770120, "test_case": "TC-6120", "name": "Apply a 10 percent promo code", "step": "Check the order total", "error": "Expected order total 107.90 but was 98.10", "config": "Chrome", "last_10_runs_on_previous_build": "10 pass", "repeats": "fails on Chrome and Safari in the last 3 runs on this build"},
+    {"result_id": 770121, "test_case": "TC-6121", "name": "Apply a promo code to a discounted item", "step": "Check the order total", "error": "Expected order total 52.50 but was 47.25", "config": "Safari", "last_10_runs_on_previous_build": "10 pass", "repeats": "fails on Chrome and Safari in the last 3 runs on this build"}
+  ],
+  "no_verdict_results": [
+    {"test_case": "TC-6130", "name": "Pay with a store credit", "status": "BLOCKED", "reason": "precondition data missing: no store credit on the test account"},
+    {"test_case": "TC-6131", "name": "Pay in two instalments", "status": "INCOMPLETE", "reason": "run stopped before the last step"}
+  ],
+  "trace_note": "The Playwright trace of TC-6101 shows a button with the accessible name 'Pay now' and data-testid 'pay-button' on the page. The id 'pay-now' no longer exists in build 2026.10.4.",
+  "stability": {"filter_type": "EXECUTION", "execution_id": 8842, "return_tests": ["FLAKY", "NEW_FAILURE"], "flaky": [], "new_failure": ["TC-6101", "TC-6102", "TC-6108", "TC-6120", "TC-6121", "TC-6110", "TC-6111"]},
+  "existing_defects": "fetch_defects for the 8 failed result IDs returned no linked defect."
+}

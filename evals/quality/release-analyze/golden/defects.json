@@ -1,0 +1,5 @@
+{
+  "scenario": "s1",
+  "expectFail": ["verdict-expected", "never-ready", "blockers-named", "scope-stated", "thresholds-or-assumptions", "counts-in-metrics"],
+  "note": "Planted: Ready despite an open critical defect and a failed P0 case, blockers not named, no iteration or window, no thresholds or assumption, adjectives in place of counts."
+}

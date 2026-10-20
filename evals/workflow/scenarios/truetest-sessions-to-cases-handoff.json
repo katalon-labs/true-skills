@@ -1,0 +1,116 @@
+{
+  "id": "truetest-sessions-to-cases-handoff",
+  "skill": "truetest-journeys",
+  "description": "Cases from chosen sessions. The agent searches sessions with the tracking environment, shortlists them, queues generation for only the chosen opaque reference after a yes, then hands the drafts to create-test-cases.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Generate test cases from the checkout sessions between 2026-10-12 and 2026-10-19 on Celestial Web staging."
+    },
+    {
+      "text": "Use only the first session, cust-sess-1001."
+    },
+    {
+      "text": "Yes, generate from cust-sess-1001.",
+      "confirms": true
+    },
+    {
+      "text": "Thanks. Now refine those draft cases and add expected results."
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "truetest-journeys"
+    },
+    {
+      "id": "sessions-searched-first",
+      "type": "order",
+      "before": {
+        "tool": "search_truetest_sessions",
+        "match": {
+          "tracking_environment_id": "9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f"
+        }
+      },
+      "after": {
+        "tool": "create_truetest_test_case_from_session"
+      }
+    },
+    {
+      "id": "chosen-reference-only",
+      "type": "called",
+      "tool": "create_truetest_test_case_from_session",
+      "match": {
+        "tracking_environment_id": "9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f",
+        "session_references": [
+          "sref_opaque_a1b2c3"
+        ]
+      },
+      "max": 1
+    },
+    {
+      "id": "no-flow-generation",
+      "type": "not-called",
+      "tool": "create_truetest_test_case_from_flow"
+    },
+    {
+      "id": "no-raw-events",
+      "type": "not-called",
+      "tool": "get_truetest_session",
+      "match": {
+        "include_raw_events": true
+      }
+    },
+    {
+      "id": "cases-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "create_truetest_test_case_from_session"
+      },
+      "reads": [
+        "find_test_cases",
+        "search"
+      ],
+      "sameArgs": [
+        "project_id"
+      ]
+    },
+    {
+      "id": "handoff-to-create-cases",
+      "type": "handoff",
+      "from": "truetest-journeys",
+      "to": "create-test-cases"
+    },
+    {
+      "id": "case-claim-hedged",
+      "type": "says",
+      "pattern": [
+        {
+          "re": "(can|may|could) take a few minutes|could not confirm|not (yet|complete)|queued, not",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": "no-completion-claim",
+      "type": "never-says",
+      "pattern": [
+        {
+          "re": "generated the cases|cases (were |have been )?created",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": "no-pii-echo",
+      "type": "never-says",
+      "pattern": [
+        {
+          "re": "[\\w.+-]+@(?!example\\.com)[\\w-]+\\.[a-z]{2,}",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

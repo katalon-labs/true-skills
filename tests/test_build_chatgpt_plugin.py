@@ -277,11 +277,11 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         self.assertEqual(len(zips), 1, output)
         with zipfile.ZipFile(zips[0]) as archive:
             names = archive.namelist()
-            # AC-58: only plugin.json, mcp.json, skills/** and assets/**, with 19 skills directly under skills/.
+            # AC-58: only plugin.json, mcp.json, skills/** and assets/**, with 22 skills directly under skills/.
             for name in names:
                 self.assertTrue(name in ("plugin.json", "mcp.json") or name.startswith(("skills/", "assets/")), name)
             skills = {n.split("/")[1] for n in names if n.startswith("skills/")}
-            self.assertEqual(len(skills), 19, sorted(skills))
+            self.assertEqual(len(skills), 22, sorted(skills))
             self.assertIn("get-started", skills)
             for skill in skills:
                 self.assertIn(f"skills/{skill}/SKILL.md", names)
@@ -315,7 +315,12 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         root_mcp = json.loads((ROOT / "mcp.json").read_text(encoding="utf-8"))
         self.assertEqual(root_mcp["mcpServers"], {"katalon-prod-mcp": {"type": "streamable-http", "url": "https://platform.katalon.io/mcp"}})
         root_plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
-        self.assertNotIn("extensions", root_plugin)
+        # The root manifest carries the Codex interface under extensions["com.openai"]
+        # (written by build-adapters.mjs). ChatGPT submission fields stay out of it.
+        root_openai = root_plugin.get("extensions", {}).get("com.openai", {})
+        self.assertNotIn("review", root_openai)
+        chatgpt_plugin = json.loads((self.base / "plugin.json").read_text(encoding="utf-8"))
+        self.assertNotEqual(root_plugin, chatgpt_plugin)
 
     def test_onboarding_requires_manifest_event_or_explicit_request(self) -> None:
         # AC-65: missing defaults discovered during another task do not permit
@@ -334,7 +339,7 @@ class BuildChatGPTPluginTests(unittest.TestCase):
         self.assertIn("If neither applies, stop without calling tools, including when a read tool reveals that no default project is stored.", text)
         self.assertLess(text.index("Before calling any tool"), text.index("Call `katalon_profile`"))
         canonical = (ROOT / "skills" / "get-started" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("or when no default project is stored yet", canonical)
+        self.assertIn("has no default project stored", canonical)
 
     def test_onboarding_stops_before_workspace_actions(self) -> None:
         # Inspect the packaged procedure, rather than only the source rewrite,

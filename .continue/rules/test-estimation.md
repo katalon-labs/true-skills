@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Estimation
-description: "Estimate testing effort, duration, and resourcing for a Katalon True Platform/TestOps cycle. Use when the question is how long testing will take, how many testers it needs, whether the scope fits the sprint window, or what a scope change costs in person-hours. Sizes design, manual execution, automated execution and triage, and rework separately, counts the countable part from platform data (case counts, automation split, historical pass and stability rates, configuration matrix), calibrates the rest against a rate the team supplies, and returns a three-point range with a confidence label instead of a single number. Splits resourcing across the manual and automated lanes and names the assumptions that would move the number most. For what to test and in what order, use test-plan; for a verdict on a cycle that has already run, use release-analyze. Written for the test lead sizing a cycle before it starts and the test manager who has to fund it."
+description: "Estimates the effort, duration, and headcount for a Katalon True Platform (formerly TestOps) test cycle as scenario ranges with a confidence label. It counts cases and failures from platform data and takes per-unit rates from the team. Use when someone asks how long testing will take, how many testers it needs, or what a scope change costs. Not for what to test (test-plan) or a finished cycle (release-analyze). For the test lead and the test manager."
 alwaysApply: false
 ---
 
@@ -8,227 +8,112 @@ alwaysApply: false
 
 # Katalon Test Estimation
 
-Use this skill for the **estimation** half of the planning stage: turn a scoped cycle into person-hours, a date, and a headcount. The output is a **range with a confidence label**, never a single number. `test-plan` decides what gets tested; this skill decides what that costs.
+This skill turns a scoped cycle into person-hours, a date, and a headcount. The test lead sizes the cycle before it starts. The test manager funds it. The output is a **range with a confidence label**, never one number. `test-plan` decides what gets tested. This skill prices that scope.
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-State this before producing any number.
+The Katalon MCP can count the work. It cannot measure the effort. Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-**The Katalon MCP can count the work. It cannot measure the effort.**
+- **Available.** Case and suite counts: `find_test_cases` (its COMMON filter queries `testType` and `automationStatus`), `read_test_suite`, `find_test_cases_by_requirement`. Uncovered requirements: `fetch_requirement_metrics`. Automated and manual split, and execution statistics: `fetch_test_case_metrics`. Failure and flake burden: `fetch_test_stability_metrics`, `find_test_results`. Configuration matrix: `fetch_test_configuration_metrics`. Cycle window: `find_iterations`. Existing automated cadence: `list_schedule`, `read_schedule_detail`. A past execution: `list_executions`, `read_execution`, and `find_test_results` with filter_type `EXECUTION`.
+- **Not available.** How long a person takes. No tool books effort against a case, a run, or a person. A manual run's open and close times are calendar time, not work. The platform also holds no roster, capacity, PTO, calendar, rate, cost model, or field for the estimate, and no cross-cycle average.
+- **Looks like data and is not.** Session concurrency. `list_test_cloud_environments`, `find_execution_profiles`, and `list_test_cloud_agents` list environments, profiles, and agents. The docs do not show a parallel-session limit in them. Tag concurrency as team-supplied.
+- **Field check.** Read one execution with `read_execution` and confirm that an elapsed-time field exists before you model on it. If it is absent, ask for the figure and tag it team-supplied. A missing field is never zero.
 
-- **Available via MCP:** case and suite counts (`find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement`), uncovered requirements (`fetch_requirement_data`), automated/manual split when exposed (`fetch_test_case_data`), failure and flake rates (`fetch_test_stability_data`, `find_test_results`), the configuration matrix (`fetch_test_configuration_data`), the cycle window (`find_iterations`), and a past execution's machine-recorded elapsed time (`read_execution`, `read_execution_test_results`).
-- **Not available at all:** how long a person takes. No tool books effort against a case, a run, or a person. A manual run's open and close timestamps are calendar elapsed, not work.
-- **Also not available:** team roster, capacity, PTO, or working calendar; any cost or rate model; a field to write the estimate back into; any cross-cycle aggregate such as average cycle duration.
-- **Looks like MCP data but is not:** session concurrency. `list_test_cloud_environments` and `find_execution_profiles` list environments and profiles, not the number of parallel sessions the plan allows. Tag it team-supplied.
-- **Field-level rule:** read one record with `read_execution` and confirm the elapsed-time field is present before modelling on it. If it is absent, ask for the figure and label it team-supplied. Never let a missing field become a zero.
+Every per-unit rate is team-supplied. Tag each one in the output. See `references/mcp-evidence-map.md` for the signal map and the checklist of questions for the human.
 
-The consequence: **every per-unit rate is team-supplied and must be tagged as such in the output.** Read `references/mcp-evidence-map.md` for the full signal-to-tool map and the human-input checklist.
-
-## Estimation Workflow
+## Estimation workflow
 
 ```text
-+------------------+     +---------------------+     +----------------------+
-| Fix the scope    | --> | Count from platform | --> | Get the rates (human)|
-+------------------+     +---------------------+     +----------------------+
-        |                          |                            |
-        v                          v                            v
-+------------------+     +---------------------+     +----------------------+
-| Size five buckets| --> | Three-point + band  | --> | Resource the lanes   |
-+------------------+     +---------------------+     +----------------------+
-                                                                |
-                                                                v
-                                                     +----------------------+
-                                                     | State the uncertainty|
-                                                     +----------------------+
+Fix scope -> Count from platform -> Get rates (human) -> Size five buckets
+                                                              |
+Resource both lanes <- Range: scenarios, then simulation <----+
+        |
+        v
+Answer the question asked -> State the uncertainty
 ```
 
-## Steps and tool rules
+## Steps
 
-1. **Fix the scope, or refuse.** An estimate of an unfixed scope is theatre. Resolve project and repository (`list_projects`, `list_repositories`), bind the cycle window with `find_iterations`, and get the release, sprint, folder, or suite in writing. If scope is still moving, produce the model with the scope stated as an assumption and force confidence to Low.
-2. **Count the countable part.** Never estimate what the platform can count. `fetch_requirement_data` for uncovered requirements, `find_test_cases` and `read_test_suite` for case counts, `fetch_test_case_data` for the automated/manual split when available, `fetch_test_configuration_data` for the matrix multiplier, `fetch_test_stability_data` for the flake burden. If a result set is paginated or truncated, say so rather than reporting a partial count as a total.
-3. **Read one comparable execution.** Pick the closest finished cycle with the human, then `read_execution` and `read_execution_test_results` on it. Extract pass rate and, if the field is present, automated elapsed time. This is your only platform-side calibration, and it is n=1. Say so.
-4. **Get the rates from the human.** Manual execution minutes per case, design minutes per new case, triage minutes per failing result, automation authoring hours per case, productive hours per tester per day, fixed-overhead percentage, session concurrency. Rank the sources: measured in this project on a recent comparable cycle beats team declaration beats an industry default. Tag each with its source and the date it was last measured.
-5. **Size five buckets separately.** Design, manual execution, automated execution and triage, automation authoring, fixed overhead. A bucket deliberately out of scope is recorded as zero **with the reason**, never dropped.
-6. **Three-point every bucket.** Optimistic, most likely, pessimistic. PERT mean is `(O + 4M + P) / 6`; standard deviation is `(P - O) / 6`. Combine independent buckets by summing the means and root-sum-squaring the deviations. Report the 80 percent band as `mean +/- 1.28 SD`, rounded outward.
-7. **Resource both lanes, and keep the units apart.** Manual work is person-hours. Automated execution is **wall clock**, bounded by session concurrency, and its human cost is triage rather than running. Run-with-AI is wall clock plus review time. Never add wall clock to person-hours.
-8. **Answer the question that was asked.** Fixed date gives headcount. Fixed team gives a date. Show both directions and name the serialized part that no extra person can shorten - usually triage and reporting, which cannot start before execution ends.
-9. **State the uncertainty honestly.** Confidence label, the two or three assumptions that move the number most with their sensitivity in hours, what is excluded, and the one measurement that would raise confidence a level. Read `references/estimation-model.md` for the confidence rubric before choosing the label.
+1. **Fix the scope, or force Low confidence.** Call `list_projects`, then `list_repositories`. Bind the window with `find_iterations`. Get the release, sprint, folder, or suite in writing. If scope still moves, build the model with the scope as a stated assumption and set confidence to Low.
+2. **Count what the platform can count.** Use `fetch_requirement_metrics` (`iteration_type` and `iteration_name`, with the iteration checked through `find_iterations`) for uncovered requirements. Use `find_test_cases` and `read_test_suite` for case counts. Pages start at 0, so copy `next_page_token` into `page_number` until it is null. Use `fetch_test_case_metrics` for the automated and manual split, or count it with `find_test_cases` and a `testType` query. Use `fetch_test_configuration_metrics` for the matrix multiplier. Use `fetch_test_stability_metrics` with `return_tests` for the flake burden. Without `return_tests` it returns metrics only, and it lists three cases per category unless you raise `limit_tests`. Say so when a result is paginated or truncated. Do not report a partial page as a total.
+3. **Read one comparable execution.** Agree on the closest finished cycle with the human. Call `list_executions` with both `start_time` and `end_time` from the real current date (the default window is the last 24 hours). Then call `read_execution` and `find_test_results` with filter_type `EXECUTION`. Its pages walk the execution's jobs, so page until the list ends. Take the pass rate and, if present, the automated elapsed time. This is your only platform calibration. It is one sample. Say "n=1".
+4. **Get the rates from the human.** Ask for manual minutes per case, design minutes per new case, new cases per uncovered requirement, triage minutes per failing result, automation authoring hours per case, productive hours per tester per day, overhead percentage, and session concurrency. Rank the sources: measured in this project within 90 days, then team declaration, then another project or an older cycle, then an industry default. Tag each rate with its source and date.
+5. **Size five buckets.** Design, manual execution, automated execution and triage, automation authoring, fixed overhead. Record an out-of-scope bucket as zero with the reason.
+6. **Give each driver a low, a likely, and a high value.** A driver is a rate or a count that can miss, such as new cases per requirement or the failure rate. Set the high value from a named risk. If you cannot name the risk, use 1.5 times the likely value and cap confidence at Medium.
+7. **Build the range from scenarios.** Compute the best case (every driver at its low), the likely case, and the worst case (every driver at its high). The drivers move together in practice. A weak requirement set raises design, execution, and triage at once. For that reason, do not add standard deviations in quadrature. See `references/estimation-model.md`.
+8. **Simulate when you can run code.** Use the script in `references/simulation.md`. Report P50, P80, and P90 with the correlation you assumed. Report the spread across three correlation values. If you cannot run code, say the range is scenario-based and give no percentile.
+9. **Resource both lanes in their own units.** Manual work is person-hours. Automated execution is wall clock, bounded by session concurrency. Its human cost is triage. Run with AI is wall clock plus review time. Never add wall clock to person-hours.
+10. **Answer the question asked.** A fixed date gives a headcount. A fixed team gives a date. Show both. Name the serialized part that no extra person shortens, usually triage and reporting.
+11. **State the uncertainty.** Give the confidence label, the two or three drivers that move the total most (with the change in hours for a stated miss), what the estimate excludes, and the one measurement that would raise confidence.
 
 ## The five buckets
 
-Most people say "estimate the test cycle" and mean bucket B alone. Sizing only B is the most common way a test estimate comes in low.
+- **A. Design** new coverage. Person-hours. Driven by uncovered requirements times new cases per requirement.
+- **B. Manual execution.** Person-hours. Driven by manual case count times configurations in the manual matrix. Retest of failures sits here.
+- **C. Automated execution and triage.** Wall clock for the run. Person-hours for the triage of what fails.
+- **D. Automation authoring.** Person-hours. Driven by the cases selected for automation.
+- **E. Fixed overhead.** A percentage of A to D. Teams often use 10 to 20 percent.
 
-- **A. Design** new coverage - person-hours, driven by uncovered requirements x cases per requirement.
-- **B. Manual execution** - person-hours, driven by manual case count x configurations in the manual matrix.
-- **C. Automated execution and triage** - wall clock for the run, person-hours for the triage of what fails.
-- **D. Automation authoring** - person-hours, driven by the cases selected for automation.
-- **E. Fixed overhead** - a percentage of A+B+C+D, typically 10 to 20 percent.
-
-Three rules govern them:
-
-- A bucket that is out of scope is **recorded as zero with the reason**. Silence reads as forgetting.
-- **Rework is not a sixth bucket.** Retest of failures lives inside B, triage of failures inside C. Modelling it separately double-counts.
-- Exploratory or session-based testing, when the cycle includes it, is **timeboxed rather than estimated**. Add the timebox as a stated line, not as a derived figure.
-
-Read `references/estimation-model.md` for the arithmetic, the rework multiplier, and the resourcing corrections before sizing any bucket.
+Rework is not a sixth bucket. Counting it separately counts it twice. Exploratory sessions are timeboxed. Add the timebox as a stated line.
 
 ## Output format
 
 ```text
 Estimate: <scope name>
-Confidence: High | Medium | Low     Basis: <where the rate came from, when measured>
+Confidence: High | Medium | Low     Basis: <rate source, date measured, sample size>
 
-Person-hours (PERT mean, with O / M / P):
-  A Design new coverage        <h>   (<O> / <M> / <P>)
-  B Manual execution           <h>   (<O> / <M> / <P>)
-  C Automated triage           <h>   (<O> / <M> / <P>)
-  D Automation authoring       <h>   or 0 - <reason for exclusion>
-  E Fixed overhead (<n>%)      <h>
-  ---------------------------------------------------
-  Total                        <h>   80% band <low> - <high> h
+Planning range, person-hours:
+  Best case    <h>   every driver at its low
+  Likely       <h>   every driver at its likely value
+  Worst case   <h>   every driver at its high
+  Simulated    P50 <h>  P80 <h>  P90 <h>   correlation <r>  (omit if not run)
+
+Buckets at the likely value:
+  A Design <h> | B Manual execution <h> | C Triage <h> | D Authoring <h> or 0 (<reason>) | E Overhead (<n>%) <h>
 
 Wall clock (not effort):
-  <n> h for a full automated pass at <k> parallel sessions x <c> configurations
+  <h> for one automated pass at <k> parallel sessions x <c> configurations
 
 Resourcing:
-  Fixed window <d> working days  -> <n> testers at the mean, <n> at P80
-  Fixed team   <n> testers       -> <d> working days at the mean
-  Serialized   <what cannot be parallelized, and how much of the window it needs>
+  Fixed window <d> working days -> <n> testers at P50, <n> at P80
+  Fixed team <n> testers -> <d> working days at P50, <d> at P80
+  Serialized: <what no extra person can shorten, and how much window it needs>
 
-Assumptions that move the number most:
-  1. <driver> - a <n>% miss moves the total by <h> h
-  2. ...
-
-Excluded from this estimate:
-  - <bucket or scope> - <reason>
-
+Drivers that move the total most:
+  1. <driver>: a <n>% miss moves the total by <h> h
+Excluded: <bucket or scope and the reason>
 Evidence:
   MCP   <tool> -> <figure>
-  Team  <figure> -> <who supplied it, when last measured>
+  Team  <figure> -> <who supplied it, date last measured>
 ```
 
 ## Never do
 
-- Never emit a single number. Mean, band, and confidence label, always.
-- Never quote more precision than the inputs carry. A rate of "about 20 minutes" produces "about 80 hours", not 81.1.
-- Never turn person-hours into a date without stating productive hours per day and the serialized portion.
-- Never treat automated elapsed time as person-effort, or a manual run's open duration as work.
-- Never let missing platform data become zero. A bucket with no data is an unknown with a stated range.
-- Never re-estimate to hit a date. If the number does not fit, cut scope or add people, re-run the model, and say which lever was pulled.
-- Never invent production traffic, change frequency, defect rates, or team velocity the MCP does not return. If the human supplies them, use them and cite the source.
-
-## Worked example
-
-**Input, verbatim from the user**
-
-> How long will it take us to test release 3.2 of Cellphone Shop, and how many testers do I need?
-
-**Step 1, inputs with provenance.** Every line is tagged. Nothing untagged enters the model.
-
-| Input | Value | Source |
-|---|---|---|
-| Cycle window | 2026-08-17 to 2026-08-28, 10 working days | MCP `find_iterations` |
-| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `fetch_requirement_data` |
-| Cases linked to covered requirements | 187 | MCP `find_test_cases_by_requirement` |
-| Cases in the release folder | 214 (187 linked + 27 unlinked regression) | MCP `find_test_cases`, full page, not truncated |
-| Automated / manual split | 96 / 118 | MCP `fetch_test_case_data` |
-| Unstable cases, last 30 days | 11 | MCP `fetch_test_stability_data` |
-| Automated pass rate, sprint 3.1 | 91% | MCP `read_execution_test_results` on the sprint 3.1 execution |
-| Target configuration matrix | Chrome, Safari, Android Chrome. Automated covers all 3, manual covers Chrome only | MCP `fetch_test_configuration_data` |
-| Sprint 3.1 automated elapsed | 41 min for 96 results | MCP `read_execution`, elapsed field confirmed present on the record |
-| Session concurrency | 4 parallel TestCloud sessions | **Team-supplied.** TestCloud plan, not an MCP field |
-| Manual execution rate | 18 min per case, median | **Team-supplied.** Measured on sprint 3.1 |
-| Manual design rate | 25 min per new case | **Team-supplied.** Team declaration |
-| New cases per uncovered requirement | 4 | **Team-supplied.** Team's own historical ratio |
-| Triage rate | 20 min per failing result | **Team-supplied.** Team declaration |
-| Productive hours per tester per day | 6 | **Team-supplied** |
-| Fixed overhead | 15% | **Team-supplied** |
-| Automation authoring this cycle | deferred | **Team decision** |
-
-**Step 2, the arithmetic, reproducible.**
-
-**A. Design new coverage.** 8 uncovered x 4 new cases = 32 cases. 32 x 25 min = 800 min = **13.3 h** most likely. O 10.0, P 22.0.
-PERT = (10.0 + 4 x 13.3 + 22.0) / 6 = 85.2 / 6 = **14.2 h**. SD = (22.0 - 10.0) / 6 = **2.00 h**.
-
-**B. Manual execution, one pass, Chrome only.** 118 existing manual + 32 new = 150 cases. 150 x 18 min = 2700 min = **45.0 h** most likely. O 37.0, P 63.0.
-PERT = (37.0 + 180.0 + 63.0) / 6 = 280.0 / 6 = **46.7 h**. SD = (63.0 - 37.0) / 6 = **4.33 h**.
-
-**C. Automated execution and triage.** 96 automated x 3 configurations = 288 results. At 91% pass, about 26 fail. 26 x 20 min = 520 min = **8.7 h** most likely. O 5.0, P 18.0 - the pessimistic branch is wide because the 11 unstable cases run on all 3 configurations and are the likeliest contributors.
-PERT = (5.0 + 34.8 + 18.0) / 6 = 57.8 / 6 = **9.6 h**. SD = (18.0 - 5.0) / 6 = **2.17 h**.
-Wall clock, tracked separately and never added to person-hours: 3 x 41 min = 123 min = **2.1 h** at 4 parallel sessions.
-
-**D. Automation authoring.** **0 h**, excluded by team decision this cycle. Recorded, not dropped.
-
-**E. Fixed overhead.** 15% of (14.2 + 46.7 + 9.6 = 70.5) = **10.6 h**.
-
-**Total.** 70.5 + 10.6 = **81.1 h**.
-Combined SD = sqrt(2.00^2 + 4.33^2 + 2.17^2) = sqrt(27.46) = 5.24 h, scaled by the 15% overhead = **6.03 h**.
-80 percent band = 81.1 +/- 1.28 x 6.03 = 81.1 +/- 7.7, rounded outward = **73 to 89 person-hours**.
-
-**Expected output**
-
-```text
-Estimate: Cellphone Shop, release 3.2 test cycle
-Confidence: Medium     Basis: manual rate measured on sprint 3.1 in this project, n=1
-
-Person-hours (PERT mean, with O / M / P):
-  A Design new coverage       14.2 h   (10.0 / 13.3 / 22.0)
-  B Manual execution          46.7 h   (37.0 / 45.0 / 63.0)
-  C Automated triage           9.6 h   ( 5.0 /  8.7 / 18.0)
-  D Automation authoring       0.0 h   excluded - team deferred authoring this cycle
-  E Fixed overhead (15%)      10.6 h
-  ---------------------------------------------------
-  Total                       81.1 h   80% band 73 - 89 h
-
-Wall clock (not effort):
-  2.1 h for a full automated pass at 4 parallel sessions x 3 configurations
-
-Resourcing:
-  Fixed window 10 working days -> 1.4 testers at the mean, 1.5 at P80
-  Fixed team   2 manual testers -> 7 working days at the mean
-  Serialized   triage cannot start before execution ends - reserve the last 2 days
-
-Assumptions that move the number most:
-  1. Manual execution rate, 18 min per case - a 25% miss moves the total by 11.7 h,
-     which is wider than the entire design bucket's 80% band
-  2. New cases per uncovered requirement, 4 - a 50% miss moves the total by 7.1 h
-  3. Session concurrency, 4 - halving it doubles wall clock but changes person-hours by 0
-
-Excluded from this estimate:
-  - Automation authoring - team deferred it this cycle
-  - Manual execution on Safari and Android Chrome - matrix currently Chrome only
-  - Any money figure - the platform holds no rate
-
-Evidence:
-  MCP   fetch_requirement_data -> 34 in scope, 8 uncovered
-  MCP   find_test_cases -> 214 cases in the release folder
-  MCP   fetch_test_case_data -> 96 automated / 118 manual
-  MCP   fetch_test_stability_data -> 11 unstable in 30 days
-  MCP   read_execution_test_results -> 91% pass on sprint 3.1
-  MCP   fetch_test_configuration_data -> 3 target configurations
-  Team  18 min per manual case -> measured by the team on sprint 3.1
-  Team  4 parallel sessions -> TestCloud plan, not an MCP field
-```
-
-**What the reader should take from it.** The listed scope needs **2 manual testers, not 3**. The third tester is not funding the listed scope; the exposure sits in the two exclusions. Sizing the first one on request - adding Safari to the manual lane at a team-supplied 0.7 repeat-pass factor is 150 x 18 min x 0.7 = 31.5 h, which with overhead takes the total from 81 h to about 117 h. That is 19.6 person-days instead of 13.5, so sustained headcount goes from 1.4 to 2.0 and the cycle costs **about 6 extra person-days**. Android Chrome and the P80 branch are what the third tester actually covers. The point is not the number, it is that the third seat is now a decision with a price on it rather than a habit.
+- Never give one number. Give the range and the confidence label.
+- Never quote more precision than the inputs carry. "About 20 minutes" gives "about 80 hours", not 81.1.
+- Never turn person-hours into a date without productive hours per day and the serialized part.
+- Never treat automated elapsed time as person-effort, or a manual run's open time as work.
+- Never turn missing platform data into zero.
+- Never re-estimate to hit a date. Cut scope or add people, rerun the model, and name the lever.
+- Never invent traffic, change rate, defect rate, or velocity. Use numbers the human supplies and cite them.
+- Never call a scenario range a confidence interval.
 
 ## Prompt recipes
 
 - `How long will it take us to test release 3.2, and how many people do I need?`
 - `If we add the Safari and Android configurations, what does that cost us in tester days?`
-- `We have 2 testers and the sprint ends on the 28th. Does the release 3.2 scope fit, and what would I have to cut?`
-- `Size the testing effort for the 8 uncovered requirements in Cellphone Shop, and tell me which assumption you are least sure about.`
+- `We have 2 testers and the sprint ends on the 28th. Does the scope fit, and what would I cut?`
+- `Size the testing effort for the 8 uncovered requirements and tell me which assumption you trust least.`
 
 ## Hand-offs
 
-- Scope not yet fixed or ranked -> `test-plan`. Estimate only what that skill has already scoped.
-- The plan of record for the estimated scope -> `test-plan`, whose folder + suite is where the estimate should be recorded, since the platform has no field for it.
-- The uncovered requirements this estimate sized -> `create-test-cases`.
-- Automation authoring effort, when it is in scope -> `test-case-to-playwright` for the per-case shape.
-- Flake burden behind the triage bucket -> `test-maintenance`, and `analyze-failures` for a specific red run.
-- The verdict once the estimated cycle has run -> `release-analyze`.
+- Scope not fixed or not ranked -> `test-plan`. Record the estimate in the plan text or the linked Jira or Azure DevOps issue, because the platform has no field for it.
+- Uncovered requirements this estimate sized -> `create-test-cases`.
+- Automation authoring effort -> `test-case-to-playwright` for the per-case shape.
+- Flake burden behind the triage bucket -> `test-maintenance`. A specific red run -> `analyze-failures`.
+- Verdict after the cycle has run -> `release-analyze`.
 
-Read `references/estimation-model.md` before sizing any bucket, and `references/mcp-evidence-map.md` before claiming any figure came from the platform. Read the orchestrator `true-platform-testing/references/unavailable-capabilities.md` when the user asks whether Katalon can hold the estimate itself.
+Read `references/estimation-model.md` before you size a bucket. Read `references/mcp-evidence-map.md` before you claim a figure came from the platform. Read `references/worked-example.md` for one complete run with arithmetic. Read `references/simulation.md` before you simulate.
 
 ---
 
@@ -241,165 +126,440 @@ _The reference material the skill points to is inlined below so this file is sel
 
 # Estimation model reference
 
-The method behind `test-estimation`. Five buckets, three points each, one combined band.
+The method behind `test-estimation`. Five buckets, three values per driver, a scenario range, and an optional simulation.
+
+## Contents
+
+- The five buckets
+- Drivers and scenarios
+- Why the buckets are not added in quadrature
+- Simulation in short
+- Lane units
+- Rework
+- Resourcing arithmetic
+- Confidence rubric
+- Sensitivity
+- Re-estimation
 
 ## The five buckets
 
-Most people say "estimate the test cycle" and mean bucket B alone. Sizing only B is the most common way a test estimate comes in low.
-
 | # | Bucket | Unit | Countable input | Rate source |
 |---|---|---|---|---|
-| A | **Design** new coverage | person-hours | uncovered requirements x cases per requirement | team, minutes per new case |
+| A | **Design** new coverage | person-hours | uncovered requirements x new cases per requirement | team, minutes per new case |
 | B | **Manual execution** | person-hours | manual case count x configurations in the manual matrix | team, minutes per case |
-| C | **Automated execution and triage** | wall clock + person-hours | automated case count x configurations; failure rate | platform for elapsed, team for triage minutes per failing result |
+| C | **Automated execution and triage** | wall clock + person-hours | automated case count x configurations; failure rate | platform for elapsed time, team for triage minutes per failing result |
 | D | **Automation authoring** | person-hours | cases selected for automation | team, hours per case |
-| E | **Fixed overhead** | percentage of A+B+C+D | none | team, typically 10 to 20 percent |
+| E | **Fixed overhead** | percent of A to D | none | team, often 10 to 20 percent |
 
 Rules:
 
-- A bucket that is out of scope is **recorded as zero with the reason**. Silence reads as forgetting.
-- Rework is not a sixth bucket. Retest of failures lives inside B, triage of failures inside C. Modelling it separately double-counts.
-- Exploratory or session-based testing, when the cycle includes it, is timeboxed rather than estimated. Add the timebox as a stated line, not as a derived figure.
+- Sizing only bucket B is the usual way an estimate comes in low.
+- Record an out-of-scope bucket as zero with the reason. Silence reads as forgetting.
+- Rework is not a sixth bucket. Retest of failures lives in B. Triage of failures lives in C.
+- Timebox exploratory sessions. Add the timebox as a stated line.
 
-## Three-point arithmetic
+## Drivers and scenarios
 
-For each bucket collect optimistic `O`, most likely `M`, pessimistic `P`.
+A **driver** is a rate or a count that can miss. Examples: new cases per uncovered requirement, minutes per manual case, design minutes per case, failure rate, triage minutes per failing result.
 
-```text
-PERT mean   E  = (O + 4M + P) / 6
-Deviation   SD = (P - O) / 6
-```
+For each driver, collect three values:
 
-Combine independent buckets:
+- **Low.** Nothing goes wrong. Often 0.8 times the likely value.
+- **Likely.** Count times rate. It is the only value with arithmetic behind it.
+- **High.** Set it from a named risk, such as "the 8 uncovered requirements need 7 cases each, not 4". If you cannot name the risk, use 1.5 times the likely value. Confidence then cannot be High.
 
-```text
-Total mean = sum of the bucket means
-Total SD   = sqrt( SD_A^2 + SD_B^2 + SD_C^2 + SD_D^2 )
-```
+Build three scenarios from the drivers:
 
-Overhead E is a percentage of the rest, so scale the combined SD by the same factor rather than giving it its own three points.
+| Scenario | Driver values | What it tells the reader |
+|---|---|---|
+| Best case | every driver at its low | the floor. Not a goal. |
+| Likely | every driver at its likely value | the plan figure |
+| Worst case | every driver at its high | the ceiling. A bound, not an interval. |
 
-Report the **80 percent band** as `mean +/- 1.28 x SD`, rounded outward to whole hours. Use 90 percent (`1.64 x SD`) only when the ask is a commitment date rather than a plan figure, and say which multiplier you used.
+The scenarios give a **planning range**. They do not give a probability. Say "planning range" and never say "80 percent band".
 
-Setting the three points honestly:
+A skewed driver makes the likely value sit below the median. A failure rate with a long upper tail is the usual cause. The simulation shows the gap. See the worked example.
 
-- `M` comes from count x rate. It is the only one with arithmetic behind it.
-- `O` assumes nothing goes wrong and no rework. Usually 0.8 x M.
-- `P` is the one that carries the information. Set it from a named risk, not a multiplier - "the 8 uncovered requirements turn out to need 7 cases each, not 4". If you cannot name the risk, `P` is 1.5 x M and confidence cannot be High.
+## Why the buckets are not added in quadrature
 
-## Lane units, and why they must not be added
+An older version of this skill combined bucket deviations by root sum of squares and printed an 80 percent band. That method assumes the buckets vary independently. They do not.
+
+A weak requirement set raises design effort, execution effort, and triage effort at the same time. A flaky environment raises triage and retest at the same time. When drivers move together, the total spreads wider than a quadrature sum shows. With one comparable execution as calibration, the true spread is wider again.
+
+For that reason, the skill uses scenarios in which drivers move together, and an optional simulation with a stated correlation. Both show the spread the inputs allow. Neither adds precision the inputs lack.
+
+## Simulation in short
+
+The script is in `references/simulation.md`. It draws each driver from a triangular distribution (low, likely, high). It ties the draws together with one shared "trouble" factor. The correlation `rho` sets how strongly. Nobody can measure `rho` from one cycle, so report it as an assumption and run three values (0.0, 0.6, 0.9).
+
+Report P50, P80, and P90 of the total. Say "model P80" and name the inputs. The percentile is only as good as the driver ranges the team gave.
+
+## Lane units
 
 | Lane | What consumes it | Unit | What shortens it |
 |---|---|---|---|
 | Manual | a person, per case, per configuration | person-hours | more people, until design and triage serialize |
-| Automated | machines, bounded by session concurrency | wall clock | more parallel sessions - and this changes person-hours by zero |
+| Automated | machines, bounded by session concurrency | wall clock | more parallel sessions. This changes person-hours by zero. |
 | Automated, human side | triage of failing results | person-hours | a lower failure rate, or fewer flaky cases |
-| Run with AI | platform wall clock, plus a human reviewing the AI session | wall clock + person-hours | nothing the estimator controls; treat the wall clock as fixed and estimate only the review |
+| Run with AI | platform wall clock, plus a person reviewing the session | wall clock + person-hours | nothing the estimator controls. Treat wall clock as fixed and estimate the review. |
 
-**Never add wall clock to person-hours.** They answer different questions - one is "will it fit in the window", the other is "how many people do I need".
+Never add wall clock to person-hours. One answers "will it fit in the window". The other answers "how many people do I need".
 
-## Rework multiplier
+## Rework
 
-Failures generate two costs, and both are already inside a bucket:
+Failures cost twice. Both costs sit in a bucket already:
 
 ```text
-failing results   = total results x (1 - pass rate)
-triage hours      = failing results x triage minutes / 60          -> bucket C
-manual retest     = failing manual cases x execution minutes / 60  -> bucket B
+failing results = total results x failure rate
+triage hours    = failing results x triage minutes / 60            -> bucket C
+manual retest   = failing manual cases x execution minutes / 60    -> bucket B
 ```
 
-Flaky cases inflate the failing count without indicating product defects. Use the unstable-case count as the driver of `P` rather than of `M`, since a flake may or may not fire on any given run.
+Flaky cases raise the failing count without a product defect. Use the unstable-case count to set the high value of the failure rate. Do not use it for the likely value, because a flake may or may not fire on a given run.
+
+Environment and infrastructure errors raise the failing count the same way. Keep them out of the pass rate that feeds product-defect triage. Count their rerun and setup effort as a named risk.
 
 ## Resourcing arithmetic
 
 ```text
 person-days   = person-hours / productive hours per day
-Fixed window  testers  = person-days / working days in the window
-Fixed team    days     = person-days / testers
+Fixed window  testers = person-days / working days in the window
+Fixed team    days    = person-days / testers
 ```
 
-Two corrections that stop the naive division from lying:
+Two corrections stop the plain division from misleading:
 
-1. **Serialization.** Triage and reporting cannot start before execution ends. Subtract that tail from the window before dividing, and state it.
-2. **Parallelism limits.** Manual execution parallelizes well across cases. Design parallelizes to roughly two people before coordination cost exceeds the gain. Triage of one suite rarely parallelizes at all. Adding people to a late cycle moves B and almost nothing else.
+1. **Serialization.** Triage and reporting cannot start before execution ends. Subtract that tail from the window before you divide. State it.
+2. **Parallelism limits.** Manual execution parallelizes well across cases. Design parallelizes to about two people before coordination cost wins. Triage of one suite rarely parallelizes. Adding people late in a cycle moves bucket B and little else.
 
-Report both directions - headcount for a fixed date, and a date for a fixed team - because the asker usually has one of them fixed and has not said which.
+Report both directions. Headcount for a fixed date. A date for a fixed team. Use P50 and P80 (or Likely and Worst case when you did not simulate).
 
 ## Confidence rubric
 
-| Label | Conditions | Typical band width |
+| Label | Conditions | Typical spread of the range |
 |---|---|---|
-| **High** | The per-unit rate was measured in this project on a comparable cycle within the last 90 days, scope is frozen, and the platform returned a count for every bucket | under +/- 15% |
-| **Medium** | The rate is team-declared, or measured on a different project or an older cycle, or one bucket's count is an estimate rather than a platform figure | +/- 15 to 35% |
-| **Low** | No measured rate anywhere, or scope is still moving, or the platform returned nothing for a bucket that matters | wider than +/- 35% |
+| **High** | The per-unit rate was measured in this project on a comparable cycle within 90 days. Scope is frozen. The platform returned a count for every bucket. | worst case within about 25% of likely |
+| **Medium** | The rate is team-declared, or measured on another project or an older cycle, or one bucket's count is an estimate. | worst case about 25 to 100% above likely |
+| **Low** | No measured rate anywhere, or scope is still moving, or the platform returned nothing for a bucket that matters. | wider than that |
 
-At **Low**, deliver the model and the shape but refuse the headline number, and name the one measurement that would move it to Medium. That is usually "time 20 real cases".
+At **Low**, give the model and its shape. Refuse the headline number. Name the one measurement that would move the label to Medium. That is usually "time 20 real cases".
 
 ## Sensitivity
 
-Find the dominant term before publishing. For each team-supplied rate, recompute the total with the rate 25 percent higher and report the delta in hours. Rank the drivers and print the top two or three.
+Find the dominant driver before you publish. For each team-supplied driver, recompute the likely total with that driver raised by a stated amount (25 percent for rates, 50 percent for counts). Report the change in hours. Print the top two or three.
 
-The dominant term is almost always the largest bucket's rate. If a 25 percent miss on one input moves the total by more than the entire 80 percent band, that input is the estimate - say so, and ask for it to be measured before the number is used to commit to anything.
+If one driver's miss moves the total by more than the gap between Likely and P80, that driver is the estimate. Say so. Ask for it to be measured before anyone commits to the number.
 
 ## Re-estimation
 
-An estimate is a snapshot of a scope. When scope changes, re-run the model rather than adjusting the number, and publish the delta with the driver named: "+31.5 h, adding Safari to the manual lane". Never quietly revise a published estimate downward to fit a date; state which lever was pulled - scope, people, or window.
+An estimate is a snapshot of a scope. When scope changes, rerun the model. Publish the change and name the driver: "+36 h, adding Safari to the manual lane". Never lower a published estimate to fit a date. Name the lever you pulled: scope, people, or window.
 
 ### references/mcp-evidence-map.md
 
 # MCP evidence map for estimation
 
-Every figure in an estimate is either a platform fact or a human input. This file draws the line. Tag every line of the output with which side it came from.
+Every figure in an estimate is a platform fact or a human input. This file draws the line. Tag every line of the output with its side.
 
-## Platform side - what the MCP actually returns
+## Platform side: what the MCP returns
 
 | Estimation input | Tool | What it gives you | Trap |
 |---|---|---|---|
-| Cycle window | `find_iterations` | sprint/iteration start and end | Calendar days, not working days. Subtract holidays yourself |
-| Uncovered requirements | `fetch_requirement_data` | coverage status per requirement | "Covered" means linked, not passing. A linked-but-never-run requirement still costs execution time |
-| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, suite, or requirement link | Check for pagination. A truncated page reported as a total silently shrinks the estimate |
-| Automated / manual split | `fetch_test_case_data` | quality signals including the split when exposed | Not guaranteed present. If absent, ask, and tag it team-supplied |
-| Failure and flake burden | `fetch_test_stability_data`, `find_test_results` | unstable cases, recent pass and fail history | A flaky case inflates the failing count without being a defect. Drive `P`, not `M`, with it |
-| Configuration matrix | `fetch_test_configuration_data` | which environments, browsers, and devices are covered against the target set | The multiplier applies per lane. Automated may cover three configurations while manual covers one |
-| Past automated elapsed time | `read_execution`, `read_execution_test_results` | a finished execution's records, including machine-recorded elapsed time | **Confirm the field is on the record before modelling on it.** Version and runner dependent. If it is absent, ask for the figure |
-| Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. There is no aggregate-across-cycles tool. Say n=1 in the confidence basis |
+| Cycle window | `find_iterations` | sprint or release name, start, and end (set `detail_level` to `FULL` for dates) | Calendar days, not working days. Subtract holidays yourself. |
+| Uncovered requirements | `fetch_requirement_metrics` | requirement coverage for a sprint or release | "Covered" means linked, not passing. A linked case that never ran still costs execution time. It takes no date range. |
+| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. Folder-scoped search resolves at most 200 folders and fails rather than truncating. |
+| Automated and manual split | `fetch_test_case_metrics`, or `find_test_cases` with a `testType` or `automationStatus` query | execution statistics, automation status, and case records | `automationStatus` is not `testType`. Do not substitute one for the other. If neither answers, ask and tag it team-supplied. |
+| Failure and flake burden | `fetch_test_stability_metrics`, `find_test_results` | flaky, always failing, newly failing, and slow cases (set `return_tests`); flakiness over a `from_date` and `to_date` window; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. The stability tool has no minimum-run parameter. Count runs with `find_test_results`. A signal from fewer than about 10 runs is unconfirmed. |
+| Configuration matrix | `fetch_test_configuration_metrics` | which OS or browser combinations are covered against the target set (`configuration_type`, `coverage_threshold`, `pass_threshold`) | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
+| Existing automated cadence | `list_schedule`, `read_schedule_detail` | saved schedules and their detail | A suite that already runs nightly adds triage every day. Count the days in the window. |
+| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is the last 24 hours. Pass explicit start and end times from the real current date. Do not use it for TestCloud artifacts. |
+| Past automated elapsed time | `read_execution`, `find_test_results` with filter_type `EXECUTION` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
+| Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. No tool aggregates across cycles. Write n=1 in the confidence basis. |
 
-Discovery first, always: `list_projects` then `list_repositories`, exactly as `test-plan` does.
+Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud (formerly TestCloud) uses a string. `list_executions` and `read_execution` take the number. `list_execution_outputs` takes the string. Never swap them.
 
-## Human side - the checklist
+Always resolve scope first: `list_projects`, then `list_repositories`.
 
-None of these exist in the platform. Ask for all of them that the chosen buckets need, and record who supplied each and when it was last measured.
+The metrics tools take an iteration, a date range, or both. `fetch_requirement_metrics` takes an iteration only. The others take a `filter` with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, the last 28 days), except `fetch_test_stability_metrics`, which takes flat parameters. See the tool schema for exact fields. Metrics are read at the time of the call. They are not point-in-time history.
 
-- Manual execution minutes per case (median, not mean - a few long cases skew the mean)
-- Design minutes per new case
-- New cases per uncovered requirement
-- Triage minutes per failing result
-- Automation authoring hours per case, if bucket D is in scope
-- Productive hours per tester per day
-- Number of testers available, and any part-time fractions
-- Working days lost to holidays or PTO inside the window
-- Fixed-overhead percentage
-- Session concurrency for the automated lane
-- Repeat-pass factor, if a configuration is being run a second time
-- Any cost rate, if the answer must be in money
+## Human side: the checklist
+
+None of these exist in the platform. Ask for each one the chosen buckets need. Record who supplied it and when it was last measured.
+
+- Manual execution minutes per case. Ask for the median. A few long cases skew the mean.
+- Design minutes per new case.
+- New cases per uncovered requirement.
+- Triage minutes per failing result.
+- Automation authoring hours per case, if bucket D is in scope.
+- Productive hours per tester per day.
+- Testers available, and any part-time fractions.
+- Working days lost to holidays or PTO inside the window.
+- Fixed-overhead percentage.
+- Session concurrency for the automated lane.
+- Repeat-pass factor, if a configuration runs a second time.
+- A low and a high value for every rate above, and the risk behind the high value.
+- Any cost rate, if the answer must be in money.
 
 ## Rate source ranking
 
 1. **Measured in this project on a comparable cycle within 90 days.** The only source that supports High confidence.
-2. **Team declaration.** Medium. Ask what it is based on; a number someone remembers is weaker than one someone tracked.
-3. **A different project, or an older cycle.** Medium, and say which project.
-4. **An industry default.** Low. Print it as a placeholder, name it as a placeholder, and ask for a real measurement.
+2. **Team declaration.** Medium. Ask what it rests on. A tracked number beats a remembered one.
+3. **Another project, or an older cycle.** Medium. Say which project.
+4. **An industry default.** Low. Print it as a placeholder and ask for a real measurement.
 
 ## Things the platform cannot hold
 
 - **No effort field.** Nothing books time against a case, run, or person.
 - **No roster or capacity.** No team members, FTE fractions, PTO, or working calendar.
-- **No cost model.** No rates, currency, license consumption, or TestCloud minute pricing.
-- **No place to store the estimate.** No estimated-effort field on a case, folder, suite, or requirement, and per `unavailable-capabilities.md` no Test Plan, Release, or Build entity to attach one to. Record it in the plan suite's description or the linked Jira/Azure issue, and hand off to `test-plan`.
-- **No cross-cycle aggregate.** Result and execution tools are record-level. Trending across releases belongs to a reporting skill that does not exist yet - state the boundary rather than assembling a trend from single reads and presenting it as one.
+- **No cost model.** No rates, currency, license use, or Test Execution - Cloud minute pricing.
+- **No place to store the estimate.** No estimated-effort field exists on a case, folder, suite, or requirement. No tool creates a Test Plan, Release, or Build. Record the estimate in the plan text or the linked Jira or Azure DevOps issue. Hand off to `test-plan`.
+- **No cross-cycle aggregate.** Result and execution tools return records. For a trend across releases, hand off to `test-reporting`, which keeps its own snapshots.
 
 ## Things that look like MCP facts and are not
 
-- **Session concurrency.** `list_test_cloud_environments` lists environments; `find_execution_profiles` lists profiles. Neither returns how many sessions run at once.
-- **A manual run's duration.** Open and close timestamps are calendar elapsed. A run left open over a weekend is not a weekend of work.
-- **Production traffic, change frequency, and defect rates.** Not returned by any tool. If the human supplies them from TrueTest Test Gap Analysis, an analytics product, or Jira, use them and cite the source - the same rule `test-plan` already applies.
+- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team.
+- **A manual run's duration.** Open and close times are calendar time. A run left open over a weekend is not a weekend of work.
+- **Production traffic, change frequency, and defect rates.** No tool returns them. If the human supplies them from TrueTest, an analytics product, or Jira, use them and cite the source.
+
+### references/simulation.md
+
+# Simulation reference
+
+Read this before you simulate. Use it only when you can run code and the team gave a low, likely, and high value for each driver. If you cannot run code, report the scenario range and give no percentile.
+
+## Contents
+
+- What the script does
+- The script
+- How to adapt it
+- How to report the result
+
+## What the script does
+
+1. Each driver gets a triangular distribution from its low, likely, and high values.
+2. One shared "trouble" draw ties the drivers together. The correlation `rho` sets how strongly. At `rho = 0` the drivers are independent. At `rho` near 1 they all run bad together.
+3. The script draws 20,000 totals and prints P50, P80, and P90.
+
+The script uses the Python 3 standard library only. It makes no network call and writes no file.
+
+## The script
+
+Edit the `DRIVERS` and `FIXED` blocks and the `total_hours` function to match the cycle. The values below are the worked example.
+
+```python
+import math, random
+
+def tri_inv(u, lo, mode, hi):
+    # inverse CDF of a triangular distribution
+    if hi == lo:
+        return lo
+    fc = (mode - lo) / (hi - lo)
+    if u < fc:
+        return lo + math.sqrt(u * (hi - lo) * (mode - lo))
+    return hi - math.sqrt((1 - u) * (hi - lo) * (hi - mode))
+
+def phi(x):
+    # standard normal CDF
+    return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+
+# Team-supplied drivers as (low, likely, high).
+DRIVERS = {
+    "new_cases_per_req": (3, 4, 7),
+    "design_min":        (20, 25, 35),
+    "manual_min":        (15, 18, 22),
+    "fail_rate":         (0.05, 0.09, 0.15),
+    "triage_min":        (15, 20, 30),
+}
+# Platform counts and fixed team inputs.
+FIXED = {"uncovered_reqs": 8, "existing_manual": 118,
+         "auto_results": 96 * 3, "overhead": 0.15}
+
+def total_hours(x):
+    new_cases = FIXED["uncovered_reqs"] * x["new_cases_per_req"]
+    a = new_cases * x["design_min"] / 60
+    b = (FIXED["existing_manual"] + new_cases) * x["manual_min"] / 60
+    c = FIXED["auto_results"] * x["fail_rate"] * x["triage_min"] / 60
+    return (a + b + c) * (1 + FIXED["overhead"])
+
+def simulate(rho, n=20000, seed=7):
+    rng = random.Random(seed)
+    totals = []
+    for _ in range(n):
+        z = rng.gauss(0, 1)                       # shared trouble factor
+        x = {}
+        for name, (lo, mode, hi) in DRIVERS.items():
+            e = rng.gauss(0, 1)                   # driver-specific noise
+            u = phi(rho * z + math.sqrt(1 - rho * rho) * e)
+            x[name] = tri_inv(u, lo, mode, hi)
+        totals.append(total_hours(x))
+    totals.sort()
+    q = lambda p: totals[int(p * (len(totals) - 1))]
+    return q(0.5), q(0.8), q(0.9)
+
+# Scenario totals.
+for label, i in (("best", 0), ("likely", 1), ("worst", 2)):
+    print(label, round(total_hours({k: v[i] for k, v in DRIVERS.items()}), 1))
+
+# Percentiles at three correlation values.
+for rho in (0.0, 0.6, 0.9):
+    print("rho", rho, "P50/P80/P90", [round(v, 1) for v in simulate(rho)])
+```
+
+Expected output for the worked example: best 54.2, likely 77.0, worst 135.8. Then P50/P80/P90 of 84.8/92.2/96.2 at `rho` 0.0, 84.6/95.7/101.7 at 0.6, and 84.0/99.3/107.9 at 0.9. If your numbers differ, check the edits before you report anything.
+
+## How to adapt it
+
+- **Different buckets.** Change `total_hours`. Keep the driver draws as they are.
+- **Automation authoring in scope.** Add a driver for hours per case and a fixed count of cases to automate. Add them to the total before overhead.
+- **Several manual configurations.** Multiply the manual case count by the number of manual configurations inside `total_hours`.
+- **A driver with no range.** Give it the same value three times. It then stays fixed. Name it as an assumption in the output.
+
+## How to report the result
+
+- Say "model P80". Name the correlation you assumed. Print all three correlation rows, or the lowest and highest P80.
+- Say that the percentiles reflect the driver ranges the team supplied. They are not measured probabilities.
+- Compare P50 with the Likely case. P50 usually sits higher when the high values are further from the likely values than the low values are. Tell the reader so.
+- Use P50 and P80 for headcount and dates. Do not use the Best case for any commitment.
+- Do not report a P80 you did not run. Without code, give Likely and Worst case and say the range is scenario-based.
+
+### references/worked-example.md
+
+# Worked example
+
+One complete run of `test-estimation`, with arithmetic you can reproduce. The numbers are an example. The project is fictional.
+
+## Contents
+
+- The request
+- Inputs with provenance
+- Drivers and the named risk behind each high value
+- Scenario arithmetic
+- Simulation
+- Resourcing
+- Expected output
+- What the reader should take from it
+
+## The request
+
+> How long will it take us to test release 3.2 of Cellphone Shop, and how many testers do I need?
+
+## Inputs with provenance
+
+Tag every line. Nothing untagged enters the model.
+
+| Input | Value | Source |
+|---|---|---|
+| Cycle window | 2026-08-17 to 2026-08-28, 10 working days | MCP `find_iterations` |
+| In-scope requirements | 34, of which 26 have coverage and 8 have none | MCP `fetch_requirement_metrics` |
+| Cases in the release folder | 214 (187 linked, 27 unlinked regression) | MCP `find_test_cases`, full page, not truncated |
+| Automated / manual split | 96 / 118 | MCP `fetch_test_case_metrics` |
+| Unstable cases, last 30 days | 11 | MCP `fetch_test_stability_metrics` |
+| Automated pass rate, sprint 3.1 | 91% | MCP `find_test_results` (filter_type `EXECUTION`) on the sprint 3.1 execution found with `list_executions` |
+| Target configurations | Chrome, Safari, Android Chrome. Automated covers all 3. Manual covers Chrome only. | MCP `fetch_test_configuration_metrics` |
+| Sprint 3.1 automated elapsed | 41 min for 96 results | MCP `read_execution`, elapsed field confirmed on the record |
+| Session concurrency | 4 parallel sessions | **Team-supplied.** Not an MCP field. |
+| Manual minutes per case | 15 / 18 / 22 (low / likely / high) | **Team-supplied.** Likely value measured on sprint 3.1. |
+| Design minutes per new case | 20 / 25 / 35 | **Team-supplied.** Declaration. |
+| New cases per uncovered requirement | 3 / 4 / 7 | **Team-supplied.** Historical ratio. |
+| Failure rate of automated results | 5% / 9% / 15% | Likely from MCP (91% pass on sprint 3.1). Low and high team-supplied. |
+| Triage minutes per failing result | 15 / 20 / 30 | **Team-supplied.** Declaration. |
+| Productive hours per tester per day | 6 | **Team-supplied.** |
+| Fixed overhead | 15% | **Team-supplied.** |
+| Automation authoring this cycle | deferred | **Team decision.** |
+
+## Drivers and the named risk behind each high value
+
+| Driver | Low | Likely | High | Risk behind the high value |
+|---|---|---|---|---|
+| New cases per uncovered requirement | 3 | 4 | 7 | the 8 uncovered requirements are payment rules with many branches |
+| Design minutes per new case | 20 | 25 | 35 | payment cases need test data setup |
+| Manual minutes per case | 15 | 18 | 22 | the staging environment is slow on Chrome |
+| Failure rate | 5% | 9% | 15% | the 11 unstable cases fail on all 3 configurations |
+| Triage minutes per failing result | 15 | 20 | 30 | failures need log reading across two services |
+
+## Scenario arithmetic
+
+Fixed counts: 8 uncovered requirements, 118 existing manual cases, 96 automated cases times 3 configurations = 288 automated results, 15% overhead.
+
+Likely case:
+
+- A Design: 8 x 4 = 32 new cases. 32 x 25 min = 800 min = **13.3 h**.
+- B Manual execution, Chrome only: (118 + 32) = 150 cases. 150 x 18 min = 2700 min = **45.0 h**.
+- C Triage: 288 x 9% = 25.9 failing results. 25.9 x 20 min = 518 min = **8.6 h**.
+- D Automation authoring: **0 h**. The team deferred it this cycle. Recorded, not dropped.
+- E Overhead: 15% of (13.3 + 45.0 + 8.6 = 66.9) = 10.0 h.
+- Total: **77.0 h**.
+
+Best case and worst case use the low and high column of the driver table, with the same method:
+
+| Scenario | A | B | C | Total with 15% overhead |
+|---|---|---|---|---|
+| Best case | 8.0 | 35.5 | 3.6 | 54.2 h |
+| Likely | 13.3 | 45.0 | 8.6 | 77.0 h |
+| Worst case | 32.7 | 63.8 | 21.6 | 135.8 h |
+
+Wall clock, kept apart from person-hours: 3 configurations x 41 min = 123 min = **2.1 h**. This holds if sprint 3.1 ran at the same 4 parallel sessions. If not, ask.
+
+## Simulation
+
+The script in `references/simulation.md` ran 20,000 draws on the five drivers above, with a shared trouble factor. Results for the total, in person-hours:
+
+| Correlation assumed | P50 | P80 | P90 |
+|---|---|---|---|
+| 0.0 (drivers independent) | 84.8 | 92.2 | 96.2 |
+| 0.6 | 84.6 | 95.7 | 101.7 |
+| 0.9 | 84.0 | 99.3 | 107.9 |
+
+Two things stand out. P50 (about 85 h) is above the Likely case (77.0 h), because the high values sit further from the likely value than the low values do. And P80 grows with correlation. An independence assumption gives 92 h. A strong shared factor gives 99 h. An older root-sum-square band on a similar example ended at 89 h, below every row here.
+
+## Resourcing
+
+Productive hours: 6 per tester per day. P50 = 84.6 h = 14.1 person-days. P80 = 95.7 h = 16.0 person-days.
+
+- Fixed window, 10 working days: 1.4 testers at P50 and 1.6 at P80 before the serialization correction.
+- Serialization: triage (about 10 h at the likely value) cannot start before execution ends. Reserve the last 2 days. Design and manual work then have 8 days. That needs about 1.6 testers at P50 and 1.7 at P80.
+- Fixed team, 2 testers: 7.1 working days at P50 and 8.0 at P80. Both fit the 10-day window.
+
+## Expected output
+
+```text
+Estimate: Cellphone Shop, release 3.2 test cycle
+Confidence: Medium     Basis: manual rate measured on sprint 3.1 in this project, n=1
+
+Planning range, person-hours:
+  Best case    54 h    every driver at its low
+  Likely       77 h    every driver at its likely value
+  Worst case   136 h   every driver at its high
+  Simulated    P50 85 h  P80 96 h  P90 102 h   correlation 0.6 (92 to 99 h at P80 for 0.0 to 0.9)
+
+Buckets at the likely value:
+  A Design 13.3 | B Manual execution 45.0 | C Triage 8.6 | D Authoring 0 (team deferred) | E Overhead (15%) 10.0
+
+Wall clock (not effort):
+  2.1 h for one automated pass at 4 parallel sessions x 3 configurations
+
+Resourcing:
+  Fixed window 10 working days -> 1.6 testers at P50, 1.7 at P80 (last 2 days kept for triage)
+  Fixed team 2 testers -> 7.1 working days at P50, 8.0 at P80
+  Serialized: triage and reporting cannot start before execution ends. Reserve the last 2 days.
+
+Drivers that move the total most:
+  1. New cases per requirement: a 50% miss moves the total by 13.2 h
+  2. Manual minutes per case: a 25% miss moves the total by 12.9 h
+  3. Failure rate: a 50% miss moves the total by 5.0 h
+Excluded:
+  - Automation authoring: team deferred it this cycle
+  - Manual execution on Safari and Android Chrome: the manual matrix is Chrome only
+  - Any money figure: the platform holds no rate
+Evidence:
+  MCP   fetch_requirement_metrics -> 34 in scope, 8 uncovered
+  MCP   find_test_cases -> 214 cases in the release folder
+  MCP   fetch_test_case_metrics -> 96 automated / 118 manual
+  MCP   fetch_test_stability_metrics -> 11 unstable in 30 days
+  MCP   find_test_results (EXECUTION) -> 91% pass on sprint 3.1
+  Team  18 min per manual case -> measured by the team on sprint 3.1
+  Team  4 parallel sessions -> TestCloud plan, not an MCP field
+```
+
+## What the reader should take from it
+
+Two manual testers fit the listed scope, even at P80. A third tester does not fund the listed scope. The exposure sits in the exclusions. Adding Safari to the manual lane at a team-supplied repeat-pass factor of 0.7 costs 150 x 18 min x 0.7 = 31.5 h, or 36.2 h with overhead. That is about 6 extra person-days. The same cycle then needs about 2.0 testers over the 10-day window instead of 1.4. The third seat is now a decision with a price on it.

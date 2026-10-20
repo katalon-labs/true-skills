@@ -1,8 +1,8 @@
 {
   "name": "katalon-testing-skills",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "displayName": "Katalon Testing Skills",
-  "description": "Agent-neutral AI testing skills for Katalon True Platform covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance - operated through the Katalon MCP.",
+  "description": "Agent-neutral AI testing skills for Katalon True Platform (formerly TestOps) covering the full software testing lifecycle: test planning, test design, test management and requirement traceability, test review, manual and automated execution with AI, failure analysis and release readiness, and test maintenance. The skills operate through the Katalon MCP.",
   "author": "katalon-labs",
   "license": "MIT",
   "minKiroCrewVersion": "0.1.0",
@@ -17,11 +17,11 @@
     "developer-tools"
   ],
   "highlights": [
-    "19 lifecycle skills - plan, design, manage, review, execute, and maintain - the agent selects by intent",
+    "22 lifecycle skills - plan, design, manage, review, execute, and maintain - the agent selects by intent",
     "Operates your real Katalon True Platform workspace through the Katalon MCP, not a mock",
     "Turn a requirement into linked manual cases, then run them with Run-with-AI",
     "Convert manual cases to Playwright TypeScript or Katalon Studio Groovy",
-    "Upload and verify Katalon Studio/KRE, JUnit XML, and Playwright reports, then answer 'is this release safe to ship?'",
+    "Upload and verify Katalon Studio, JUnit XML, and Playwright reports, then answer 'is this release safe to ship?'",
     "Browser-OAuth auth only - no tokens or keys pasted into chat; each skill enforces this"
   ],
   "defaultEnabled": false,
@@ -41,10 +41,12 @@
     "skills/test-plan",
     "skills/test-estimation",
     "skills/create-test-cases",
+    "skills/truetest-journeys",
     "skills/test-data",
     "skills/exploratory-charter",
     "skills/test-management",
     "skills/test-review",
+    "skills/test-environments",
     "skills/execute-test",
     "skills/upload-report",
     "skills/test-case-to-playwright",
@@ -54,6 +56,7 @@
     "skills/release-analyze",
     "skills/test-reporting",
     "skills/test-maintenance",
+    "skills/project-memory",
     "skills/get-started"
   ],
   "setup": {

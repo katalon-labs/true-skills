@@ -1,0 +1,184 @@
+{
+  "scenario": "truetest-uncovered-flow",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "What do real users do on Celestial Web that we do not test? Cover the biggest gap.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:truetest-journeys"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_projects",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"projects\":[{\"id\":28459,\"name\":\"Celestial Web App\",\"key\":\"CEL\",\"role\":\"OWNER\"},{\"id\":28460,\"name\":\"Orbit Mobile\",\"key\":\"ORB\",\"role\":\"MEMBER\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__memory_list",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"available\":true,\"agent_rules_enabled\":true,\"memory_enabled\":true,\"revision\":\"rev-0007\",\"policy\":null,\"records\":[{\"id\":\"e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091\",\"scope\":\"project\",\"kind\":\"convention\",\"headline\":\"Test cases: name starts with the feature area, then the behavior\",\"status\":\"active\",\"created_at\":\"2026-09-02T08:00:00Z\"},{\"id\":\"f6a7b8c9-d0e1-4f2a-9b4c-5d6e7f8091a2\",\"scope\":\"user\",\"kind\":\"preference\",\"headline\":\"Test folders: \\\"Folder name - YYYYMMDD\\\"\",\"status\":\"active\",\"created_at\":\"2026-10-01T08:00:00Z\"}],\"pages\":[{\"slug\":\"skill.seed-session\",\"description\":\"How to seed a session for regression tests.\"}],\"budget\":{\"truncated\":false},\"next_cursor\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__list_truetest_auts",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"auts\":[{\"platform_aut_id\":91,\"client_code\":\"celestial-web\",\"display_name\":\"Celestial Web\",\"aut_project_id\":7,\"project_id\":28459,\"test_project_id\":500,\"readiness\":\"READY\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t5",
+      "name": "mcp__katalon__list_truetest_tracking_environments",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t5",
+      "isError": false,
+      "text": "{\"tracking_environments\":[{\"tracking_environment_id\":\"0ec3c0b5-3a27-4c94-997b-dc89aa82f3cc\",\"canonical_name\":\"production\",\"label\":\"Production\"},{\"tracking_environment_id\":\"9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f\",\"canonical_name\":\"staging\",\"label\":\"Staging\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "The AUT is Celestial Web (celestial-web). It has two tracking environments, Production and Staging. Which one should I read? Production and test traffic give different maps."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Use the production environment.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t6",
+      "name": "mcp__katalon__search_truetest_journey_maps",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "tracking_environment_id": "0ec3c0b5-3a27-4c94-997b-dc89aa82f3cc",
+        "status": "active"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t6",
+      "isError": false,
+      "text": "{\"maps\":[{\"map_id\":\"6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"status\":\"active\",\"web_url\":\"https://mock.katalon.invalid/truetest/maps/6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"tracked_data_start_time\":\"2026-09-18T00:00:00Z\",\"tracked_data_end_time\":\"2026-10-18T00:00:00Z\",\"creator_email\":\"dana.reyes@example.com\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t7",
+      "name": "mcp__katalon__get_truetest_journey_map",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "map_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t7",
+      "isError": false,
+      "text": "{\"map_id\":\"6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"status\":\"active\",\"flows\":[{\"flow_id\":\"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d\",\"name\":\"Add item, apply discount code, check out\",\"traffic_share\":0.31,\"coverage\":{\"covered\":true,\"linked_test_case_ids\":[1003]}},{\"flow_id\":\"c3d4e5f6-a7b8-4c9d-8e1f-2a3b4c5d6e7f\",\"name\":\"Sign in and reset password\",\"traffic_share\":0.18,\"coverage\":{\"covered\":true,\"linked_test_case_ids\":[1001]}},{\"flow_id\":\"b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e\",\"name\":\"Open order history and export CSV\",\"traffic_share\":0.07,\"coverage\":{\"covered\":false,\"linked_test_case_ids\":[]}}],\"next_flow_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t8",
+      "name": "mcp__katalon__search",
+      "args": {
+        "query": "order history CSV export",
+        "project_id": 28459,
+        "types": [
+          "test_case"
+        ],
+        "include_documents": false
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t8",
+      "isError": false,
+      "text": "{\"retrieval_mode\":\"indexed\",\"incomplete\":false,\"results\":[{\"corpus\":\"entities\",\"tier\":\"strong\",\"score\":0.83,\"title\":\"Password reset sends email link\",\"ref\":{\"type\":\"test_case\",\"id\":1001,\"project_id\":28459},\"resource_url\":\"https://mock.katalon.invalid/p/28459/test-cases/1001\",\"snippet\":null}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "The active map covers 2026-09-18 to 2026-10-18 and has 3 flows. Covered: \"Add item, apply discount code, check out\" (31 percent of traffic, case 1003) and \"Sign in and reset password\" (18 percent, case 1001). Uncovered: \"Open order history and export CSV\" (7 percent). The biggest gap is the CSV export flow. Queue case generation for that flow only? The cases copy observed behavior and stay drafts."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "Yes, generate cases for the order history CSV export flow.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t9",
+      "name": "mcp__katalon__create_truetest_test_case_from_flow",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "map_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+        "flow_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t9",
+      "isError": false,
+      "text": "{\"status\":\"STARTED\",\"map_id\":\"6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"flow_id\":\"b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e\",\"message\":\"Generation is queued, not complete. Read the flow with get_truetest_journey_map to see linked test cases.\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t10",
+      "name": "mcp__katalon__get_truetest_journey_map",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "map_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+        "flow_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t10",
+      "isError": false,
+      "text": "{\"map_id\":\"6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"status\":\"active\",\"flows\":[{\"flow_id\":\"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d\",\"name\":\"Add item, apply discount code, check out\",\"traffic_share\":0.31,\"coverage\":{\"covered\":true,\"linked_test_case_ids\":[1003]}},{\"flow_id\":\"c3d4e5f6-a7b8-4c9d-8e1f-2a3b4c5d6e7f\",\"name\":\"Sign in and reset password\",\"traffic_share\":0.18,\"coverage\":{\"covered\":true,\"linked_test_case_ids\":[1001]}},{\"flow_id\":\"b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e\",\"name\":\"Open order history and export CSV\",\"traffic_share\":0.07,\"coverage\":{\"covered\":false,\"linked_test_case_ids\":[]}}],\"next_flow_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "Generation is queued, not complete. I read the flow back and it shows no linked cases yet. New cases can take a few minutes to appear. They arrive as drafts."
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "result": {
+      "outcome": "configured",
+      "execution_id": 9101,
+      "execution_path": "/executions/9101"
+    }
+  },
+  {
+    "match": {
+      "update": {
+        "action": "START",
+        "execution_mode": "MANUAL"
+      }
+    },
+    "result": {
+      "outcome": "started",
+      "execution_mode": "MANUAL",
+      "execution_path": "/executions/9101",
+      "manual_execution_id": 7101,
+      "execution_test_case_id": 8801,
+      "steps": [
+        {
+          "step_number": 1,
+          "name": "Open the login page and choose Forgot password",
+          "expected": "Reset form is shown"
+        },
+        {
+          "step_number": 2,
+          "name": "Enter the registered email and submit",
+          "expected": "Confirmation message is shown"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "update": {
+        "action": "START",
+        "execution_mode": "KATALON_AI"
+      }
+    },
+    "result": {
+      "outcome": "started",
+      "execution_mode": "KATALON_AI",
+      "execution_path": "/executions/9101",
+      "manual_execution_id": 7101,
+      "session_id": 5501,
+      "next_actions": [
+        "read_manual_ai_session"
+      ]
+    }
+  },
+  {
+    "match": {
+      "update": {
+        "action": "END",
+        "unfinished_cases": "SKIP"
+      }
+    },
+    "result": {
+      "outcome": "ended",
+      "skipped_cases": 1,
+      "execution_path": "/executions/9101"
+    }
+  },
+  {
+    "match": {
+      "update": {
+        "action": "END"
+      }
+    },
+    "result": {
+      "outcome": "blocked",
+      "reason": "Unfinished cases block END. Ask whether to skip them.",
+      "unfinished_cases": 1
+    }
+  }
+]

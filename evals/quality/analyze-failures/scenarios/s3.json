@@ -1,0 +1,16 @@
+{
+  "id": "s3",
+  "title": "All-zero stability, no cloud ID and a stuck Run with AI session",
+  "prompt": "Why did the Mobile Smoke run, execution 9190, go red? Classify the failures. Do not file anything. The platform data is in the fixture.",
+  "fixture": "../fixtures/s3-execution-9190.json",
+  "expect": {
+    "min_clusters": 2,
+    "max_clusters": 2,
+    "classification": {"TC-6302": "product", "TC-6303": "product", "TC-6304": "automation"},
+    "no_verdict": ["TC-6301"],
+    "defects_not_requested": true,
+    "cross_check_zero": true,
+    "blocked_input": true,
+    "idKeys": ["no_verdict"]
+  }
+}

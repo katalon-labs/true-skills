@@ -1,0 +1,68 @@
+{
+  "id": "execute-bare-run-asks-path",
+  "skill": "execute-test",
+  "description": "A bare \"run this\" request. The agent asks one question, Run With AI or manual testing in TestPak, and starts only the path the user picks.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Run the Authentication Regression suite."
+    },
+    {
+      "text": "Manual testing in TestPak."
+    },
+    {
+      "text": "QA."
+    },
+    {
+      "text": "Yes, go ahead.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "execute-test"
+    },
+    {
+      "id": "path-asked",
+      "type": "asked-before",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START"
+        }
+      },
+      "question": [
+        "Run With AI",
+        "TestPak"
+      ]
+    },
+    {
+      "id": "manual-chosen",
+      "type": "called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "MANUAL"
+        }
+      }
+    },
+    {
+      "id": "ai-not-chosen",
+      "type": "not-called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "execution_mode": "KATALON_AI"
+        }
+      }
+    },
+    {
+      "id": "no-ai-launch",
+      "type": "not-called",
+      "tool": "create_manual_ai_session"
+    }
+  ]
+}

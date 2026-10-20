@@ -1,0 +1,86 @@
+{
+  "scenario": "environments-private-aut-tunnel-pick",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "I need to run my suite against our intranet staging site. Set up private access.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:test-environments"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_projects",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"projects\":[{\"id\":28459,\"name\":\"Celestial Web App\",\"key\":\"CEL\",\"role\":\"OWNER\"},{\"id\":28460,\"name\":\"Orbit Mobile\",\"key\":\"ORB\",\"role\":\"MEMBER\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__list_test_cloud_tunnels",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"tunnels\":[{\"id\":\"tun-5d2c\",\"startedBy\":\"dana.reyes\",\"status\":\"ACTIVE\",\"startedAt\":\"2026-10-20T07:55:00Z\"}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "One tunnel is active. How should the run reach your site? Choose: No private access needed, Use Katalon Tunnel, or Use IP Whitelisting."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Use Katalon Tunnel.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Choose Auto-select tunnel (recommended) or Tunnel: tun-5d2c (started by dana.reyes). I do not pick one for you, even with a single tunnel."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "Use tunnel tun-5d2c.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__build_private_local_testing_config",
+      "args": {
+        "mode": "tunnel",
+        "selected_tunnel": "tun-5d2c"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"enabled\":true,\"mode\":\"tunnel\",\"selectedTunnel\":null,\"includeApiCalls\":false}"
+    },
+    {
+      "type": "assistant",
+      "text": "The payload for tunnel tun-5d2c is ready. Nothing was created. execute-test shows the run preview and asks for the yes."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# Bulk and derived eval output stays out of git; results.jsonl, score.md and change.* are committed.
+**/traces/
+**/progress.txt
+**/report.html
+**/state.json
+**/trajectory/

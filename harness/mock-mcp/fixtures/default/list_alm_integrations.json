@@ -1,0 +1,29 @@
+[
+  {
+    "result": {
+      "integrations": [
+        {
+          "id": 11,
+          "type": "JIRA",
+          "name": "Celestial Jira",
+          "connections": [
+            {
+              "id": 12,
+              "name": "celestial.atlassian.net"
+            }
+          ],
+          "defectFieldMappings": [
+            {
+              "field": "Priority",
+              "default": "High"
+            },
+            {
+              "field": "Component",
+              "default": "Web"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

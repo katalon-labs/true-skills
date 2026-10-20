@@ -1,0 +1,100 @@
+[
+  {
+    "result": {
+      "retrieval_mode": "indexed",
+      "incomplete": false,
+      "results": [
+        {
+          "corpus": "entities",
+          "tier": "strong",
+          "score": 0.83,
+          "title": "Password reset sends email link",
+          "ref": {
+            "type": "test_case",
+            "id": 1001,
+            "project_id": 28459
+          },
+          "resource_url": "https://mock.katalon.invalid/p/28459/test-cases/1001",
+          "snippet": null
+        },
+        {
+          "corpus": "entities",
+          "tier": "weak",
+          "score": 0.61,
+          "title": "Authentication Regression",
+          "ref": {
+            "type": "test_suite",
+            "id": 2001,
+            "project_id": 28459
+          },
+          "resource_url": "https://mock.katalon.invalid/p/28459/test-suites/2001",
+          "snippet": null
+        },
+        {
+          "corpus": "documents",
+          "tier": "strong",
+          "score": 0.78,
+          "snippet": "A reset link stays valid for 30 minutes and works once.",
+          "ref": {
+            "document_id": "doc-12",
+            "filename": "auth-spec.pdf",
+            "page": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "types": [
+        "test_case"
+      ]
+    },
+    "result": {
+      "retrieval_mode": "indexed",
+      "incomplete": false,
+      "results": [
+        {
+          "corpus": "entities",
+          "tier": "strong",
+          "score": 0.83,
+          "title": "Password reset sends email link",
+          "ref": {
+            "type": "test_case",
+            "id": 1001,
+            "project_id": 28459
+          },
+          "resource_url": "https://mock.katalon.invalid/p/28459/test-cases/1001",
+          "snippet": null
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "include_documents": false,
+      "types": [
+        "test_case"
+      ]
+    },
+    "result": {
+      "retrieval_mode": "indexed",
+      "incomplete": false,
+      "results": [
+        {
+          "corpus": "entities",
+          "tier": "exact",
+          "score": 0.9,
+          "title": "Checkout applies valid discount code",
+          "ref": {
+            "type": "test_case",
+            "id": 1003,
+            "project_id": 28459
+          },
+          "resource_url": "https://mock.katalon.invalid/p/28459/test-cases/1003",
+          "snippet": null
+        }
+      ]
+    }
+  }
+]

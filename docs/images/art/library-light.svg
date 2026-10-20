@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 830 255" width="830" height="255" role="img" aria-label="The skills folder fills row by row, then fans out to every agent adapter from one source">
+<title>The skills folder fills row by row, then fans out to every agent adapter from one source</title>
+<style>
+text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;font-size:20px;fill:#0f8461}
+.m{fill:#5b6661}
+.fr{opacity:0}
+.f5{opacity:1}
+@media (prefers-reduced-motion: no-preference){
+.fr{animation-duration:4.40s;animation-timing-function:step-end;animation-iteration-count:infinite;animation-fill-mode:both}
+@keyframes f0{0%{opacity:1}13.636%{opacity:0}100%{opacity:0}}
+.f0{animation-name:f0}
+@keyframes f1{0%{opacity:0}13.636%{opacity:1}27.273%{opacity:0}100%{opacity:0}}
+.f1{animation-name:f1}
+@keyframes f2{0%{opacity:0}27.273%{opacity:1}40.909%{opacity:0}100%{opacity:0}}
+.f2{animation-name:f2}
+@keyframes f3{0%{opacity:0}40.909%{opacity:1}54.545%{opacity:0}100%{opacity:0}}
+.f3{animation-name:f3}
+@keyframes f4{0%{opacity:0}54.545%{opacity:1}68.182%{opacity:0}100%{opacity:0}}
+.f4{animation-name:f4}
+@keyframes f5{0%{opacity:0}68.182%{opacity:1}100%{opacity:1}}
+.f5{animation-name:f5}
+}
+@media (prefers-reduced-motion: reduce){.fr{animation:none;opacity:0}.f5{opacity:1}}
+</style>
+<rect x="0.5" y="0.5" width="829" height="254" rx="14" fill="#f6f8f7" stroke="#e2e7e4"/>
+<g class="fr f0"><text x="54" y="46.4" xml:space="preserve">skills/</text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [ ]</text></g>
+<g class="fr f1"><text x="54" y="46.4" xml:space="preserve">skills/</text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [x]</text><text x="54" y="104.4" xml:space="preserve">  test-plan           [ ]</text></g>
+<g class="fr f2"><text x="54" y="46.4" xml:space="preserve">skills/</text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [x]</text><text x="54" y="104.4" xml:space="preserve">  test-plan           [x]</text><text x="54" y="133.4" xml:space="preserve">  create-test-cases   [ ]</text></g>
+<g class="fr f3"><text x="54" y="46.4" xml:space="preserve">skills/   <tspan class="m">22 folders, one SKILL.md each</tspan></text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [x]</text><text x="54" y="104.4" xml:space="preserve">  test-plan           [x]</text><text x="54" y="133.4" xml:space="preserve">  create-test-cases   [x]</text><text x="54" y="162.4" xml:space="preserve">  <tspan class="m">... +19</tspan></text></g>
+<g class="fr f4"><text x="54" y="46.4" xml:space="preserve">skills/                   --&gt; .agents/skills</text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [x] --&gt; claude plugin</text><text x="54" y="104.4" xml:space="preserve">  test-plan           [x] --&gt; .kiro/skills</text><text x="54" y="133.4" xml:space="preserve">  create-test-cases   [x]</text><text x="54" y="162.4" xml:space="preserve">  <tspan class="m">... +19</tspan></text></g>
+<g class="fr f5"><text x="54" y="46.4" xml:space="preserve">skills/                   --&gt; .agents/skills   .continue</text><text x="54" y="75.4" xml:space="preserve">  platform-setup      [x] --&gt; claude plugin    AGENTS.md</text><text x="54" y="104.4" xml:space="preserve">  test-plan           [x] --&gt; .kiro/skills     .codex</text><text x="54" y="133.4" xml:space="preserve">  create-test-cases   [x] --&gt; .cline/skills    kiro crew app</text><text x="54" y="162.4" xml:space="preserve">  <tspan class="m">... +19</tspan>                                      chatgpt/</text><text x="54" y="220.4" xml:space="preserve">  <tspan class="m">22 skills, 1 source  (6 old rule folders retired, -1.6 MB)</tspan></text></g>
+</svg>

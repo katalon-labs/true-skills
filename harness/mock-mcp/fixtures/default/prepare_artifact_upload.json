@@ -1,0 +1,13 @@
+[
+  {
+    "result": {
+      "artifact_id": "07b8c9d0-e1f2-4a3b-8c5d-6e7f8091a2b3",
+      "scope": "project",
+      "upload_url": "https://uploads.mock.katalon.invalid/artifacts/mock-upload",
+      "headers": {
+        "Content-Type": "image/png"
+      },
+      "max_bytes": 10485760
+    }
+  }
+]

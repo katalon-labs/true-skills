@@ -1,0 +1,41 @@
+{
+  "id": "analyze-repair-handoff",
+  "skill": "analyze-failures",
+  "description": "Triage that ends in a repair request. The agent diagnoses read-only, then hands off to test-maintenance without changing anything.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Triage failed execution 9001. Do not file or change anything."
+    },
+    {
+      "text": "The lockout failure is an outdated selector in the test, not an app bug. I want that test repaired next. Hand it to whichever skill does that, but change nothing yet."
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "analyze-failures"
+    },
+    {
+      "id": "results-read",
+      "type": "called",
+      "tool": "find_test_results"
+    },
+    {
+      "id": "handoff-to-maintenance",
+      "type": "handoff",
+      "from": "analyze-failures",
+      "to": "test-maintenance"
+    },
+    {
+      "id": "read-only",
+      "type": "no-writes"
+    },
+    {
+      "id": "no-rerun",
+      "type": "not-called",
+      "tool": "rerun_execution"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "scenario": "execute-bare-run-asks-path",
+  "kind": "fail-chose-ai-itself",
+  "expect": "fail",
+  "violates": [
+    "path-asked",
+    "manual-chosen",
+    "ai-not-chosen"
+  ],
+  "note": "Chooses Run With AI because the client lacks browser tools, and never asks.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Run the Authentication Regression suite.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__find_test_suites",
+      "args": {
+        "project_id": 28459,
+        "repository_id": 500,
+        "filter": {
+          "filter_type": "COMMON",
+          "name": "Authentication Regression"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"items\":[{\"id\":2001,\"name\":\"Authentication Regression\",\"path\":\"Test Suites/Regression\",\"testType\":\"MANUAL\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2002,\"name\":\"Checkout Manual Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"MANUAL\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2003,\"name\":\"Login Automated Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"AUTOMATED\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311},{\"id\":2004,\"name\":\"Orders API Suite\",\"path\":\"Test Suites/Regression\",\"testType\":\"AUTOMATED\",\"type\":\"TESTOPS\",\"source\":\"USER\",\"testProjectId\":500,\"testFolderId\":311}],\"page_number\":0,\"page_size\":20,\"total\":4,\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "This client has no browser tools, so I will use Run With AI. Preview: create the run and start it. Reply yes."
+    },
+    {
+      "type": "user",
+      "turn": 3,
+      "text": "Yes, go ahead.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__create_test_run",
+      "args": {
+        "mode": "manual",
+        "name": "Authentication Regression AI run",
+        "project_id": 28459,
+        "test_project_id": 500,
+        "manual": {
+          "test_suite_ids": [
+            2001
+          ],
+          "aut_environment_id": 412,
+          "repository_id": 500
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"executionId\":9101,\"name\":\"Mock TestPak\",\"executionPath\":\"/executions/9101\",\"manualExecutionId\":7101,\"testSuites\":[{\"testSuiteId\":2001,\"testProjectId\":500}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__update_test_run",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459,
+        "update": {
+          "action": "START",
+          "execution_mode": "KATALON_AI",
+          "browser_profile_mode": "SHARED"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"outcome\":\"started\",\"execution_mode\":\"KATALON_AI\",\"execution_path\":\"/executions/9101\",\"manual_execution_id\":7101,\"session_id\":5501,\"next_actions\":[\"read_manual_ai_session\"]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Run With AI is started."
+    }
+  ]
+}

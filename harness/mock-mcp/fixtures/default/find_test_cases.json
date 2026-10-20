@@ -1,0 +1,146 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        },
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        },
+        {
+          "id": 1005,
+          "name": "Login lockout after five failures",
+          "path": "Test Cases/Authentication/Login",
+          "status": "PUBLISHED",
+          "priority": "CRITICAL",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_COMPLETE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1006,
+          "name": "Order history CSV export downloads file",
+          "path": "Test Cases/Orders",
+          "status": "DRAFT",
+          "priority": "LOW",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_IN_PROGRESS",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 6,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "COMMON",
+        "folder": {
+          "folder_id": 304
+        }
+      }
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "filter": {
+        "filter_type": "RELATIVE",
+        "status": "DRAFT"
+      }
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        },
+        {
+          "id": 1006,
+          "name": "Order history CSV export downloads file",
+          "path": "Test Cases/Orders",
+          "status": "DRAFT",
+          "priority": "LOW",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_IN_PROGRESS",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  }
+]

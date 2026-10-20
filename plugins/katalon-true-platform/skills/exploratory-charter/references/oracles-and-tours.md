@@ -36,7 +36,16 @@ Point at one of four things, always:
 3. **A published behavior** you can link, such as provider docs or a standard.
 4. **A stated purpose** the feature would defeat.
 
-If you cannot point at any of the four, you have a `Q`, not a `BUG`. Log it and ask.
+If you cannot point at any of the four, you have a `Q`. A `BUG` needs an oracle. Log it and ask.
+
+## Oracles for AI features
+
+An AI feature can return different text for the same input. Exact-match oracles fail on it. Use these instead.
+
+- **A property the answer must always hold.** Examples: it cites a source that exists, it refuses a disallowed request, it keeps the user's data out of the reply.
+- **A repeat count.** Run the same input five times. Record how many runs hold the property. One bad run in five is a finding, even when four are fine.
+- **A metamorphic pair.** Two inputs that mean the same thing must give answers that agree on the facts.
+- **An acceptance line you can quote.** Without one, the finding is a question, as for any other feature.
 
 ## Tours
 
@@ -53,6 +62,8 @@ A tour is a lens that constrains where you look. Pick two or three, never all of
 | **Back-button tour** | Browser back, forward, refresh, and deep links at every step | Multi-step flows and wizards |
 | **Interruption tour** | Killing the network, the tab, or the session mid-flow | Long transactions, payments, uploads |
 | **Anti-social tour** | Doing the least reasonable legal thing at each step | The happy path is already covered |
+| **Accessibility tour** | Keyboard-only navigation, focus order, labels, and an automated scan such as axe through Playwright | Forms, dialogs, and any new screen. The MCP has no accessibility tool, so the scan runs in your browser. |
+| **Adversarial-input tour** | Feeding an AI feature off-topic requests, conflicting instructions, and prompt-injection text, then repeating the same input several times | Chat, agent, and generated-content features |
 
 ## Choosing tours from the mission
 
@@ -65,11 +76,13 @@ A tour is a lens that constrains where you look. Pick two or three, never all of
 | A payment or checkout surface | Error-message tour, then money tour, then interruption tour |
 | A form-heavy or search surface | Data tour, then anti-social tour |
 | A permissions or multi-tenant change | Configuration tour, then landmark tour |
+| A new form or dialog | Data tour, then accessibility tour |
+| An AI-powered feature | Adversarial-input tour, then error-message tour |
 
 Two or three. A charter naming six tours has not chosen; it has listed.
 
 ## The boundary, restated
 
-- **The Katalon MCP cannot see the application.** Drive the product with Browser or Playwright. The MCP reads requirements and writes cases, folders, and suites, and that is all it does here.
-- **Evidence capture is on the tester.** There is no attachment upload tool, so screenshots, recordings, and HAR files belong in the ALM ticket, not in the platform. Reference them from the finding by ticket ID.
-- **There is no exploratory session object**, so the charter and the session sheet are local artifacts unless you deliberately mirror the charter into a test case. Say which you did.
+- **The Katalon MCP cannot see the application.** Drive the product with a browser tool or Playwright. The MCP reads requirements and writes cases, folders, suites, results, and evidence files.
+- **Evidence capture is on the tester.** Screenshots, recordings, and HAR files come from your browser. Strip personal data and credentials first. Files of 10 MiB or less can go to the platform with `prepare_artifact_upload` and `confirm_artifact_upload`. Larger files go in the tracker ticket. Reference them from the finding by ticket ID.
+- **There is no exploratory session object.** The charter and the session sheet are local artifacts unless you mirror the charter into a test case. Say which you did.

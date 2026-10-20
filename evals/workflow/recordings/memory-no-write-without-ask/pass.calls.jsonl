@@ -1,0 +1,2 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"memory_list","args":{},"outcome":"ok","fixture":"default/memory_list.json#0","isError":false}
+{"ts":"2026-10-20T09:00:01.000Z","seq":2,"scenario":"default","transport":"recorded","method":"tools/call","tool":"memory_read","args":{"record_ids":["e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091"]},"outcome":"ok","fixture":"default/memory_read.json#0","isError":false}

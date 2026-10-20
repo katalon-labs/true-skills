@@ -1,124 +1,127 @@
 ---
 name: create-test-cases
-description: Create, update, organize, and link Katalon True Platform/TestOps manual test cases from a synced requirement key such as CEL-6, a read requirement, or free-text product behavior. Use when you need to analyze requirements, design manual test cases using ISTQB techniques as a reference, check existing Katalon coverage, avoid duplicate test cases, import only missing cases, update or link existing cases, or create/reuse a test suite for newly designed cases. For full requirement-to-execution workflows, combine with or defer to true-platform-testing. Written for the manual tester who has a written requirement in hand and no cases for it yet.
+description: Designs manual test cases from a synced requirement key such as CEL-6, a pasted requirement, or captured TrueTest sessions. Then creates, updates, and links them in Katalon True Platform (formerly TestOps) after a coverage and duplicate check. Use when a written requirement or real user behavior exists and cases do not. Not for unscripted exploration (exploratory-charter) or inventory cleanup (test-management). For the manual tester.
+license: MIT
+compatibility: Requires the Katalon True Platform MCP server and network access.
+metadata:
+  version: "0.5.0"
+  mcp-contract: "katalon-docs-2026-10"
 ---
 
 # Katalon Create Test Cases
 
-Use this skill for the test design and import portion of Katalon True Platform work. Keep the larger `true-platform-testing` skill available as the end-to-end orchestrator; this skill is only the focused create/update/link workflow.
+This skill covers test design and import: read a requirement, design cases, check what exists, then create, update, and link. The `true-platform-testing` skill routes end-to-end requests here. Tool names below are bare. Clients add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-State the Katalon MCP boundary before promising writes:
+- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases, manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
+- **Cannot:** create requirements (they sync from Jira or Azure DevOps), create a formal Test Plan entity, or inspect the live application.
+- **Test plan workaround:** create or reuse a named folder and suite as the executable planning structure.
 
-- Available: list projects/repositories, find/read requirements, create/read/update/move test cases, find/manage folders, find/read/manage test suites, and link requirements to test cases.
-- Not directly available: create requirements, create a formal Test Plan entity, inspect the live AUT UI, or guarantee downstream AI execution.
-- Workaround for a test plan: create or reuse a named test suite/folder as the executable planning structure.
+Read `references/capability-boundaries.md` when the user asks whether the platform can do one specific operation.
 
-Read `references/capability-boundaries.md` when the user asks whether Katalon can do a specific operation.
+## Resolve context first
 
-## Resolve Context First
+Before any write:
 
-Before mutating Katalon data:
+1. Call `list_projects`, then `list_repositories`.
+2. Treat repository and Test Project as one target.
+3. If exactly one repository exists, use it. If several are equally likely, ask the user to choose.
+4. If the user says "Katalon Cloud" or "cloud repo", prefer a repository named `Katalon Cloud`.
+5. Do not scan every repository to avoid asking.
+6. Call `memory_list` once. It returns the team's saved naming, folder, and step conventions plus the project policy page. Call `memory_read` on headlines that match this job. Follow a convention when it applies and quote it. Never present it as a platform fact. If `available` is false, say memory is unavailable and do not conclude that the team has no conventions. Memory is optional: carry on when it is empty. Never call `memory_write` or `memory_forget` on your own. Use them only when the user asks you to remember or forget something.
 
-1. Call `list_projects`.
-2. Call `list_repositories`.
-3. Resolve the repository/Test Project from the user's wording, requirement key, or unique available repository.
+## Pick the source
 
-Rules:
+| The user has | Start here |
+|---|---|
+| A requirement key | `find_requirements` or `read_requirement`, then "Analyze the requirement" below. Read `customFields` too: acceptance criteria often live there. |
+| Free text or a pasted spec | Analyze it locally. Link only when a real requirement ID is known. |
+| Captured user sessions, a journey map, or one journey-map flow | `references/from-truetest-sessions.md` |
 
-- Treat repository and Test Project as the same resolution target.
-- If exactly one repository exists, use it.
-- If multiple equally plausible repositories remain, ask the user to choose.
-- If the user says "Katalon Cloud" or "cloud repo", prefer a repository named `Katalon Cloud` when present.
-- Do not scan every repository just to avoid asking.
+## Analyze the requirement
 
-## Analyze Requirement
+Track these points: intent, personas, main flow, alternate and negative flows, data and environment assumptions, risk areas, and the coverage you recommend. Read `references/requirement-analysis.md` before analyzing a non-trivial requirement.
 
-If the user provides a requirement key, use `find_requirements` or `read_requirement`. If the user provides free text, analyze it locally and only link requirements when a real requirement ID is known.
+## Design coverage
 
-Output or internally track:
+Rank first, then apply techniques.
 
-- Requirement intent
-- Personas
-- Main flows
-- Alternate and negative flows
-- Data and environment assumptions
-- Risk areas
-- Coverage recommendations
+1. **Rank by risk.** Score each requirement line by impact and likelihood of failure. Use defect history when it helps (`fetch_defect_metrics` with `filter_type` `DATE_RANGE` or `ITERATION`). Check `fetch_defects` for defects already linked to the cases you reuse. Put the most cases where the risk is highest.
+2. **Apply techniques as tools.** ISTQB techniques (equivalence partitioning, boundary values, decision tables, state transitions, use-case scenarios, error guessing, pairwise) help you find cases. They do not prove coverage is complete. Model-based views such as a state diagram or a journey map are equal tools.
+3. **State the gap.** Report what the design leaves uncovered and why. Never imply full coverage.
 
-Read `references/requirement-analysis.md` before analyzing non-trivial requirements.
-
-## Design Coverage
-
-Design manual cases using ISTQB techniques as a reference for coverage (the techniques guide the design; the deliverable is plain platform test cases, not an ISTQB certification):
-
-- Equivalence partitioning for input classes, statuses, roles, filters, and product states.
-- Boundary value analysis for ranges, quantities, prices, dates, pagination, and text lengths.
-- Decision tables for business rules with multiple conditions.
-- State transitions for lifecycle flows such as cart, checkout, status, and execution.
-- Use-case scenarios for realistic end-to-end user journeys.
-- Error guessing for ecommerce, account, permissions, environment, and data risks.
+The deliverable is plain platform test cases. Read `references/istqb-coverage.md` before creating cases from requirements, and `references/manual-test-case-format.md` before importing several cases.
 
 ### Make each case atomic
 
-Each test case targets **one validation condition (one acceptance-criteria line)** — but it must still be a **complete, independently runnable flow**, not a single bare assertion.
+Each case targets one validation condition (one acceptance line). It must still be a complete flow that runs on its own.
 
-- "Atomic" describes the *scope under test* (one rule per case), not the step count. Every case walks the real path to that condition: precondition/navigation -> enter the surrounding valid data -> perform the action under test -> verify the expected result. A case that is a lone step like "count the columns" is too thin; lead with the steps to reach and exercise that state so the case runs on its own (and so Run with AI can execute it).
-- Split each input class, each required field, each boundary value, and each error message into its own case. Example: a password rule of "min 8 chars, has a letter, has a number, no spaces" becomes separate cases for too-short (7), exactly-8 valid, letters-only, numbers-only, and contains-space — each one a full fill-the-form-and-submit flow, differing only in the field under test.
-- Cover both the happy-path flow and its edge cases. For every feature, include at least the main success flow plus the boundary and negative variants around it; do not stop at the positive path.
-- Reserve genuinely combined multi-feature cases for true end-to-end scenarios (e.g. register -> log in -> land on dashboard), never as a container for unrelated checks.
-- Why: a case mixing several *conditions* fails as a whole, so the result cannot tell you which rule broke and you lose 1 requirement-line -> 1 test-result traceability. Atomic-scope cases pinpoint the failing rule and map cleanly back to the requirement.
-- Quote expected error and UI strings **verbatim** from the requirement, including any source typos. Flag suspected typos separately; never silently "correct" them in the expected result, or the test will assert behavior the app does not produce.
+- Atomic limits the scope under test. It does not limit the step count. Every case walks the real path: precondition and navigation, valid surrounding data, the action under test, the expected result. A lone step such as "count the columns" is too thin. Run with AI cannot execute it.
+- Split each input class, required field, boundary value, and error message into its own case. A password rule of "minimum 8 characters, one letter, one number, no spaces" becomes separate cases for 7 characters, exactly 8 characters, letters only, numbers only, and a space. Each case fills the whole form and submits. Only the field under test differs.
+- Cover the main success flow and the boundary and negative variants around it.
+- Combine features only in true end-to-end scenarios, such as register, log in, and land on the dashboard.
+- Reason: a case that mixes conditions fails as a whole. The result cannot say which rule broke, and the requirement-line to test-result trace is lost.
+- Quote expected error and UI strings verbatim from the requirement, including source typos. Flag a suspected typo separately. Never correct it silently in the expected result.
 
-Read `references/istqb-coverage.md` before creating cases from requirements, and `references/manual-test-case-format.md` before importing several cases.
+## Platform constraints
 
-## Platform Constraints
+- Test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Keep `@`, `:`, and `/` out of titles. Put them in descriptions or steps. Folder paths may use `/`.
+- Test case names start with a letter or digit. `path` starts with `Test Cases` or `Test Cases/`.
+- Prefer `update_test_cases` over delete and recreate. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
+- `create_test_case` with `test_case_type` `AUTOMATED` creates nothing. It returns the next action for script generation. Create manual cases only.
+- Suites reject a mix of MANUAL and AUTOMATED cases.
+- No tool looks up assignees or the signed-in user. Leave the assignee empty unless the user supplies a valid UUID.
+- A step that calls another case uses the step `action` object (`type` `call`, `test_case_id`, `version`). Never write it as a plain step named "Call test case 12".
+- `update_test_cases` with `UPDATE_CONTENT` replaces all steps. Send the complete step list and keep Call Test Case steps. Omit `context` or include `expectedResult`. Never send `context: {}`.
 
-- Test case **names** accept only letters, numbers, spaces, and `( ) . , _ -`. Avoid other symbols (such as `@`, `:`, `/`) in titles; keep them in descriptions or steps instead. Folder paths may use `/`.
-- Prefer `update_test_case` over delete-and-recreate when adjusting an existing set. Deletion can fail server-side, and updating in place keeps IDs, links, and history intact.
+## Check existing cases
 
-## Check Existing Cases
+This step is mandatory before every create, including retries after a partial failure.
 
-This step is mandatory before every create/import attempt, including retries after partial failure:
+1. If requirement IDs are known, call `find_test_cases_by_requirement`. Pass exactly one of the requirement identifiers it accepts.
+2. Search with `find_test_cases` by requirement key, title keywords, feature area, and target folder.
+3. Run `search` with `types: ["test_case"]` and `include_documents: false` for the same wording. It finds cases that keyword filters miss. Judge "exists" by the result tier (exact or strong), never by score alone. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that a case is absent. Cases created in the last few minutes may not be searchable yet, so hedge any absence claim.
+4. Read likely matches with `read_test_cases` (`content_type` `FLOW` for steps) when the title alone cannot settle coverage. A `search` hit gives a title and ref only.
+5. Reuse, update, move, or link existing cases that already cover the behavior.
+6. Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete cases.
 
-1. If requirement IDs are known, call `find_test_cases_by_requirement`.
-2. Search by requirement key, title keywords, feature area, and target folder with `find_test_cases`.
-3. Read likely matches with `read_test_case` when the title alone is not enough to judge coverage.
-4. Reuse, update, move, or link existing cases when they already cover the behavior.
-5. Create new cases only for uncovered behavior, missing coverage classes, or clearly obsolete/incorrect cases.
+Never create a duplicate because an earlier create call failed. Search again first.
 
-Never create a duplicate just because a previous create call failed.
+## Write in three phases: plan, validate, execute
 
-## Create Or Update Cases
+Follow `references/write-policy.md`. One write set gets one confirmation. For more than a handful of cases, use the bulk plan in `references/bulk-write-plan.md`.
 
-Use Katalon tools in this order:
+1. **Plan.** List every proposed create, update, link, move, and suite change. Mark each as reuse, update, or new.
+2. **Validate.** Check the plan before any write: name charset, duplicate titles inside the plan and against existing cases, folder exists or is in the plan, requirement IDs are real, suite members share one type. Fix the plan before you touch the platform.
+3. **Execute.** Show the plan summary. Get one confirmation. Then write in this order.
+   1. `create_test_case` for uncovered manual cases only.
+   2. `update_test_cases` for revisions. Put every change to one case in one call: actions run in order, so separate calls for one case race. Each item is `{action, test_case_data: {id, ...}}` with one action per field (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, `UPDATE_CONTENT`). `repository_id` is required.
+   3. `manage_requirement_test_case_linkages` with `action` `link`, `requirement_ids`, `test_case_ids`, and `project_id`, only after the requirement IDs are known. The call is many-to-many and runs per requirement in parallel. A partial failure leaves some requirements updated, so read back with `find_test_cases_by_requirement`.
+   4. `manage_test_folder` or `move_test_case` when organization was requested or is clearly needed.
+4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Compare the result with the plan. Report any mismatch.
 
-1. `create_test_case` only for uncovered manual cases.
-2. `update_test_case` for revisions, passing all intended updates in one call.
-3. `link_requirements_to_test_case` only after requirement IDs are known.
-4. `read_test_case` after creation or update when verification matters.
-5. `manage_test_folder` or `move_test_case` only when organization is requested or clearly needed.
+Case shape: title, description, pre-condition, steps, expected results, test data, priority, requirement links.
 
-Use this manual case shape:
+## Suites
 
-- Title
-- Description
-- Pre-condition
-- Steps
-- Expected results
-- Test data
-- Priority
-- Requirement links
+When the user asks for a suite or test plan from the cases:
 
-## Test Suite Handling
-
-When the user asks to create a test suite/test plan from the cases:
-
-1. Search existing suites with `find_test_suites` before creating anything.
-2. Read likely matching suites with `read_test_suite`.
-3. Reuse the matching suite and add missing cases instead of creating a duplicate.
-4. Create a new suite with `manage_test_suite` only when no suitable suite exists.
+1. Search with `find_test_suites` before creating anything. Check `find_test_suite_collections` when the user names a collection.
+2. Read likely matches with `read_test_suite`.
+3. Reuse a matching suite and add the missing cases.
+4. Call `manage_test_suite` to create a suite only when none fits.
 5. Verify the final suite with `read_test_suite`.
 
-Report what was reused, updated, newly created, linked, and left uncovered.
+Suite collections are read-only here. No tool creates or edits them.
+
+## Report
+
+State what was reused, updated, created, linked, and left uncovered. Name the risk ranking you used and the gaps that remain.
+
+## Hand-offs
+
+- Unscripted discovery first: `exploratory-charter`.
+- Values, fixtures, and cleanup for the cases: `test-data`.
+- Inventory hygiene and traceability audits: `test-management`.
+- Running the cases: `execute-test`.

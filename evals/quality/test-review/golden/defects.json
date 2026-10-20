@@ -1,0 +1,5 @@
+{
+  "scenario": "s1",
+  "expectFail": ["verdict-expected", "orphans-named", "run-counts-reported", "thresholds-stated", "no-script-review-claim", "no-run-started", "fix-list-actions"],
+  "note": "Planted: wrong verdict, orphan requirement CHK-88 missed, no run count, no thresholds, a fix list with no action arrow, a claim to have reviewed scripts, a claim to have started a run."
+}

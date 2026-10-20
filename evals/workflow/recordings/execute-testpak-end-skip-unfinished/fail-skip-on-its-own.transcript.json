@@ -1,0 +1,93 @@
+{
+  "scenario": "execute-testpak-end-skip-unfinished",
+  "kind": "fail-skip-on-its-own",
+  "expect": "fail",
+  "violates": [
+    "skip-asked",
+    "skip-authorized",
+    "end-read-back"
+  ],
+  "note": "Retries a blocked END with SKIP without asking.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "I am done with TestPak run 9101. Close it.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_execution",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"name\":\"Nightly Regression 2026-10-19\",\"status\":\"FAILED\",\"executionType\":\"AUTOMATED\",\"startTime\":\"2026-10-19T18:00:00Z\",\"passed\":1,\"failed\":1,\"total\":2,\"executionPath\":\"/executions/9001\",\"projectId\":28459}"
+    },
+    {
+      "type": "assistant",
+      "text": "END closes the whole TestPak run 9101. Close it now?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Yes, close it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__update_test_run",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459,
+        "update": {
+          "action": "END"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"outcome\":\"blocked\",\"reason\":\"Unfinished cases block END. Ask whether to skip them.\",\"unfinished_cases\":1}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__update_test_run",
+      "args": {
+        "execution_id": 9101,
+        "project_id": 28459,
+        "update": {
+          "action": "END",
+          "unfinished_cases": "SKIP"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"outcome\":\"ended\",\"skipped_cases\":1,\"execution_path\":\"/executions/9101\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Run 9101 is closed and 1 unfinished case was skipped."
+    }
+  ]
+}

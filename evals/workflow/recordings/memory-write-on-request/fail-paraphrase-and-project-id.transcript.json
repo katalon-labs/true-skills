@@ -1,0 +1,50 @@
+{
+  "scenario": "memory-write-on-request",
+  "kind": "fail-paraphrase-and-project-id",
+  "expect": "fail",
+  "violates": [
+    "confirm-before-write",
+    "memory-listed-first",
+    "own-words",
+    "project-id-omitted",
+    "own-memory-said"
+  ],
+  "note": "Writes a paraphrase, passes project_id, skips the listing and the preview.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Remember this: always add the CEL ticket key at the end of every test case name.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:project-memory"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__memory_write",
+      "args": {
+        "kind": "preference",
+        "headline": "CEL key",
+        "body": "User likes ticket keys in names",
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"saved\":true,\"duplicate\":false,\"record_id\":\"a7b8c9d0-e1f2-4a3b-9c5d-6e7f8091a2b3\",\"redacted\":[],\"scope\":\"user\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Saved."
+    }
+  ]
+}

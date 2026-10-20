@@ -1,56 +1,63 @@
 # MCP evidence map for estimation
 
-Every figure in an estimate is either a platform fact or a human input. This file draws the line. Tag every line of the output with which side it came from.
+Every figure in an estimate is a platform fact or a human input. This file draws the line. Tag every line of the output with its side.
 
-## Platform side - what the MCP actually returns
+## Platform side: what the MCP returns
 
 | Estimation input | Tool | What it gives you | Trap |
 |---|---|---|---|
-| Cycle window | `find_iterations` | sprint/iteration start and end | Calendar days, not working days. Subtract holidays yourself |
-| Uncovered requirements | `fetch_requirement_data` | coverage status per requirement | "Covered" means linked, not passing. A linked-but-never-run requirement still costs execution time |
-| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, suite, or requirement link | Check for pagination. A truncated page reported as a total silently shrinks the estimate |
-| Automated / manual split | `fetch_test_case_data` | quality signals including the split when exposed | Not guaranteed present. If absent, ask, and tag it team-supplied |
-| Failure and flake burden | `fetch_test_stability_data`, `find_test_results` | unstable cases, recent pass and fail history | A flaky case inflates the failing count without being a defect. Drive `P`, not `M`, with it |
-| Configuration matrix | `fetch_test_configuration_data` | which environments, browsers, and devices are covered against the target set | The multiplier applies per lane. Automated may cover three configurations while manual covers one |
-| Past automated elapsed time | `read_execution`, `read_execution_test_results` | a finished execution's records, including machine-recorded elapsed time | **Confirm the field is on the record before modelling on it.** Version and runner dependent. If it is absent, ask for the figure |
-| Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. There is no aggregate-across-cycles tool. Say n=1 in the confidence basis |
+| Cycle window | `find_iterations` | sprint or release name, start, and end (set `detail_level` to `FULL` for dates) | Calendar days, not working days. Subtract holidays yourself. |
+| Uncovered requirements | `fetch_requirement_metrics` | requirement coverage for a sprint or release | "Covered" means linked, not passing. A linked case that never ran still costs execution time. It takes no date range. |
+| Case counts | `find_test_cases`, `read_test_suite`, `find_test_cases_by_requirement` | the cases in a folder, a suite, or a requirement link | Check for pagination. A truncated page reported as a total shrinks the estimate. `find_test_cases_by_requirement` takes exactly one identifier. Folder-scoped search resolves at most 200 folders and fails rather than truncating. |
+| Automated and manual split | `fetch_test_case_metrics`, or `find_test_cases` with a `testType` or `automationStatus` query | execution statistics, automation status, and case records | `automationStatus` is not `testType`. Do not substitute one for the other. If neither answers, ask and tag it team-supplied. |
+| Failure and flake burden | `fetch_test_stability_metrics`, `find_test_results` | flaky, always failing, newly failing, and slow cases (set `return_tests`); flakiness over a `from_date` and `to_date` window; recent results | A flaky case raises the failing count without a defect. Use it to set the high value of the failure rate. The stability tool has no minimum-run parameter. Count runs with `find_test_results`. A signal from fewer than about 10 runs is unconfirmed. |
+| Configuration matrix | `fetch_test_configuration_metrics` | which OS or browser combinations are covered against the target set (`configuration_type`, `coverage_threshold`, `pass_threshold`) | The multiplier applies per lane. Automated may cover three configurations while manual covers one. |
+| Existing automated cadence | `list_schedule`, `read_schedule_detail` | saved schedules and their detail | A suite that already runs nightly adds triage every day. Count the days in the window. |
+| Past executions in a window | `list_executions` | numeric TestOps execution IDs and scheduling data for a time range | The default range is the last 24 hours. Pass explicit start and end times from the real current date. Do not use it for TestCloud artifacts. |
+| Past automated elapsed time | `read_execution`, `find_test_results` with filter_type `EXECUTION` | one finished execution, job-grouped results, and machine-recorded elapsed time | **Confirm the elapsed field is on the record before you model on it.** It depends on version and runner. If absent, ask. |
+| Comparable cycle for calibration | `read_execution` on a named past execution | one sample | It is n=1. No tool aggregates across cycles. Write n=1 in the confidence basis. |
 
-Discovery first, always: `list_projects` then `list_repositories`, exactly as `test-plan` does.
+Two ID spaces both say "execution". TestOps uses a number. Test Execution - Cloud (formerly TestCloud) uses a string. `list_executions` and `read_execution` take the number. `list_execution_outputs` takes the string. Never swap them.
 
-## Human side - the checklist
+Always resolve scope first: `list_projects`, then `list_repositories`.
 
-None of these exist in the platform. Ask for all of them that the chosen buckets need, and record who supplied each and when it was last measured.
+The metrics tools take an iteration, a date range, or both. `fetch_requirement_metrics` takes an iteration only. The others take a `filter` with a mandatory `filter_type` (`ITERATION`, `DATE_RANGE`, or `DEFAULT`, the last 28 days), except `fetch_test_stability_metrics`, which takes flat parameters. See the tool schema for exact fields. Metrics are read at the time of the call. They are not point-in-time history.
 
-- Manual execution minutes per case (median, not mean - a few long cases skew the mean)
-- Design minutes per new case
-- New cases per uncovered requirement
-- Triage minutes per failing result
-- Automation authoring hours per case, if bucket D is in scope
-- Productive hours per tester per day
-- Number of testers available, and any part-time fractions
-- Working days lost to holidays or PTO inside the window
-- Fixed-overhead percentage
-- Session concurrency for the automated lane
-- Repeat-pass factor, if a configuration is being run a second time
-- Any cost rate, if the answer must be in money
+## Human side: the checklist
+
+None of these exist in the platform. Ask for each one the chosen buckets need. Record who supplied it and when it was last measured.
+
+- Manual execution minutes per case. Ask for the median. A few long cases skew the mean.
+- Design minutes per new case.
+- New cases per uncovered requirement.
+- Triage minutes per failing result.
+- Automation authoring hours per case, if bucket D is in scope.
+- Productive hours per tester per day.
+- Testers available, and any part-time fractions.
+- Working days lost to holidays or PTO inside the window.
+- Fixed-overhead percentage.
+- Session concurrency for the automated lane.
+- Repeat-pass factor, if a configuration runs a second time.
+- A low and a high value for every rate above, and the risk behind the high value.
+- Any cost rate, if the answer must be in money.
 
 ## Rate source ranking
 
 1. **Measured in this project on a comparable cycle within 90 days.** The only source that supports High confidence.
-2. **Team declaration.** Medium. Ask what it is based on; a number someone remembers is weaker than one someone tracked.
-3. **A different project, or an older cycle.** Medium, and say which project.
-4. **An industry default.** Low. Print it as a placeholder, name it as a placeholder, and ask for a real measurement.
+2. **Team declaration.** Medium. Ask what it rests on. A tracked number beats a remembered one.
+3. **Another project, or an older cycle.** Medium. Say which project.
+4. **An industry default.** Low. Print it as a placeholder and ask for a real measurement.
 
 ## Things the platform cannot hold
 
 - **No effort field.** Nothing books time against a case, run, or person.
 - **No roster or capacity.** No team members, FTE fractions, PTO, or working calendar.
-- **No cost model.** No rates, currency, license consumption, or TestCloud minute pricing.
-- **No place to store the estimate.** No estimated-effort field on a case, folder, suite, or requirement, and per `unavailable-capabilities.md` no Test Plan, Release, or Build entity to attach one to. Record it in the plan suite's description or the linked Jira/Azure issue, and hand off to `test-plan`.
-- **No cross-cycle aggregate.** Result and execution tools are record-level. Trending across releases belongs to a reporting skill that does not exist yet - state the boundary rather than assembling a trend from single reads and presenting it as one.
+- **No cost model.** No rates, currency, license use, or Test Execution - Cloud minute pricing.
+- **No place to store the estimate.** No estimated-effort field exists on a case, folder, suite, or requirement. No tool creates a Test Plan, Release, or Build. Record the estimate in the plan text or the linked Jira or Azure DevOps issue. Hand off to `test-plan`.
+- **No cross-cycle aggregate.** Result and execution tools return records. For a trend across releases, hand off to `test-reporting`, which keeps its own snapshots.
 
 ## Things that look like MCP facts and are not
 
-- **Session concurrency.** `list_test_cloud_environments` lists environments; `find_execution_profiles` lists profiles. Neither returns how many sessions run at once.
-- **A manual run's duration.** Open and close timestamps are calendar elapsed. A run left open over a weekend is not a weekend of work.
-- **Production traffic, change frequency, and defect rates.** Not returned by any tool. If the human supplies them from TrueTest Test Gap Analysis, an analytics product, or Jira, use them and cite the source - the same rule `test-plan` already applies.
+- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team.
+- **A manual run's duration.** Open and close times are calendar time. A run left open over a weekend is not a weekend of work.
+- **Production traffic, change frequency, and defect rates.** No tool returns them. If the human supplies them from TrueTest, an analytics product, or Jira, use them and cite the source.

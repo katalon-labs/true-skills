@@ -1,0 +1,16 @@
+{
+  "_comment": "Fixture: what the platform returned for Release 5.0 of Travel Booking Web. All data is fictional.",
+  "project": "Travel Booking Web", "repository": "Travel Booking Tests",
+  "iteration": {"type": "RELEASE", "name": "5.0", "start": "2026-10-05", "end": "2026-10-16"},
+  "thresholds": {"requirement_coverage": 0.9, "pass_rate": 0.95, "source": "team-supplied in the request"},
+  "requirement_metrics": {"total": 20, "covered": 20, "uncovered": [], "with_passing_evidence": 18, "without_passing_evidence": ["CHK-305", "CHK-306"], "critical": ["CHK-301", "CHK-302"], "note": "CHK-305 and CHK-306 are priority low and were not executed this cycle"},
+  "test_case_metrics": {"total": 188, "automated": 120, "manual": 68, "unexecuted": 5, "stale": 0},
+  "executions": [
+    {"id": 9201, "name": "Release 5.0 regression", "started": "2026-10-15T20:00:00Z", "total": 188, "passed": 181, "failed": 2, "blocked": 0, "not_run": 5, "pass_rate": 0.963}
+  ],
+  "failed_p0_p1": [],
+  "failed_other": [{"test_case": "TC-7410", "title": "Show the loyalty badge", "priority": "P2", "execution": 9201, "classification": "flaky, same build, 4 of the last 10 runs failed, cause known: slow image CDN"}],
+  "defect_metrics": {"resolution_state": "UNRESOLVED", "critical": 0, "high": 0, "medium": 1, "open": [{"key": "DEF-955", "priority": "medium", "summary": "Loyalty badge flickers on slow networks", "release_blocking_in_tracker": false}]},
+  "stability": {"flaky": 1, "always_failing": 0, "new_failures": 0},
+  "configuration_metrics": {"configuration_type": "BROWSER", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": [{"browser": "Chrome", "coverage": 0.97, "pass_rate": 0.97}, {"browser": "Safari", "coverage": 0.91, "pass_rate": 0.96}, {"browser": "Firefox", "coverage": 0.86, "pass_rate": 0.96}]}
+}

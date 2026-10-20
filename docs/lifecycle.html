@@ -126,25 +126,25 @@ footer code{background:var(--chip);border-radius:4px;padding:1px 6px}
   <div class="flow">
     <div class="stage"><div class="num">STAGE 1</div><h3>Plan</h3>
       <span class="skill">test-plan</span>
-      <div class="tools">Scope, risk-priority, and the executable folder+suite for a sprint/release.<br><code>list_projects</code> <code>find_iterations</code> <code>fetch_requirement_data</code> <code>manage_test_suite</code></div></div>
+      <div class="tools">Scope, risk-priority, and the executable folder+suite for a sprint/release.<br><code>list_projects</code> <code>find_iterations</code> <code>fetch_requirement_metrics</code> <code>manage_test_suite</code></div></div>
     <div class="stage"><div class="num">STAGE 2</div><h3>Design</h3>
       <span class="skill">create-test-cases</span>
-      <div class="tools">Atomic cases from requirements, ISTQB-as-reference, linked and de-duplicated.<br><code>find_requirements</code> <code>create_test_case</code> <code>update_test_case</code></div></div>
+      <div class="tools">Atomic cases from requirements, ISTQB-as-reference, linked and de-duplicated.<br><code>find_requirements</code> <code>create_test_case</code> <code>update_test_cases</code></div></div>
     <div class="stage"><div class="num">STAGE 3</div><h3>Manage</h3>
       <span class="skill">test-management</span>
-      <div class="tools">Inventory + requirement↔case↔suite traceability, orphans, coverage %.<br><code>manage_test_folder</code> <code>move_test_case</code> <code>link_requirements_to_test_case</code></div></div>
+      <div class="tools">Inventory + requirement↔case↔suite traceability, orphans, coverage %.<br><code>manage_test_folder</code> <code>move_test_case</code> <code>manage_requirement_test_case_linkages</code></div></div>
     <div class="stage"><div class="num">STAGE 4</div><h3>Review</h3>
       <span class="skill">test-review</span>
-      <div class="tools">Pre-pipeline verdict on coverage, quality, and flakiness.<br><code>fetch_test_case_data</code> <code>fetch_test_stability_data</code> <code>fetch_test_configuration_data</code></div></div>
+      <div class="tools">Pre-pipeline verdict on coverage, quality, and flakiness.<br><code>fetch_test_case_metrics</code> <code>fetch_test_stability_metrics</code> <code>fetch_test_configuration_metrics</code></div></div>
     <div class="stage"><div class="num">STAGE 5</div><h3>Execute</h3>
       <span class="skill">execute-test</span><span class="skill">upload-report</span><span class="skill">playwright-execute</span>
-      <div class="tools">Manual, Run with AI, automated, and cloud-scale execution.<br><code>read_auts</code> <code>create_manual_ai_session</code> <code>schedule_test_run</code></div></div>
+      <div class="tools">Manual, Run with AI, automated, and cloud-scale execution.<br><code>read_auts</code> <code>create_manual_ai_session</code> <code>create_test_run</code></div></div>
     <div class="stage"><div class="num">STAGE 6</div><h3>Analyze</h3>
       <span class="skill">analyze-failures</span><span class="skill">release-analyze</span>
-      <div class="tools">Failure triage (product / automation / environment), defects, and the ship call.<br><code>read_test_result</code> <code>fetch_defect_data</code> <code>create_defect</code></div></div>
+      <div class="tools">Failure triage (product / automation / environment), defects, and the ship call.<br><code>find_test_results</code> <code>fetch_defect_metrics</code> <code>create_defect</code></div></div>
     <div class="stage"><div class="num">STAGE 7</div><h3>Maintain</h3>
       <span class="skill">test-maintenance</span>
-      <div class="tools">Repair flaky/broken cases, regenerate, and feed gaps back to plan.<br><code>fetch_test_stability_data</code> <code>update_test_case</code> <code>find_test_results</code></div></div>
+      <div class="tools">Repair flaky/broken cases, regenerate, and feed gaps back to plan.<br><code>fetch_test_stability_metrics</code> <code>update_test_cases</code> <code>find_test_results</code></div></div>
     <div class="stage" style="border-style:dashed"><div class="num">CROSS-CUTTING</div><h3>Connect &amp; route</h3>
       <span class="skill">platform-setup</span><span class="skill">true-platform-testing (router)</span>
       <div class="tools">Connect and verify the MCP · route any request to the right stage · run the full chain end to end.</div></div>

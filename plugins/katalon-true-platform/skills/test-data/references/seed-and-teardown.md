@@ -13,7 +13,7 @@ Take the highest rung that works.
 
 ## Rules that make a seed trustworthy
 
-- **Idempotent.** Running it twice leaves one record, not two, and does not error on the second run.
+- **Idempotent.** Running it twice leaves one record and does not error on the second run.
 - **Unique per run.** Stamp every key that must be unique: `qa+cel9-20260810-1432@example.com`, `ORDER-<stamp>`. The stamp is what teardown searches for.
 - **Self-describing.** A seeded record should be identifiable as test data by looking at it, so a human who finds one in a shared environment knows what it is.
 - **Scoped to what the case needs.** Seeding a hundred orders to test one discount makes the failure harder to read and the teardown slower.
@@ -27,6 +27,7 @@ Take the highest rung that works.
 - **Teardown is scoped to this run's stamp.** Never delete by a broad pattern in a shared environment.
 - **Leave nothing behind that changes another test's outcome**, including cart state, session state, and feature-flag overrides.
 - **A nightly cleanup job is not teardown.** It hides the defect until the day it does not run.
+- **A missing-teardown failure on one case usually means the fixture itself is broken.** Check whether sibling cases share the same fixture before patching just this one; fix the fixture once.
 
 ## Manual lane pattern
 
@@ -43,7 +44,7 @@ Teardown:
   npm run seed -- --teardown --stamp <run-stamp>
 ```
 
-Write it into the case with a single `update_test_case` call containing every edit, then confirm with `read_test_case`. If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
+Write it into the case with a single `update_test_cases` call containing every edit (`UPDATE_PRECONDITION` and `UPDATE_CONTENT`, which needs the complete step list), then confirm with `read_test_cases` (`content_type` `FLOW`). If the Test Data column comes back empty, re-issue the update; never create a duplicate case because an update appeared to fail.
 
 ## Automation lane pattern
 
@@ -66,7 +67,7 @@ export const test = base.extend<Fixtures>({
 });
 ```
 
-Use `globalSetup` only for state that is genuinely shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
+Use `globalSetup` only for state that is shared and read-only across the whole run. Anything a test mutates belongs to a per-test fixture, or the tests become order-dependent.
 
 ## The acceptance test for any data design
 

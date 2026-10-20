@@ -1,0 +1,11 @@
+interface:
+  display_name: "Katalon Test Estimation"
+  short_description: "Size and resource a test cycle"
+  default_prompt: "Use $test-estimation to how long will testing this release take, and with how many people?"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

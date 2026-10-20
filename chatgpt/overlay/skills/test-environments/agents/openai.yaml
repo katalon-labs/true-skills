@@ -1,0 +1,15 @@
+interface:
+  display_name: "Test environments"
+  short_description: "Prepare apps, devices and tunnels"
+  brand_color: "#6059E4"
+  default_prompt: "Show the browsers and devices I can run tests on"
+policy:
+  products: [CHAT, CODEX]
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon"
+      description: "Katalon True Platform MCP"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp/chatgpt"

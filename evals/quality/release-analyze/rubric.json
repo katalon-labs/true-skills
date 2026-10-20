@@ -1,0 +1,197 @@
+{
+  "skill": "release-analyze",
+  "checks": [
+    {
+      "id": "template-fields",
+      "type": "sections-present",
+      "desc": "Output follows the readiness template",
+      "params": {
+        "labels": [
+          "Release Readiness",
+          "Confidence",
+          "Key Metrics",
+          "Blocking Issues",
+          "Risks / Gaps",
+          "Recommendation",
+          "Evidence"
+        ]
+      }
+    },
+    {
+      "id": "verdict-vocabulary",
+      "type": "label-in",
+      "desc": "Readiness is exactly Ready, Ready with risk or Not ready",
+      "params": {
+        "label": "Release Readiness",
+        "allowed": [
+          "Ready",
+          "Ready with risk",
+          "Not ready"
+        ]
+      }
+    },
+    {
+      "id": "confidence-vocabulary",
+      "type": "label-in",
+      "desc": "Confidence is High, Medium or Low",
+      "params": {
+        "label": "Confidence",
+        "allowed": [
+          "High",
+          "Medium",
+          "Low"
+        ]
+      }
+    },
+    {
+      "id": "verdict-expected",
+      "type": "label-in",
+      "desc": "Readiness matches the rules for this fixture",
+      "when": "verdict",
+      "params": {
+        "label": "Release Readiness",
+        "allowed": [
+          "$expect.verdict"
+        ]
+      }
+    },
+    {
+      "id": "never-ready",
+      "type": "label-not-in",
+      "desc": "Never returns Ready when a hard blocker or too little data exists",
+      "when": "verdict_not",
+      "params": {
+        "label": "Release Readiness",
+        "values": [
+          "$expect.verdict_not"
+        ]
+      }
+    },
+    {
+      "id": "confidence-allowed",
+      "type": "label-in",
+      "desc": "Confidence fits the quality of the data",
+      "when": "confidence_allowed",
+      "params": {
+        "label": "Confidence",
+        "allowed": "$expect.confidence_allowed"
+      }
+    },
+    {
+      "id": "blockers-named",
+      "type": "contains-all",
+      "desc": "Blocking tests and defects are named",
+      "when": "blockers",
+      "params": {
+        "values": "$expect.blockers"
+      }
+    },
+    {
+      "id": "risks-named",
+      "type": "contains-all",
+      "desc": "Accepted risks and gaps are named",
+      "when": "risks",
+      "params": {
+        "values": "$expect.risks"
+      }
+    },
+    {
+      "id": "evidence-ids",
+      "type": "contains-all",
+      "desc": "Evidence cites the execution IDs",
+      "when": "evidence_ids",
+      "params": {
+        "values": "$expect.evidence_ids"
+      }
+    },
+    {
+      "id": "scope-stated",
+      "type": "contains-any",
+      "desc": "The iteration or window of the data is stated",
+      "params": {
+        "values": [
+          "$expect.iteration",
+          "$expect.window_start"
+        ]
+      }
+    },
+    {
+      "id": "thresholds-or-assumptions",
+      "type": "present",
+      "desc": "Thresholds are quoted, or the assumption is stated",
+      "params": {
+        "pattern": "(threshold|assum)"
+      }
+    },
+    {
+      "id": "counts-in-metrics",
+      "type": "present",
+      "desc": "Key Metrics lines carry counts, or say unknown when the data is missing, not adjectives",
+      "params": {
+        "patterns": [
+          "Requirement coverage\\s*:[^\\n]*\\d",
+          "Test execution\\s*:[^\\n]*\\d",
+          "Defect risk\\s*:[^\\n]*(\\d|unknown|no data)"
+        ]
+      }
+    },
+    {
+      "id": "rerun-not-cleared",
+      "type": "near-all",
+      "desc": "A P0 or P1 pass on an unmodified rerun is a stability risk, not a cleared failure",
+      "when": "rerun_pass_case",
+      "params": {
+        "values": [
+          "$expect.rerun_pass_case"
+        ],
+        "pattern": "(stability|flak|under investigation|not cleared|unmodified)",
+        "window": 350
+      }
+    },
+    {
+      "id": "zero-stability-cross-checked",
+      "type": "present",
+      "desc": "An all-zero stability result is cross-checked against the results",
+      "when": "cross_check",
+      "params": {
+        "patterns": [
+          "cross-?check",
+          "(zero|all zeros|0 flaky)"
+        ]
+      }
+    },
+    {
+      "id": "execution-window-fixed",
+      "type": "present",
+      "desc": "The empty execution list is traced to the default 24-hour window",
+      "when": "window_gap",
+      "params": {
+        "pattern": "(24 hours|start_time|default window)"
+      }
+    },
+    {
+      "id": "grounded-keys",
+      "type": "grounded-ids",
+      "desc": "Every defect, case or requirement key exists in the fixture",
+      "params": {
+        "pattern": "\\b(?:TC|CEL|PAY|CHK|DEF|SHP|CLM)-\\d+\\b"
+      }
+    },
+    {
+      "id": "grounded-executions",
+      "type": "grounded-ids",
+      "desc": "Every execution ID cited exists in the fixture",
+      "params": {
+        "pattern": "(?<=\\bexecution(?: ID)?[ :#]{1,3})\\d{3,}"
+      }
+    },
+    {
+      "id": "style-no-em-dash",
+      "type": "absent",
+      "desc": "House style: no em dash",
+      "params": {
+        "pattern": "\\u2014"
+      }
+    }
+  ]
+}

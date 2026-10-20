@@ -1,0 +1,11 @@
+[
+  {
+    "result": {
+      "created": true,
+      "defectKey": "CEL-231",
+      "summary": "Defect for Login lockout after five failures",
+      "linkedTestResultId": 55001,
+      "url": "https://celestial.atlassian.net/browse/CEL-231"
+    }
+  }
+]

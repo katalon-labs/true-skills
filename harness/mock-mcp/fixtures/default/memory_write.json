@@ -1,0 +1,23 @@
+[
+  {
+    "result": {
+      "saved": true,
+      "duplicate": false,
+      "record_id": "a7b8c9d0-e1f2-4a3b-9c5d-6e7f8091a2b3",
+      "redacted": [],
+      "scope": "user"
+    }
+  },
+  {
+    "match": {
+      "headline": "Test folders: \"Folder name - YYYYMMDD\""
+    },
+    "result": {
+      "saved": false,
+      "duplicate": true,
+      "record_id": "f6a7b8c9-d0e1-4f2a-9b4c-5d6e7f8091a2",
+      "redacted": [],
+      "scope": "user"
+    }
+  }
+]

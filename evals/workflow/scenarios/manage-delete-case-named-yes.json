@@ -1,0 +1,82 @@
+{
+  "id": "manage-delete-case-named-yes",
+  "skill": "test-management",
+  "description": "A delete request for one case. The agent reads the case, names it with its ID when it asks, and deletes only after a yes that names the case.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Delete test case 1004. It duplicates 1003."
+    },
+    {
+      "text": "I do want it deleted. Yes, delete test case 1004, Checkout rejects expired discount code.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "test-management"
+    },
+    {
+      "id": "case-read-first",
+      "type": "order",
+      "before": {
+        "tool": "read_test_cases"
+      },
+      "after": {
+        "tool": "delete_test_case"
+      }
+    },
+    {
+      "id": "target-named",
+      "type": "asked-before",
+      "tool": "delete_test_case",
+      "question": [
+        "1004",
+        "Checkout rejects expired discount code"
+      ]
+    },
+    {
+      "id": "named-yes",
+      "type": "user-said-before",
+      "tool": "delete_test_case",
+      "patterns": [
+        "\\byes\\b",
+        "1004"
+      ]
+    },
+    {
+      "id": "deleted-once",
+      "type": "called",
+      "tool": "delete_test_case",
+      "match": {
+        "test_case_id": 1004
+      },
+      "max": 1
+    },
+    {
+      "id": "delete-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "delete_test_case"
+      },
+      "reads": [
+        "find_test_cases",
+        "read_test_cases"
+      ],
+      "sameArgs": [
+        "project_id"
+      ],
+      "entity": {
+        "write": "test_case_id"
+      },
+      "resultMustMatch": [
+        "\"testCases\""
+      ],
+      "resultMustNotMatch": [
+        "\"id\":\\s*{entity}\\b"
+      ]
+    }
+  ]
+}

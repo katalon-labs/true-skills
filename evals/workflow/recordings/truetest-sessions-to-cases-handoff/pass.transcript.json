@@ -1,0 +1,180 @@
+{
+  "scenario": "truetest-sessions-to-cases-handoff",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Generate test cases from the checkout sessions between 2026-10-12 and 2026-10-19 on Celestial Web staging.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:truetest-journeys"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_projects",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"projects\":[{\"id\":28459,\"name\":\"Celestial Web App\",\"key\":\"CEL\",\"role\":\"OWNER\"},{\"id\":28460,\"name\":\"Orbit Mobile\",\"key\":\"ORB\",\"role\":\"MEMBER\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__list_truetest_auts",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"auts\":[{\"platform_aut_id\":91,\"client_code\":\"celestial-web\",\"display_name\":\"Celestial Web\",\"aut_project_id\":7,\"project_id\":28459,\"test_project_id\":500,\"readiness\":\"READY\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__list_truetest_tracking_environments",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"tracking_environments\":[{\"tracking_environment_id\":\"0ec3c0b5-3a27-4c94-997b-dc89aa82f3cc\",\"canonical_name\":\"production\",\"label\":\"Production\"},{\"tracking_environment_id\":\"9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f\",\"canonical_name\":\"staging\",\"label\":\"Staging\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t5",
+      "name": "mcp__katalon__search_truetest_sessions",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "start_time": "2026-10-12T00:00:00Z",
+        "end_time": "2026-10-19T23:59:59Z",
+        "tracking_environment_id": "9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f",
+        "url_patterns": [
+          "/cart",
+          "/checkout"
+        ]
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t5",
+      "isError": false,
+      "text": "{\"sessions\":[{\"session_reference\":\"sref_opaque_a1b2c3\",\"session_id\":\"cust-sess-1001\",\"start_time\":\"2026-10-18T09:12:00Z\",\"steps\":7,\"duration_ms\":84200,\"custom_attributes\":{\"serviceGroup\":\"Checkout\"},\"session_replay_url\":\"/truetest/replay/cust-sess-1001\"},{\"session_reference\":\"sref_opaque_d4e5f6\",\"session_id\":\"cust-sess-1002\",\"start_time\":\"2026-10-18T10:40:00Z\",\"steps\":5,\"duration_ms\":51000,\"custom_attributes\":{\"serviceGroup\":\"Orders\"},\"session_replay_url\":\"/truetest/replay/cust-sess-1002\"}],\"next_page_token\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t6",
+      "name": "mcp__katalon__get_truetest_session",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "session_reference": "sref_opaque_a1b2c3"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t6",
+      "isError": false,
+      "text": "{\"session_id\":\"cust-sess-1001\",\"start_time\":\"2026-10-18T09:12:00Z\",\"steps\":[{\"step\":1,\"action\":\"navigate\",\"target\":\"/cart\"},{\"step\":2,\"action\":\"click\",\"target\":\"Apply discount\"},{\"step\":3,\"action\":\"type\",\"target\":\"Discount code\"},{\"step\":4,\"action\":\"click\",\"target\":\"Checkout\"}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Two sessions match. Shortlist: cust-sess-1001 (2026-10-18 09:12 UTC, 7 steps, cart to checkout with a discount code) and cust-sess-1002 (2026-10-18 10:40 UTC, 5 steps, orders). Which sessions do you want cases from? Cases copy what users did, so expected results stay unconfirmed."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Use only the first session, cust-sess-1001.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Preview. Queue generation from session cust-sess-1001 only. It becomes draft cases. Generation is queued, not instant. Reply yes to queue it."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "Yes, generate from cust-sess-1001.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t7",
+      "name": "mcp__katalon__create_truetest_test_case_from_session",
+      "args": {
+        "project_id": 28459,
+        "client_code": "celestial-web",
+        "tracking_environment_id": "9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f",
+        "session_references": [
+          "sref_opaque_a1b2c3"
+        ]
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t7",
+      "isError": false,
+      "text": "{\"status\":\"STARTED\",\"accepted_sessions\":1,\"message\":\"Generation is queued, not complete.\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t8",
+      "name": "mcp__katalon__find_test_cases",
+      "args": {
+        "project_id": 28459,
+        "repository_id": 500,
+        "filter": {
+          "filter_type": "RELATIVE",
+          "scope": "RECENT"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t8",
+      "isError": false,
+      "text": "{\"items\":[{\"id\":1001,\"name\":\"Password reset sends email link\",\"path\":\"Test Cases/Authentication/Password Reset\",\"status\":\"PUBLISHED\",\"priority\":\"HIGH\",\"testType\":\"MANUAL\",\"automationStatus\":\"MANUAL_ONLY\",\"testProjectId\":500},{\"id\":1002,\"name\":\"Password reset rejects expired link\",\"path\":\"Test Cases/Authentication/Password Reset\",\"status\":\"PUBLISHED\",\"priority\":\"MEDIUM\",\"testType\":\"MANUAL\",\"automationStatus\":\"MANUAL_ONLY\",\"testProjectId\":500},{\"id\":1003,\"name\":\"Checkout applies valid discount code\",\"path\":\"Test Cases/Checkout\",\"status\":\"PUBLISHED\",\"priority\":\"HIGH\",\"testType\":\"MANUAL\",\"automationStatus\":\"AUTOMATION_CANDIDATE\",\"testProjectId\":500},{\"id\":1004,\"name\":\"Checkout rejects expired discount code\",\"path\":\"Test Cases/Checkout\",\"status\":\"DRAFT\",\"priority\":\"MEDIUM\",\"testType\":\"MANUAL\",\"automationStatus\":\"TO_BE_ASSESSED\",\"testProjectId\":500},{\"id\":1005,\"name\":\"Login lockout after five failures\",\"path\":\"Test Cases/Authentication/Login\",\"status\":\"PUBLISHED\",\"priority\":\"CRITICAL\",\"testType\":\"AUTOMATED\",\"automationStatus\":\"AUTOMATION_COMPLETE\",\"testProjectId\":500},{\"id\":1006,\"name\":\"Order history CSV export downloads file\",\"path\":\"Test Cases/Orders\",\"status\":\"DRAFT\",\"priority\":\"LOW\",\"testType\":\"AUTOMATED\",\"automationStatus\":\"AUTOMATION_IN_PROGRESS\",\"testProjectId\":500}],\"page_number\":0,\"page_size\":20,\"total\":6,\"next_page_token\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "Generation is queued. I checked recent cases and none are new yet. They can take a few minutes. Every generated case is a draft."
+    },
+    {
+      "type": "user",
+      "turn": 3,
+      "text": "Thanks. Now refine those draft cases and add expected results.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t9",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:create-test-cases"
+      }
+    },
+    {
+      "type": "assistant",
+      "text": "Refining the drafts belongs to create-test-cases. I loaded it. When the drafts appear it will add expected results from the requirement and show a plan before any write."
+    }
+  ]
+}

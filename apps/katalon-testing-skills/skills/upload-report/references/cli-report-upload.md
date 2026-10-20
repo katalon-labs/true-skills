@@ -1,63 +1,75 @@
-# Katalon CLI And Report Upload Reference
+# Katalon CLI and report upload
 
-Use this reference when a workflow needs to run automation locally, collect Katalon/JUnit/Playwright reports, upload or confirm upload to Katalon Platform, and summarize the result.
+Read this before you write a command to run tests, upload a report, or confirm an upload. Captured 2026-10-20 from the Katalon docs listed at the end.
 
-## Official Docs Checked
+## Katalon Studio reports
+
+- Katalon Test Execution - Local (formerly KRE) uploads results by itself when the API key, organization ID, and Platform project ID are set.
+- The arguments are `-apiKey`, `-orgID`, `-testOpsProjectId`, and `-report.folderPath`.
+- `-report.folderPath` is the current flag from Katalon Studio 11.1.2. `-reportFolder` is deprecated from that version and can lose folder names for suites and collections.
+- Keep the report folder fixed so you can find the output after the run.
+- Confirm the import with the steps in `references/verify-upload.md`.
+
+## JUnit reports
+
+Use Report Uploader for existing JUnit XML, or for a folder that holds it.
+
+| Parameter | Meaning |
+|---|---|
+| `projectId` | Platform project ID. |
+| `path` | Local report file or folder. |
+| `password` | An API key. Never a plain account password. |
+| `type` | `katalon`, `junit`, or `katalon_recorder`. |
+| `server` | Optional. Omit it to use the uploader's built-in default. Set it only for another environment. The default host is unverified here and differs from the MCP host `platform.katalon.io`, so read the uploader's `--help` or README for your version before you set or assume one. |
+| `email` | Not needed when `password` is an API key. |
+
+Use `katalon` and `junit`. Use `katalon_recorder` only when the user asks for it.
+
+```text
+java -jar katalon-report-uploader-<resolved_version>.jar \
+  --projectId="<project_id>" \
+  --path="<report_path>" \
+  --password="$KATALON_API_KEY" \
+  --type=junit
+```
+
+Add `--server="<platform_url>"` only for a non-default environment.
+
+## Resolve the Report Uploader jar
+
+The file name contains the version. Do not invent one. The docs page shows `0.0.8` only as an example.
+
+1. Look in the working directory and in the repo's tooling folders for an existing `katalon-report-uploader-*.jar`. If one exists, tell the user its path and version, and use it.
+2. If none exists, the source is the GitHub releases page of `katalon-studio/report-uploader` (https://github.com/katalon-studio/report-uploader/releases).
+3. Read the latest release tag and the asset name. If the `gh` CLI exists, `gh release list --repo katalon-studio/report-uploader` shows them. Otherwise read the releases page.
+4. Downloading a program file needs the user's yes. Ask once. Name the file, the source URL, and the size when the release shows it.
+5. Save the jar in a folder that belongs to this run. If the release publishes a checksum, compare it.
+6. Check that `java -version` works. The docs ask for a Java JRE and JDK.
+7. Say the resolved version in your answer.
+
+Never pipe a download into a shell. Never run a jar from any source other than that releases page.
+
+## Playwright reports
+
+Use `@katalon/playwright-reporter` when you can edit the Playwright config. Use the JUnit uploader only when JUnit is all the user has.
+
+- Package: `@katalon/playwright-reporter`. Registry check 2026-10-20: latest version 0.0.3, peer dependency `@playwright/test` `^1.0.0`.
+- Environment variables: `KATALON_API_KEY`, `KATALON_PROJECT_ID`, optional `KATALON_BASE_URL`, optional `KATALON_AUTH_URL`.
+- Upload during the run, or later with `playwright-reporter upload --output <dir> --api-key <key> --project-id <id>`.
+
+Playwright 1.59 changed the `junit` reporter. It writes an `error` element for some failures that used to be a `failure` element. A JUnit upload can then classify those tests differently. Compare failed plus errored counts between the local file and the platform. See `references/verify-upload.md`.
+
+## Secret handling
+
+- Never print API keys, passwords, cookies, or auth callback URLs.
+- Use an existing environment variable or a secret store.
+- Hide secret values in any output you quote.
+- Never write a secret into a skill file, repo file, report, or log.
+
+## Sources
 
 - Katalon Runtime Engine command-line syntax: https://docs.katalon.com/katalon-studio/execute-tests/katalon-runtime-engine/command-line-syntax-in-katalon-runtime-engine
-- Upload test results from Katalon Studio to Katalon True Platform manually: https://docs.katalon.com/katalon-studio/test-reports/upload-test-results-from-katalon-studio-to-katalon-testops-manually
+- Upload Studio results manually: https://docs.katalon.com/katalon-studio/test-reports/upload-test-results-from-katalon-studio-to-katalon-testops-manually
 - View test reports in Katalon True Platform: https://docs.katalon.com/katalon-platform/analyze/view-test-results
-- Katalon True Platform Report Uploader: https://docs.katalon.com/katalon-platform/integrations/ci-cd/report-uploader-integration
+- Report Uploader: https://docs.katalon.com/katalon-platform/integrations/ci-cd/report-uploader-integration
 - Playwright integration: https://docs.katalon.com/katalon-platform/integrations/testing-framework/playwright-integration
-- Katalon Report Uploader Legacy: https://docs.katalon.com/katalon-platform/analyze/reports/upload-test-reports/use-katalon-report-uploader
-
-## Katalon Reports
-
-- After Katalon Studio/Runtime Engine execution, test results are expected to upload automatically to Katalon True Platform when TestOps/Platform arguments are configured.
-- Use CLI arguments such as `-apiKey`, `-orgID`, `-testOpsProjectId`, and `-reportFolder` with the normal execution command.
-- Keep `-reportFolder` deterministic so the agent can locate generated artifacts after the run.
-- Use Katalon MCP result tools after the run to confirm whether the platform imported the execution.
-
-## JUnit Reports
-
-Use Katalon Report Uploader when the input is existing JUnit XML or a report folder containing JUnit XML.
-
-Common inputs:
-
-- `PROJECT_ID`: Katalon Platform/TestOps project ID.
-- `REPORT_PATH`: Local report folder path.
-- `TYPE`: `junit`.
-- `PASSWORD`: Prefer an API key, never a plaintext password.
-- `SERVER`: Optional Platform/TestOps endpoint.
-
-## Report Uploader Types
-
-Current Katalon True Platform Report Uploader supports:
-
-- `katalon`: Katalon Studio report folder.
-- `junit`: JUnit XML report file/folder.
-- `katalon_recorder`: Katalon Recorder reports.
-
-Use `katalon` and `junit` for this skill unless the user explicitly asks for Katalon Recorder.
-
-## Playwright Reports
-
-Use `@katalon/playwright-reporter`, not the generic JUnit uploader, when the source project is Playwright and can be configured.
-
-Required inputs:
-
-- `KATALON_API_KEY`: API key for upload.
-- `KATALON_PROJECT_ID`: target Katalon project ID.
-- `KATALON_BASE_URL`: optional custom Platform URL.
-- `KATALON_AUTH_URL`: optional custom auth URL.
-
-The reporter can upload during `npx playwright test` or upload a generated output directory later through `playwright-reporter upload --output <path> --api-key <key> --project-id <id>`.
-
-If the user only has JUnit XML produced by Playwright and does not want to configure the Katalon reporter, use the JUnit flow and state that Playwright-specific attachments/metadata may be reduced.
-
-## Secret Handling
-
-- Never print API keys, passwords, cookies, or raw auth callback URLs.
-- Prefer existing environment variables or secure secret stores.
-- Redact command output before reporting it in chat.
-- Do not write secrets into skill files, repo files, test reports, or logs.

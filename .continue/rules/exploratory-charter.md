@@ -1,6 +1,6 @@
 ---
 name: Katalon Exploratory Charter
-description: "Write, run, and debrief exploratory testing charters against Katalon True Platform/TestOps when there is no script to follow. Use when you need to turn a vague area into a charter (mission, areas, oracles, timebox), run a timeboxed unscripted session, log what you find as session notes, judge which findings are real defects, and promote what was learned into atomic manual cases plus the folder or suite that holds them. This is unscripted discovery and the debrief after it; when a written requirement is already in hand and the job is designing cases from it, use create-test-cases instead. Written for the manual tester who has an hour, a feature, and no cases to run against it."
+description: "Writes, runs, and debriefs timeboxed exploratory testing charters for Katalon True Platform (formerly TestOps). Records the outcome as session notes, optional manual results with uploaded evidence, and promoted test cases. Use when no script exists and the job is learning about a feature, rather than designing cases from a written requirement (create-test-cases) or triaging a failed run (analyze-failures). For the manual tester."
 alwaysApply: false
 ---
 
@@ -8,23 +8,47 @@ alwaysApply: false
 
 # Katalon Exploratory Charter
 
-Use this skill for the **unscripted** part of the design stage: a timeboxed session that learns something the written requirement does not say, then converts what it learned into scripted coverage. A charter is not a test case and a session is not a test run. The value is the *learning plus the promotion*, so a session that produces no notes and no promoted cases has failed even if nothing crashed.
+This skill covers the unscripted part of test design. You run a timeboxed session that learns what the written requirement does not say. Then you turn the findings into scripted coverage. A charter is not a test case. A session is not a test run. The value is the learning plus the promotion. A session with no notes and no promoted cases has failed, even if nothing crashed.
 
-Treat the human as a tool. Ask when the area, the timebox, the environment, or the risk appetite cannot be resolved safely. Never invent an oracle.
+Treat the human as a tool. Ask when the area, the timebox, the environment, or the risk appetite cannot be resolved safely. Never invent an oracle. Tool names below are bare. Clients add a prefix (Claude Code: `mcp__<server>__<tool>`).
 
-## Availability Boundary
+## What the MCP can and cannot do
 
-**There is no exploratory session object in the platform.** Say that before promising to "run a session in Katalon".
+There is no exploratory session object in the platform. Say so before you promise to "run a session in Katalon".
 
-- **Available via MCP:** resolve scope (`list_projects`, `list_repositories`), read the oracles you already have (`find_requirements`, `read_requirement`, `fetch_requirement_data`), check whether an area is already covered before spending the timebox on it (`find_test_cases`, `find_test_cases_by_requirement`), and land the outcome (`manage_test_folder`, `create_test_case`, `link_requirements_to_test_case`, `manage_test_suite`, `read_test_suite`).
-- **Not available, and no workaround exists:** a charter / session / session-sheet entity, a session timer or duration field, attachment upload for screenshots or video or HAR files, a tool that sets a manual test result to failed, custom fields or tags to mark a case as exploratory in origin, and creating a requirement for behavior the charter discovered. Do not reach for `create_charter`, `upload_attachment`, `set_test_result_status`, or `manage_tags` - none of them exists.
-- **The defect trap.** `create_defect` requires a known **failed test result ID**. An unscripted session produces no test result, so a charter finding cannot be filed through MCP as it stands. In order of preference: (1) file it in Jira or Azure DevOps directly, outside the MCP; (2) execute the reproduction case and mark it failed in the TestOps UI, then file from that run. A third path is MCP-legal but conditional - promote the finding to a case, `create_manual_test_run`, `create_manual_ai_session`, and if the AI run genuinely fails, `create_defect` with that result ID. It only works when Run with AI actually reproduces the bug, so never offer it as the default.
-- **The Katalon MCP cannot see the application.** It reads and writes platform objects only. Every observation in a session comes from a browser you drive yourself, so use Browser or Playwright for the product and the MCP for the artifacts.
-- **Where the charter lives.** Author the charter and the session sheet as a local artifact the user keeps. Optionally mirror the charter into the platform as one test case in the charter folder, mission in Description and session log in Steps. Say which you did.
+- **Can read:** scope (`list_projects`, `list_repositories`), oracles you already have (`find_requirements`, `read_requirement`, `fetch_requirement_metrics`), existing coverage (`find_test_cases`, `find_test_cases_by_requirement`, `search`), defect patterns for the area (`fetch_defect_metrics`, `fetch_defects`), and the target environment (`read_auts`).
+- **Can write:** the outcome (`manage_test_folder`, `create_test_case`, `manage_requirement_test_case_linkages`, `manage_test_suite`, then `read_test_suite` to confirm), manual results for promoted cases (`update_test_run`, `update_test_results`), and evidence files (`prepare_artifact_upload`, then `confirm_artifact_upload`).
+- **Cannot do:** hold a charter or session entity, time a session, tag a case as exploratory, or create a requirement for behavior the session found. No tool sees the application. Every observation comes from a browser you drive yourself. Use a browser tool or Playwright for the product and the MCP for the platform records.
+- **Where the charter lives:** write the charter and the session sheet as a local artifact the user keeps. Optionally mirror the charter into the platform as one test case in the charter folder, with the mission in Description and the session log in Steps. Say which you did.
 
-Read `references/charter-and-session.md` before writing a charter. Consult `true-platform-testing/references/unavailable-capabilities.md` when the user asks whether Katalon can run exploratory sessions for them.
+Read `references/write-policy.md` before any write. Read `references/charter-and-session.md` before you write a charter.
 
-## Session Workflow
+## Filing a finding
+
+A session has no test result. `create_defect` needs a failed test result ID. Two paths exist. `create_defect` files a real Jira or Azure DevOps bug. Preview it and confirm.
+
+1. **Direct.** File the finding in Jira or Azure DevOps. This path needs no run.
+2. **Linked.** Promote the finding to a case, run it, and file from the failed result.
+   1. Create the case (hand to `create-test-cases`).
+   2. Start a manual run for it after the user confirms. This consumes capacity. Hand the run to `execute-test`. It creates the run with `create_test_run` and starts it with `update_test_run` (`START`, `execution_mode: "MANUAL"`).
+   3. Reproduce the bug during the run. Record the result you observed with `update_test_results`. The tool needs an active run that you created. Treat only an `applied` or `unchanged` outcome as success. End the run with `update_test_run` (`END`) when every case has an outcome.
+   4. Upload evidence (see "Evidence").
+   5. Call `fetch_defects` with `filter: {"filter_type": "TEST_RESULT", "test_result_ids": [<failed result ID>]}` to check that the result has no linked defect. Find the integration and connection IDs with `list_alm_integrations`. Ask the user for the defect summary if it is missing. Suggest the failed case name or "Defect for {test case name}". Show the summary, get a yes, then call `create_defect` with the failed result ID.
+   6. Read the result back with `find_test_results` and `filter_type: "TEST_RESULT"`.
+
+Offer the direct path when the user has no ALM integration, or when the bug does not reproduce on demand. Never record a failed result for a bug you did not reproduce.
+
+## Evidence
+
+Evidence capture stays with the tester. The MCP only stores the files.
+
+- Capture screenshots, recordings, and HAR files from the browser you drive.
+- Remove personal data and credentials first. A HAR file holds cookies and tokens. Strip them or skip the file.
+- Preview each file (filename, exact byte size, mime type, and that project members can see it) and get one confirmation first. Measure the exact byte size of each file of 10 MiB or less. Call `prepare_artifact_upload` with `upload: {filename, mime_type, content_length}`. Upload the raw bytes to the signed URL without Platform credentials. Then call `confirm_artifact_upload`. It returns an artifact ID.
+- Attach `{"artifact_id": "<id>"}` in the `evidence` list of the case or step in `update_test_results`. A case or step takes at most 3 items. Project members can see project artifacts.
+- Files over 10 MiB, such as long recordings, go into the tracker ticket. Reference the ticket ID from the finding.
+
+## Session workflow
 
 ```text
 +------------------+     +------------------+     +------------------+
@@ -41,35 +65,35 @@ Read `references/charter-and-session.md` before writing a charter. Consult `true
 
 ## Steps and tool rules
 
-1. **Resolve scope and existing coverage.** `list_projects` -> `list_repositories`. Then `find_test_cases` on the area keywords and `find_test_cases_by_requirement` when a requirement key is known. **Coverage is an input to the charter, not an afterthought**: an area that already has twenty cases is a poor use of the timebox, and the gaps are where the charter should point.
-2. **Write the charter before touching the application.** Six fields, all required: mission, areas, oracles, timebox, out of scope, done when. Show it to the user and get one confirmation. A charter without oracles is a browsing session; refuse to start until at least one oracle is named.
-3. **Choose the tours that fit the mission.** Pick two or three from `references/oracles-and-tours.md`. Name them in the charter so the session is reproducible by another tester.
-4. **Run the timebox and take notes as you go, not afterwards.** Every note is timestamped and typed - `SETUP`, `OBS`, `Q`, `BUG`, `RISK`, `IDEA`. A `BUG` note is worthless without the steps that produced it, so write the repro before moving on. Use Browser or Playwright for the application itself; the Katalon MCP cannot see the AUT UI.
-5. **Stop when the timebox ends, not when you run out of ideas.** Record the timebox accounting - minutes on charter, minutes on bug investigation and writeup, minutes on setup. A session that spent 40 of 60 minutes on setup is a finding about the environment; report it as one.
-6. **Classify every finding against the oracle it broke.** Product defect, test-data or environment issue, question for the product owner, or design risk. A finding with no broken oracle is an observation, not a defect - say so plainly rather than inflating it.
-7. **Debrief.** Report what the mission was, what was covered, what was not reached, the findings by class, the timebox accounting, and the charter you would run next. The next charter is part of the deliverable.
-8. **Promote, then hand off.** Turn confirmed findings into a promotion list - title, priority, requirement link if one exists, and the one-line expected result. `manage_test_folder` to create or reuse the charter folder, then **hand authoring to `create-test-cases`**, which owns duplicate checking, the atomic-case rules, and import. Do not reimplement those rules here. Add the promoted cases to the relevant suite with `manage_test_suite` and confirm with `read_test_suite`.
+1. **Resolve scope and existing coverage.** Call `list_projects`, then `list_repositories`. Call `find_test_cases` on the area keywords, and `find_test_cases_by_requirement` when a requirement key is known. Coverage is an input to the charter. An area with twenty cases is a poor use of the timebox. Point the charter at the gaps. Also call `fetch_defect_metrics` for the area. Its `filter` needs a `filter_type`: `ITERATION`, `DATE_RANGE` or `DEFAULT` (the last 28 days). It returns `UNRESOLVED` defects unless you set `resolution_state`, which accepts only `RESOLVED` or `UNRESOLVED`. Make two calls for all defects. For requirement-level counts, call `fetch_requirement_metrics` with `iteration_type` and `iteration_name`, and check the iteration with `find_iterations` first. A history of confirmed defects outweighs a hunch. When you need a duplicate or coverage check, `search` with `types: ["test_case"]` and `include_documents: false` helps. Its `tier` (exact, strong, weak) decides "exists", not the score. Treat a response with `incomplete=true`, `retrieval_mode="keyword_fallback"` or a warning as a limit and never as proof of absence.
+2. **Write the charter before you touch the application.** All fields are required. Show the charter to the user and get one confirmation. A charter without an oracle is a browsing session. Refuse to start until at least one oracle is named.
+3. **Choose the tours.** Pick two or three from `references/oracles-and-tours.md`. Name them in the charter so another tester can repeat the session.
+4. **Run the timebox and take notes as you go.** Timestamp and type every note: `SETUP`, `OBS`, `Q`, `BUG`, `RISK`, `IDEA`. A `BUG` needs its repro steps. Write them before you move on. Confirm the environment with `read_auts` or the user before the first action.
+5. **Stop when the timebox ends.** Record the accounting: minutes on charter, minutes on bug investigation and writeup, minutes on setup. A session that spent 40 of 60 minutes on setup is a finding about the environment. Report it as one.
+6. **Classify every finding against the oracle it broke.** The classes are product defect, test-data or environment issue, question for the product owner, and design risk. A finding with no broken oracle is an observation. Say so.
+7. **Debrief.** Report the mission, what was covered, what was not reached, the findings by class, the timebox accounting, and the next charter.
+8. **Promote, then hand off.** Turn confirmed findings into a promotion list: title, priority, requirement link if one exists, one-line expected result. Call `manage_test_folder` to create or reuse the charter folder. Hand authoring to `create-test-cases`. It owns duplicate checks, atomic-case rules, and import. Link each case to its requirement with `manage_requirement_test_case_linkages` (`action: "link"`). Add the promoted cases to the right suite with `manage_test_suite` and confirm with `read_test_suite`. Offer to run them and record results (see "Filing a finding").
 
 ## Hard rules
 
-- **No oracle, no charter.** At least one named, checkable oracle before the timebox starts. *It feels wrong* is not an oracle.
-- **The timebox ends the session.** Not the idea supply. An overrun charter is two charters that were never split.
-- **A `BUG` note carries its repro or it is an `OBS`.** Write the reproduction before moving to the next observation, while the state is still on screen.
-- **A finding with no broken oracle is not a defect.** Report it as a question or a risk. Inflating observations into defects is how a session loses its credibility.
-- **Never explore production without explicit confirmation.** Confirm the environment from `read_auts` or from the user before the first action.
-- **A session with no promoted cases and no notes has failed.** Nothing crashing is not a result.
+- **No oracle, no charter.** Name at least one checkable oracle before the timebox starts. "It feels wrong" is not an oracle.
+- **The timebox ends the session.** When ideas outrun the clock, you have two charters. Split them.
+- **A `BUG` note carries its repro, or it is an `OBS`.** Write the reproduction while the state is on screen.
+- **A finding with no broken oracle is not a defect.** Report it as a question or a risk.
+- **Confirm before you explore production.** Get explicit confirmation of the environment first.
+- **Confirm before any run, result, or defect write.** Runs use capacity. Defects write to an external tracker.
 
 ## Naming and platform constraints
 
-- Test case and folder **names** accept only letters, numbers, spaces, and `( ) . , _ -`. Charter titles love colons, and a colon will be rejected. Use `CH-01 Explore guest checkout with expired card`, never `CH-01: Explore ...`. Folder paths may use `/`.
-- There is no tag or custom field via MCP, so the only durable marker of exploratory origin is the naming convention plus the folder. Keep both: folder `Exploratory / <charter id> <short mission>`, and prefix promoted case titles with the charter id.
-- Prefer `update_test_case` over delete-and-recreate when a later session revises a promoted case. Deletion can fail server-side and updating in place keeps IDs, links, and history.
+- A test case name must start with a letter or a digit. Test case and folder names accept only letters, numbers, spaces, and `( ) . , _ -`. A case `path` starts with `Test Cases` or `Test Cases/`, and a suite path starts with `Test Suites`. Charter titles tend to carry colons. A colon is rejected. Write `CH-01 Explore guest checkout with expired card`. Folder paths may use `/`.
+- No tool field marks exploratory origin. Use the naming convention and the folder together. Folder: `Exploratory / <charter id> <short mission>`. Prefix promoted case titles with the charter id.
+- Prefer `update_test_cases` over delete and recreate when a later session revises a promoted case. It needs `repository_id` and an `updates` list with one action per field. Batch every change to one case in one call. `UPDATE_CONTENT` replaces all steps, so send the complete step list. `delete_test_case` needs an explicit yes that names the case. Updating keeps IDs, links, and history.
 
 ## Worked example
 
 **User asks:** *We shipped guest checkout last week with no cases for it. Run an hour of exploratory testing on the payment step in Cellphone Shop and tell me what to write up.*
 
-**Step 1 - scope and coverage.**
+**Step 1, scope and coverage.**
 
 ```text
 list_projects            -> Cellphone Shop (id 4021), Demo Bank (id 3980)
@@ -79,9 +103,9 @@ find_test_cases_by_requirement CEL-6
                          -> 4 cases, all on the cart step, none on payment
 ```
 
-Coverage gap confirmed, so the payment step is worth the timebox.
+The payment step has no coverage. It is worth the timebox.
 
-**Step 2 - the charter, confirmed with the user before starting.**
+**Step 2, the charter, confirmed with the user before starting.**
 
 ```text
 CHARTER      CH-01
@@ -100,27 +124,27 @@ Done when    Every declined-card path has a recorded outcome and every
              finding is classified
 ```
 
-**Step 4 - session sheet excerpt.**
+**Step 4, session sheet excerpt.**
 
 ```text
 00:00 SETUP  Staging reachable, cart seeded with 1 phone, provider test keys present
 00:07 OBS    CVV field accepts 5 digits without complaint, submit still enabled
 00:09 BUG-1  Expired card 01/24 -> spinner 41s -> blank page. Back button shows an
              EMPTY cart. No order in Orders. No charge on the provider dashboard.
-             Repro 3/3. Oracle broken - CEL-6 line 3, cart must survive a decline
+             Repro 3/3. Oracle broken: CEL-6 line 3, cart must survive a decline
 00:24 Q-1    Is a 5-digit CVV meant to be accepted, or is the provider silently
              truncating? No acceptance line covers CVV length
 00:31 BUG-2  Declined card shows the raw provider string "card_declined" instead
-             of a user message. Oracle broken - CEL-6 line 4
+             of a user message. Oracle broken: CEL-6 line 4
 00:38 RISK-1 Retrying after a decline re-submits the same idempotency key. Could
              double-charge under a slow network. Not reproduced in the timebox
 00:52 OBS    Receipt email never arrives for guest orders. Out of scope, logged
 01:00 STOP
 ```
 
-**Step 5 - timebox accounting.** 44 minutes on charter, 11 on bug investigation and writeup, 5 on setup.
+**Step 5, timebox accounting.** 44 minutes on charter, 11 on bug investigation and writeup, 5 on setup.
 
-**Step 6 - findings.**
+**Step 6, findings.**
 
 | ID | Class | Oracle broken | Severity | Promote |
 |---|---|---|---|---|
@@ -129,24 +153,25 @@ Done when    Every declined-card path has a recorded outcome and every
 | Q-1 | question for the product owner | none, the rule does not exist | n/a | no, ask first |
 | RISK-1 | design risk, unreproduced | none yet | n/a | no, next charter |
 
-**Step 8 - promotion list handed to `create-test-cases`.**
+**Step 8, promotion list handed to `create-test-cases`.**
 
 ```text
 CH-01 Guest checkout keeps the cart after an expired card is declined   P0  CEL-6
 CH-01 Guest checkout shows a retry message after a decline              P0  CEL-6
-CH-01 Guest checkout shows a readable message not a provider code       P1  CEL-6
+CH-01 Guest checkout shows a readable message instead of a provider code P1  CEL-6
 ```
 
 ```text
 find_test_cases "checkout expired card"  -> 0 matches   [dedupe before create]
+search "guest checkout expired card"     -> no exact or strong test_case hit
 manage_test_folder create "Exploratory / CH-01 Guest checkout payment"
                                          -> folder id 9134
--> hand to create-test-cases for create_test_case x3 + link_requirements_to_test_case
+-> hand to create-test-cases for create_test_case x3 + manage_requirement_test_case_linkages
 manage_test_suite add the 3 cases to "CEL-6 Regression"
 read_test_suite                          -> 7 cases, 3 new   [confirmed]
 ```
 
-**Expected report back to the user.** Name every one of these; a report missing the boundary line is incomplete:
+**Expected report back to the user.** Name each item. A report with no filing line is incomplete.
 
 ```text
 Charter CH-01, guest checkout payment, 60 minutes on staging. Timebox: 44 charter / 11 writeup / 5 setup.
@@ -156,8 +181,10 @@ Promoted: 3 cases under folder 9134 "Exploratory / CH-01 Guest checkout payment"
   Regression suite. read_test_suite confirms 7 cases, 3 new.
 Not reached: email receipt path, out of scope by the charter.
 Next charter: CH-02, retry and idempotency under a slow network, 45 minutes.
-Boundary: the two defects were NOT filed through MCP. create_defect needs a failed test result ID and this
-  session produced none. File them in Jira, or run the three promoted cases and file from the failed run.
+Filing: no defect is filed yet. Two options. (1) File BUG-1 and BUG-2 in Jira directly.
+  (2) Start a manual run of the 3 promoted cases, reproduce each bug and record the failed result with
+  evidence, then file from the failed result with create_defect. Option 2 needs your yes for the run
+  and again for each defect.
 ```
 
 ## Prompt recipes
@@ -167,15 +194,16 @@ Boundary: the two defects were NOT filed through MCP. create_defect needs a fail
 - `Debrief my session notes below and tell me which findings should become test cases.`
 - `We have an hour before the release. Which area is worth exploring given current coverage?`
 - `Which of these findings are real defects and which are just observations?`
+- `Record the failed result for the promoted cases and file the defects with my screenshots attached.`
 
 ## Hand-offs
 
-- Promoted cases to author, dedupe, and import -> `create-test-cases`.
-- The data a promoted case needs before anyone can run it -> `test-data`.
-- Running the promoted cases, by hand or with AI -> `execute-test`.
-- **A red run, not a session.** If the user already has failed test results, this is not the skill - `analyze-failures` owns failures with a result ID. This skill owns findings that have no result ID at all.
-- A charter programme across a sprint or release -> `test-plan`.
-- Coverage gaps the session exposed across the repository -> `test-management`.
+- Promoted cases to author, dedupe, and import: `create-test-cases`.
+- The data a promoted case needs before anyone can run it: `test-data`.
+- Running the promoted cases, by hand or with AI, and recording results: `execute-test`.
+- A red run with a result ID already: `analyze-failures`. This skill owns findings that have no result ID yet.
+- A charter programme across a sprint or release: `test-plan`.
+- Coverage gaps across the repository: `test-management`.
 
 Read `references/charter-and-session.md` before writing a charter, and `references/oracles-and-tours.md` before choosing how to explore.
 
@@ -208,9 +236,9 @@ Done when    <the observable condition that ends the session>
 | Field | The one rule |
 |---|---|
 | Mission | A target plus an information goal. If it does not say what you want to *learn*, it is not a mission. |
-| Areas | Named surfaces, not the whole feature. Four is a session, twelve is a release. |
+| Areas | Named surfaces. Four is a session. Twelve is a release. |
 | Oracles | Each one must be checkable by a second person. Point at an acceptance line, a covered flow, a published behavior, or a stated purpose. |
-| Tours | Named in advance so another tester can reproduce the session, not just the bugs. |
+| Tours | Named in advance so another tester can reproduce the whole session, and the bugs with it. |
 | Timebox | Includes the environment. A charter that does not say where it runs will be run in the wrong place. |
 | Out of scope | Written down so a tempting detour becomes a note instead of a lost 20 minutes. |
 | Done when | An observable condition. "When I have looked at it enough" is not one. |
@@ -231,7 +259,7 @@ One line per note. Timestamped, typed, written as you go and never reconstructed
 
 | Type | Means | Rule |
 |---|---|---|
-| `SETUP` | Getting the environment ready | Counts against the timebox. Log it honestly. |
+| `SETUP` | Getting the environment ready | Counts against the timebox. Log the real minutes. |
 | `OBS` | Something observed, no rule broken | The default. Most notes are this. |
 | `Q` | A question no oracle answers | Names the missing rule, and who should answer. |
 | `BUG` | An oracle was broken | **Carries its repro, or it is an `OBS`.** |
@@ -242,9 +270,10 @@ Rules that make the sheet worth keeping:
 
 - **Timestamp every line** as `MM:SS` from the session start. The timestamps are what produce the accounting below.
 - **Write the repro before moving on.** The state is on screen now and gone in 90 seconds. Steps, the data used, and how many times out of how many it reproduced.
-- **Name the broken oracle inside the `BUG` note**, not later. A `BUG` that cannot name its oracle is an `OBS` that got excited.
+- **Name the broken oracle inside the `BUG` note.** Do not wait for the debrief. A `BUG` that cannot name its oracle is an `OBS` that got excited.
 - **Log out-of-scope discoveries as `OBS` and keep going.** That is what the out-of-scope field is for.
-- **Evidence capture is on the tester.** The MCP has no attachment upload, so screenshots and recordings go in the ALM ticket, not the platform.
+- **Evidence capture is on the tester.** Capture screenshots and recordings as you go. Strip personal data and credentials before any upload. Files of 10 MiB or less can go to the platform with `prepare_artifact_upload` and `confirm_artifact_upload`. Larger files go in the tracker ticket. See "Evidence" in `SKILL.md`.
+- **A `BUG` note records the end state left behind.** Check what data now exists or is missing (the order record, the cart content, the balance), the same way BUG-1 in the worked example checks Orders and the provider dashboard alongside the blank page.
 
 ## Timebox accounting
 
@@ -281,7 +310,7 @@ A finding becomes a scripted case when **all three** hold:
 
 1. It is **reproducible**, with steps that work from a stated starting state.
 2. It maps to a **rule someone will defend**, an oracle a product owner would stand behind.
-3. It **would not be caught by existing coverage**, checked with `find_test_cases` before proposing it.
+3. It **would not be caught by existing coverage**, checked with `find_test_cases` or `search` before proposing it. For `search`, an exact or strong tier hit means the case exists. No hit proves nothing when the response says `incomplete=true`, `retrieval_mode="keyword_fallback"` or carries a warning.
 
 Otherwise it stays where it is:
 
@@ -302,8 +331,8 @@ Expected: <one line>
 
 - **45 minutes** for a narrow surface with a known oracle.
 - **60 minutes** is the default and the one to reach for when unsure.
-- **90 minutes** only with a second tester or a heavy setup cost, and only when the mission genuinely cannot be split.
-- **A charter that needs more than 90 minutes is two charters.** Split it on the mission, not on the clock.
+- **90 minutes** only with a second tester or a heavy setup cost, and only when the mission cannot be split.
+- **A charter that needs more than 90 minutes is two charters.** Split it on the mission. Do not split it on the clock.
 
 ### references/oracles-and-tours.md
 
@@ -345,7 +374,16 @@ Point at one of four things, always:
 3. **A published behavior** you can link, such as provider docs or a standard.
 4. **A stated purpose** the feature would defeat.
 
-If you cannot point at any of the four, you have a `Q`, not a `BUG`. Log it and ask.
+If you cannot point at any of the four, you have a `Q`. A `BUG` needs an oracle. Log it and ask.
+
+## Oracles for AI features
+
+An AI feature can return different text for the same input. Exact-match oracles fail on it. Use these instead.
+
+- **A property the answer must always hold.** Examples: it cites a source that exists, it refuses a disallowed request, it keeps the user's data out of the reply.
+- **A repeat count.** Run the same input five times. Record how many runs hold the property. One bad run in five is a finding, even when four are fine.
+- **A metamorphic pair.** Two inputs that mean the same thing must give answers that agree on the facts.
+- **An acceptance line you can quote.** Without one, the finding is a question, as for any other feature.
 
 ## Tours
 
@@ -362,6 +400,8 @@ A tour is a lens that constrains where you look. Pick two or three, never all of
 | **Back-button tour** | Browser back, forward, refresh, and deep links at every step | Multi-step flows and wizards |
 | **Interruption tour** | Killing the network, the tab, or the session mid-flow | Long transactions, payments, uploads |
 | **Anti-social tour** | Doing the least reasonable legal thing at each step | The happy path is already covered |
+| **Accessibility tour** | Keyboard-only navigation, focus order, labels, and an automated scan such as axe through Playwright | Forms, dialogs, and any new screen. The MCP has no accessibility tool, so the scan runs in your browser. |
+| **Adversarial-input tour** | Feeding an AI feature off-topic requests, conflicting instructions, and prompt-injection text, then repeating the same input several times | Chat, agent, and generated-content features |
 
 ## Choosing tours from the mission
 
@@ -374,11 +414,77 @@ A tour is a lens that constrains where you look. Pick two or three, never all of
 | A payment or checkout surface | Error-message tour, then money tour, then interruption tour |
 | A form-heavy or search surface | Data tour, then anti-social tour |
 | A permissions or multi-tenant change | Configuration tour, then landmark tour |
+| A new form or dialog | Data tour, then accessibility tour |
+| An AI-powered feature | Adversarial-input tour, then error-message tour |
 
 Two or three. A charter naming six tours has not chosen; it has listed.
 
 ## The boundary, restated
 
-- **The Katalon MCP cannot see the application.** Drive the product with Browser or Playwright. The MCP reads requirements and writes cases, folders, and suites, and that is all it does here.
-- **Evidence capture is on the tester.** There is no attachment upload tool, so screenshots, recordings, and HAR files belong in the ALM ticket, not in the platform. Reference them from the finding by ticket ID.
-- **There is no exploratory session object**, so the charter and the session sheet are local artifacts unless you deliberately mirror the charter into a test case. Say which you did.
+- **The Katalon MCP cannot see the application.** Drive the product with a browser tool or Playwright. The MCP reads requirements and writes cases, folders, suites, results, and evidence files.
+- **Evidence capture is on the tester.** Screenshots, recordings, and HAR files come from your browser. Strip personal data and credentials first. Files of 10 MiB or less can go to the platform with `prepare_artifact_upload` and `confirm_artifact_upload`. Larger files go in the tracker ticket. Reference them from the finding by ticket ID.
+- **There is no exploratory session object.** The charter and the session sheet are local artifacts unless you mirror the charter into a test case. Say which you did.
+
+### references/write-policy.md
+
+<!-- GENERATED from shared/references/write-policy.md - edit the source -->
+# Write Policy, Execution Consent, and Session Rules
+
+These rules apply to every agent and every skill that changes data on Katalon True Platform (formerly TestOps).
+
+## Write policy
+
+1. Resolve the project and repository first.
+2. Preview the full mutation set in chat. List each create, update, move, link, and delete with its target.
+3. Ask for one confirmation for the whole set.
+4. Run the writes.
+5. Read back each changed item with a read tool and report what the platform now holds.
+
+Reads need no confirmation. This covers every tool that finds, reads, lists, gets, fetches, searches, or lists metrics, every memory read tool, and every tool that only builds a payload.
+
+A user who says "go ahead and do all of it" has confirmed the set you previewed. A new write outside that set needs a new preview.
+
+Destructive tools need an explicit yes that names the target. These are:
+- `delete_test_case`.
+- `delete_test_cloud_app`. The user types YES. Confirm which app when several match.
+- `manage_test_folder` or `manage_test_suite` with a DELETE action. Resolve the exact folder `id` with `find_test_folders` by its full `rawPath`.
+- `stop_test_cloud_tunnel`. It stops a tunnel that other runs may share.
+- `manage_test_cloud_dynamic_app` with an UPDATE action. UPDATE silently redirects every consumer of the app alias.
+- `manage_requirement_test_case_linkages` with `action` set to `unlink`. Name the links.
+- `update_test_run` with END and `unfinished_cases` set to `SKIP`. SKIP also stops hosted AI.
+- `memory_forget`. It deletes for good. Call it only when the user asks to forget something. Name what you deleted.
+
+`memory_write` stores a note in the user's own words. Call it only when the user asks you to remember something. A project-wide rule belongs on the Agent Rules screen, which needs a project admin.
+
+Other writes need a preview and a yes of their own:
+- `prepare_artifact_upload` and `confirm_artifact_upload` put a file where every project member can see it. Preview the filename, the exact byte size, the mime type, and the visibility (shared with project members). Confirm once, then prepare, upload, and confirm. Call them only when the user asked to attach evidence. Mask personal data first. Never upload secrets.
+- `create_defect` files a real Jira or Azure DevOps bug. Ask for the summary when it is missing. Preview the summary and description. Check `fetch_defects` for a linked defect first.
+- `create_truetest_test_case_from_session` and `create_truetest_test_case_from_flow` queue generation. `STARTED` means queued, not done.
+- `update_schedule_configuration` runs once, after the user confirms, with every target in one `updates` list and only the settings the user asked for.
+
+Two more rules for bulk work:
+- Before a bulk write, run the plan and validation steps first. Check names, folder paths, and duplicates against what already exists. Then write.
+- If a write fails part way, stop. Report which items changed and which did not. Do not retry blindly. Do not create a duplicate to replace a failed create. Search first.
+
+## Execution consent
+
+Confirm before you call `create_test_run`, `update_test_run` with START, `create_manual_ai_session`, or `rerun_execution`. These calls use Test Execution - Cloud minutes, launch a hosted browser, or can change data in the application under test (AUT). Creating a TestPak for later, with no START, still needs the preview. The confirmation names:
+- the suite or cases,
+- the AUT environment,
+- the mode (manual, Run with AI, or automated),
+- the schedule if one exists,
+- and any private network setup.
+
+A confirmation covers one run. Ask again for the next run.
+
+## Stateless MCP
+
+The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
+- Never rely on a server prompt or on sampling. Ask the user in chat.
+- Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
+- Prefer structured fields in a tool result. If they are missing, parse the text block.
+- Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
+
+## Terminology
+
+Katalon True Platform (formerly TestOps). Katalon Test Execution - Local (formerly Katalon Runtime Engine, KRE). Katalon Test Execution - Cloud (formerly TestCloud). On first mention, give both names. Use one name for one thing after that.

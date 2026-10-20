@@ -1,0 +1,19 @@
+[
+  {
+    "result": {
+      "tracking_environments": [
+        {
+          "tracking_environment_id": "0ec3c0b5-3a27-4c94-997b-dc89aa82f3cc",
+          "canonical_name": "production",
+          "label": "Production"
+        },
+        {
+          "tracking_environment_id": "9b1d3c4e-2f5a-4b6c-8d7e-1a2b3c4d5e6f",
+          "canonical_name": "staging",
+          "label": "Staging"
+        }
+      ],
+      "next_page_token": null
+    }
+  }
+]

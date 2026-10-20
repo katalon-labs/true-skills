@@ -1,0 +1,111 @@
+{
+  "id": "environments-delete-app-typed-yes",
+  "skill": "test-environments",
+  "description": "Delete a TestCloud app. The agent lists the matching apps, names the app and its ID, asks for a typed YES, deletes that one app, and lists the apps again.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Delete the Orbit Mobile test app."
+    },
+    {
+      "text": "YES",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "test-environments"
+    },
+    {
+      "id": "apps-listed-first",
+      "type": "order",
+      "before": {
+        "tool": "list_test_cloud_apps"
+      },
+      "after": {
+        "tool": "delete_test_cloud_app"
+      }
+    },
+    {
+      "id": "target-named",
+      "type": "asked-before",
+      "tool": "delete_test_cloud_app",
+      "question": [
+        "Orbit Mobile",
+        "app-7c1e90",
+        {
+          "re": "\\bYES\\b",
+          "flags": ""
+        }
+      ]
+    },
+    {
+      "id": "typed-yes",
+      "type": "user-said-before",
+      "tool": "delete_test_cloud_app",
+      "patterns": [
+        {
+          "re": "\\bYES\\b",
+          "flags": ""
+        }
+      ]
+    },
+    {
+      "id": "one-app-deleted",
+      "type": "called",
+      "tool": "delete_test_cloud_app",
+      "match": {
+        "app_ids": [
+          "app-7c1e90"
+        ]
+      },
+      "max": 1
+    },
+    {
+      "id": "apps-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "delete_test_cloud_app"
+      },
+      "reads": [
+        "list_test_cloud_apps"
+      ],
+      "sameArgs": [
+        "project_id"
+      ],
+      "entity": {
+        "write": "app_ids[]"
+      },
+      "resultMustMatch": [
+        "\"items\""
+      ],
+      "resultMustNotMatch": [
+        "\"id\":\\s*\"{entity}\""
+      ]
+    },
+    {
+      "id": "app-deleted-reported",
+      "type": "says",
+      "scope": "final",
+      "pattern": [
+        {
+          "re": "(app-7c1e90|Orbit Mobile)[^.\\n]{0,80}\\b(deleted|removed)\\b|\\b(deleted|removed)\\b[^.\\n]{0,80}(app-7c1e90|Orbit Mobile)",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": "no-failure-claim",
+      "type": "never-says",
+      "scope": "final",
+      "pattern": [
+        {
+          "re": "\\b(not|never|failed|unable|couldn'?t|could not|still)\\b[^.\\n]{0,60}\\b(deleted|removed|delete|remove|listed|exists|present)\\b",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

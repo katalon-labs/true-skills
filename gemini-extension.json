@@ -1,0 +1,11 @@
+{
+  "name": "katalon-true-platform",
+  "version": "0.5.0",
+  "description": "Katalon True Platform (formerly TestOps) MCP server for Gemini CLI.",
+  "mcpServers": {
+    "katalon-prod-mcp": {
+      "httpUrl": "https://platform.katalon.io/mcp"
+    }
+  },
+  "contextFileName": "AGENTS.md"
+}
