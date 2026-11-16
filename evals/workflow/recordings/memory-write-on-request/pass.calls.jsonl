@@ -1,0 +1,2 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"memory_list","args":{},"outcome":"ok","fixture":"default/memory_list.json#0","isError":false}
+{"ts":"2026-10-20T09:00:01.000Z","seq":2,"scenario":"default","transport":"recorded","method":"tools/call","tool":"memory_write","args":{"kind":"convention","headline":"Test case names end with the CEL ticket key","body":"Always add the CEL ticket key at the end of every test case name."},"outcome":"ok","fixture":"default/memory_write.json#0","isError":false}

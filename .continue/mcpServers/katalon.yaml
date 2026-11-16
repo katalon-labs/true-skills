@@ -3,10 +3,5 @@ version: 0.0.1
 schema: v1
 mcpServers:
   - name: katalon-prod-mcp
-    command: npx
-    args:
-      - "-y"
-      - "mcp-remote"
-      - "https://platform.katalon.io/mcp"
-      - "--transport"
-      - "http-first"
+    type: streamable-http
+    url: https://platform.katalon.io/mcp

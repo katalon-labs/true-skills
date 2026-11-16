@@ -1,0 +1,31 @@
+{
+  "_comment": "Fixture: what the platform returned for the Checkout Smoke suite. All data is fictional.",
+  "project": "Checkout Web",
+  "repository": "Checkout Web Tests",
+  "memory_list": {"available": true, "records": [{"headline": "Smoke cases must finish in under 3 minutes", "kind": "constraint"}]},
+  "suite": {
+    "id": 411, "name": "Checkout Smoke", "lane": "automated", "page": "1 of 1", "total_cases": 8,
+    "cases": [
+      {"id": "TC-4001", "title": "Guest checks out with a card", "priority": "P0", "requirement": "CHK-81", "runs": 20, "failures": 0},
+      {"id": "TC-4004", "title": "Member checks out with a saved address", "priority": "P0", "requirement": "CHK-82", "runs": 20, "failures": 1},
+      {"id": "TC-4008", "title": "Apply a free shipping threshold", "priority": "P1", "requirement": "CHK-83", "runs": 20, "failures": 0},
+      {"id": "TC-4012", "title": "Pay with a saved card", "priority": "P0", "requirement": "CHK-84", "runs": 14, "failures": 5, "note": "five failures and nine passes on the same build 2026.10.3"},
+      {"id": "TC-4015", "title": "Remove an item from the cart", "priority": "P1", "requirement": "CHK-85", "runs": 20, "failures": 0},
+      {"id": "TC-4019", "title": "Change the delivery date", "priority": "P2", "requirement": "CHK-86", "runs": 20, "failures": 0},
+      {"id": "TC-4022", "title": "Show the order confirmation page", "priority": "P1", "requirement": "CHK-81", "runs": 20, "failures": 0},
+      {"id": "TC-4025", "title": "Show an error for a declined card", "priority": "P1", "requirement": "CHK-84", "runs": 20, "failures": 0}
+    ]
+  },
+  "requirement_metrics": {
+    "iteration_type": "SPRINT", "iteration_name": "Sprint 22", "total": 7, "covered": 6, "uncovered": ["CHK-88"],
+    "requirements": [
+      {"key": "CHK-81", "priority": "critical", "cases": 2}, {"key": "CHK-82", "priority": "critical", "cases": 1},
+      {"key": "CHK-83", "priority": "medium", "cases": 1}, {"key": "CHK-84", "priority": "critical", "cases": 2},
+      {"key": "CHK-85", "priority": "medium", "cases": 1}, {"key": "CHK-86", "priority": "low", "cases": 1},
+      {"key": "CHK-88", "title": "Pay with Apple Pay", "priority": "critical", "cases": 0}
+    ]
+  },
+  "configuration_metrics": {"configuration_type": "BROWSER", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": [{"browser": "Chrome", "coverage": 1.0, "pass_rate": 0.97}, {"browser": "Safari", "coverage": 0.88, "pass_rate": 0.96}]},
+  "stability": {"filter_type": "ITERATION", "return_tests": ["FLAKY"], "limit_tests": 3, "flaky": [{"id": "TC-4012", "flip_count": 6}]},
+  "auts": [{"name": "Checkout Web", "environments": ["staging"]}]
+}

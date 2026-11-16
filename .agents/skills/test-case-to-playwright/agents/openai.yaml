@@ -1,0 +1,11 @@
+interface:
+  display_name: "Katalon Test Case to Playwright Script"
+  short_description: "Generate Playwright from Katalon cases"
+  default_prompt: "Use $test-case-to-playwright to generate Playwright TypeScript automation from Katalon Platform test cases using Page Object Model and fixtures."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

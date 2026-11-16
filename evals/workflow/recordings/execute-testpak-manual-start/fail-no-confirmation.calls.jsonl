@@ -1,0 +1,1 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"create_test_run","args":{"mode":"manual","name":"Auth TestPak","project_id":28459,"test_project_id":500,"manual":{"test_suite_ids":[2001]}},"outcome":"ok","fixture":"default/create_test_run.json#2","isError":false}

@@ -1,0 +1,5 @@
+{
+  "scenario": "s1",
+  "expectFail": ["cluster-count", "cluster-fields", "classification-vocabulary", "classification-correct", "no-verdict-block", "no-verdict-not-forced", "no-defects-filed-unasked", "grounded-keys", "no-invented-stack-frame", "no-rerun-loop", "rerun-asks-first"],
+  "note": "Planted: two clusters instead of three, a missing Evidence field, the word flaky as a classification, blocked and incomplete cases forced into a cluster, a defect claimed as filed with an invented key, an invented stack frame, a rerun loop with no consent."
+}

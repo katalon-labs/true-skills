@@ -1,0 +1,32 @@
+[
+  {
+    "result": {
+      "repositories": [
+        {
+          "id": 500,
+          "name": "Celestial Web Tests",
+          "projectId": 28459
+        },
+        {
+          "id": 501,
+          "name": "Celestial API Tests",
+          "projectId": 28459
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "project_id": 28460
+    },
+    "result": {
+      "repositories": [
+        {
+          "id": 502,
+          "name": "Orbit Mobile Tests",
+          "projectId": 28460
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "result": {
+      "summary": {
+        "toDo": 0,
+        "inTesting": 0,
+        "passed": 2,
+        "failed": 0
+      },
+      "items": [
+        {
+          "testCaseId": 1001,
+          "provisionStatus": "READY",
+          "state": "DONE",
+          "result": {
+            "testCaseResult": "PASSED",
+            "stepsPassed": 3,
+            "stepsFailed": 0
+          }
+        },
+        {
+          "testCaseId": 1002,
+          "provisionStatus": "READY",
+          "state": "DONE",
+          "result": {
+            "testCaseResult": "PASSED",
+            "stepsPassed": 2,
+            "stepsFailed": 0
+          }
+        }
+      ]
+    }
+  }
+]

@@ -2,3 +2,10 @@ interface:
   display_name: "Katalon Test Review"
   short_description: "Review coverage and quality before the pipeline"
   default_prompt: "Use $test-review to review this suite for the pipeline and give a verdict with weak cases."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

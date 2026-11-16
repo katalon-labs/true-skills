@@ -1,0 +1,19 @@
+{
+  "scenario": "s1",
+  "expectFail": [
+    "code-balanced",
+    "case-id-kept",
+    "assertion-per-expected",
+    "expected-values-verbatim",
+    "role-locators",
+    "no-xpath",
+    "no-removed-apis",
+    "no-hard-sleeps",
+    "no-literal-secrets",
+    "page-objects-used",
+    "ai-drafted-marked",
+    "repeat-without-retries",
+    "verification-reported"
+  ],
+  "note": "Planted: a missing closing brace, no case ID, one assertion, an altered expected string, CSS and XPath locators, page.accessibility, a fixed sleep, a password literal, no page objects, no AI-drafted mark, a claim that tests pass with no verification report, a repeat check with retries on."
+}

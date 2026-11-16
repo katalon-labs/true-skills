@@ -1,0 +1,193 @@
+{
+  "skill": "create-test-cases",
+  "checks": [
+    {
+      "id": "plan-before-write",
+      "type": "present",
+      "desc": "Output is a plan that waits for one confirmation",
+      "params": {
+        "patterns": [
+          "\\bplan\\b",
+          "\\bconfirm"
+        ]
+      }
+    },
+    {
+      "id": "no-premature-writes",
+      "type": "absent",
+      "desc": "Output does not claim cases were already created, linked or updated",
+      "params": {
+        "patterns": [
+          "\\b(created|linked|updated)\\s+\\d+\\s+(new\\s+)?(test\\s+)?cases?\\b",
+          "\\bI (have )?(created|linked|updated)\\b"
+        ]
+      }
+    },
+    {
+      "id": "case-count",
+      "type": "case-count",
+      "desc": "At least the minimum number of designed or reused cases",
+      "params": {
+        "min": "$expect.min_cases"
+      }
+    },
+    {
+      "id": "names-charset",
+      "type": "case-names-charset",
+      "desc": "Case names use only letters, digits, spaces and ( ) . , _ -"
+    },
+    {
+      "id": "names-unique",
+      "type": "case-names-unique",
+      "desc": "No two cases in the plan share a name"
+    },
+    {
+      "id": "case-shape",
+      "type": "case-shape",
+      "desc": "Every case has a pre-condition, a full flow of 3 or more steps and an expected result",
+      "params": {
+        "minSteps": 3
+      }
+    },
+    {
+      "id": "steps-single-action",
+      "type": "case-steps-single-action",
+      "desc": "One user action per step"
+    },
+    {
+      "id": "expected-not-vague",
+      "type": "case-no-vague-expected",
+      "desc": "Expected results name an observable outcome"
+    },
+    {
+      "id": "atomic-split",
+      "type": "case-name-coverage",
+      "desc": "Each input class, boundary or rule has its own case",
+      "params": {
+        "groups": "$expect.condition_groups"
+      }
+    },
+    {
+      "id": "verbatim-strings",
+      "type": "contains-all",
+      "desc": "Expected UI and error strings appear exactly as in the requirement",
+      "when": "verbatim",
+      "params": {
+        "values": "$expect.verbatim",
+        "caseSensitive": true
+      }
+    },
+    {
+      "id": "typo-flagged",
+      "type": "near-all",
+      "desc": "A suspected source typo is flagged beside the verbatim text, not corrected silently",
+      "when": "typo",
+      "params": {
+        "values": [
+          "$expect.typo"
+        ],
+        "pattern": "typo|misspell|spelling",
+        "window": 400
+      }
+    },
+    {
+      "id": "existing-cases-reused",
+      "type": "contains-all",
+      "desc": "Existing matching cases are named as reused",
+      "when": "reuse_ids",
+      "params": {
+        "values": "$expect.reuse_ids"
+      }
+    },
+    {
+      "id": "no-duplicate-of-existing",
+      "type": "case-names-not-in",
+      "desc": "No new case repeats the title of an existing case",
+      "when": "existing_titles",
+      "params": {
+        "titles": "$expect.existing_titles"
+      }
+    },
+    {
+      "id": "no-link-without-key",
+      "type": "absent",
+      "desc": "No requirement link is proposed when the spec has no requirement key",
+      "when": "no_links",
+      "params": {
+        "pattern": "Requirement IDs?\\s*:\\**\\s*(?!N/A|none|n/a)[A-Z]{2,6}-\\d+"
+      }
+    },
+    {
+      "id": "requirement-linked",
+      "type": "near-all",
+      "desc": "The requirement key is listed on the cases",
+      "when": "requirement_key",
+      "params": {
+        "values": [
+          "$expect.requirement_key"
+        ],
+        "pattern": "Requirement IDs?\\s*:",
+        "window": 60
+      }
+    },
+    {
+      "id": "risk-ranked",
+      "type": "present",
+      "desc": "Cases carry a risk-based priority",
+      "params": {
+        "patterns": [
+          "Priority\\s*:\\**\\s*P[012]",
+          "\\brisk\\b"
+        ]
+      }
+    },
+    {
+      "id": "gap-stated",
+      "type": "present",
+      "desc": "The plan states what stays uncovered",
+      "params": {
+        "pattern": "(uncovered|not covered|gap|out of scope|left out)"
+      }
+    },
+    {
+      "id": "no-full-coverage-claim",
+      "type": "absent",
+      "desc": "Never implies complete coverage or a guarantee",
+      "params": {
+        "pattern": "((full|complete|100\\s?%)\\s+coverage|covers everything|guarantee)"
+      }
+    },
+    {
+      "id": "no-selectors-in-steps",
+      "type": "absent",
+      "desc": "Steps use visible labels, not implementation selectors",
+      "params": {
+        "pattern": "(xpath|css=|data-testid|getBy[A-Z])"
+      }
+    },
+    {
+      "id": "no-automated-create",
+      "type": "absent",
+      "desc": "No create_test_case call with test_case_type AUTOMATED",
+      "params": {
+        "pattern": "create_test_case[^.\\n]*AUTOMATED"
+      }
+    },
+    {
+      "id": "grounded-keys",
+      "type": "grounded-ids",
+      "desc": "Every requirement or case key in the output exists in the fixture",
+      "params": {
+        "pattern": "\\b(?:TC|CEL|PAY|CHK|DEF|SHP)-\\d+\\b"
+      }
+    },
+    {
+      "id": "style-no-em-dash",
+      "type": "absent",
+      "desc": "House style: no em dash",
+      "params": {
+        "pattern": "\\u2014"
+      }
+    }
+  ]
+}

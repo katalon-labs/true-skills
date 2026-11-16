@@ -1,0 +1,18 @@
+[
+  {
+    "result": {
+      "resolutionState": "UNRESOLVED",
+      "byPriority": {
+        "HIGH": 2,
+        "MEDIUM": 3,
+        "LOW": 1
+      },
+      "bySeverity": {
+        "CRITICAL": 1,
+        "MAJOR": 2,
+        "MINOR": 3
+      },
+      "window": "last 28 days"
+    }
+  }
+]

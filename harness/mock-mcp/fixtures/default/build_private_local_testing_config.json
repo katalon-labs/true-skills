@@ -1,0 +1,19 @@
+[
+  {
+    "result": {
+      "enabled": true,
+      "mode": "tunnel",
+      "selectedTunnel": null,
+      "includeApiCalls": false
+    }
+  },
+  {
+    "match": {
+      "mode": "whitelist"
+    },
+    "result": {
+      "enabled": true,
+      "mode": "whitelist"
+    }
+  }
+]

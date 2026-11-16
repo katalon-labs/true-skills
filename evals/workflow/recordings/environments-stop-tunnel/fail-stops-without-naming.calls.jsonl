@@ -1,0 +1,1 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"stop_test_cloud_tunnel","args":{"project_id":28459,"tunnel_id":"tun-5d2c"},"outcome":"ok","fixture":"default/stop_test_cloud_tunnel.json#0","isError":false}

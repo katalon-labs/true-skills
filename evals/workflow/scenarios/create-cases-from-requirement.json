@@ -1,0 +1,91 @@
+{
+  "id": "create-cases-from-requirement",
+  "skill": "create-test-cases",
+  "description": "Cases for a requirement with no coverage. The agent reads the requirement, checks existing cases, previews the plan, creates MANUAL cases with valid names, and reads them back.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Design manual test cases for requirement CEL-9, customer export of order history to CSV. Put them in Celestial Web Tests."
+    },
+    {
+      "text": "Yes, create those cases.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "create-test-cases"
+    },
+    {
+      "id": "requirement-read-first",
+      "type": "order",
+      "before": {
+        "tools": [
+          "read_requirement",
+          "find_requirements"
+        ]
+      },
+      "after": {
+        "tool": "create_test_case"
+      }
+    },
+    {
+      "id": "existing-checked",
+      "type": "order",
+      "before": {
+        "tools": [
+          "find_test_cases_by_requirement",
+          "find_test_cases",
+          "search"
+        ]
+      },
+      "after": {
+        "tool": "create_test_case"
+      }
+    },
+    {
+      "id": "cases-created",
+      "type": "called",
+      "tool": "create_test_case",
+      "match": {
+        "repository_id": 500
+      }
+    },
+    {
+      "id": "no-automated-create",
+      "type": "not-called",
+      "tool": "create_test_case",
+      "match": {
+        "test_case_type": "AUTOMATED"
+      }
+    },
+    {
+      "id": "name-charset",
+      "type": "not-called",
+      "tool": "create_test_case",
+      "matchRegex": {
+        "test_case.name": {
+          "re": "^[^A-Za-z0-9]|[^A-Za-z0-9 ().,_-]",
+          "flags": ""
+        }
+      }
+    },
+    {
+      "id": "cases-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "create_test_case"
+      },
+      "reads": [
+        "read_test_cases",
+        "find_test_cases",
+        "find_test_cases_by_requirement"
+      ],
+      "sameArgs": [
+        "project_id"
+      ]
+    }
+  ]
+}

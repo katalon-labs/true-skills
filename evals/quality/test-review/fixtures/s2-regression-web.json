@@ -1,0 +1,22 @@
+{
+  "_comment": "Fixture: what the platform returned for the Regression Web suite. All data is fictional.",
+  "project": "Checkout Web",
+  "repository": "Checkout Web Tests",
+  "memory_list": {"available": true, "records": [{"headline": "Expected results name a value or a message", "kind": "convention"}]},
+  "suite": {
+    "id": 417, "name": "Regression Web", "lane": "automated", "page": "1 of 1", "total_cases": 6,
+    "cases": [
+      {"id": "TC-5101", "title": "Add a product to the cart", "priority": "P1", "requirement": "CHK-91", "runs": 30, "failures": 0},
+      {"id": "TC-5110", "title": "Search by brand", "priority": "P2", "requirement": "CHK-92", "runs": 30, "failures": 0},
+      {"id": "TC-5120", "title": "Order totals are right", "priority": "P1", "requirement": "CHK-93", "runs": 30, "failures": 0,
+        "steps_summary": "Step 6 checks the 10 percent discount. Step 7 checks the 8 percent tax. Expected result of the last step: works correctly.", "behaviours_checked": ["discount rule", "tax rule"]},
+      {"id": "TC-5133", "title": "Save a wishlist item", "priority": "P2", "requirement": "CHK-94", "runs": 6, "failures": 2},
+      {"id": "TC-5140", "title": "Filter by price range", "priority": "P2", "requirement": "CHK-92", "runs": 30, "failures": 0},
+      {"id": "TC-5144", "title": "Sort results by rating", "priority": "P2", "requirement": "CHK-92", "runs": 30, "failures": 0}
+    ]
+  },
+  "requirement_metrics": {"iteration_type": "SPRINT", "iteration_name": "Sprint 22", "total": 4, "covered": 4, "uncovered": []},
+  "configuration_metrics": {"configuration_type": "BROWSER", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": [{"browser": "Chrome", "coverage": 1.0, "pass_rate": 0.98}, {"browser": "Safari", "coverage": 0.6, "pass_rate": 1.0}]},
+  "stability": {"filter_type": "ITERATION", "return_tests": ["FLAKY", "NEW_FAILURE"], "limit_tests": 3, "flaky": [], "new_failure": [{"id": "TC-5133"}]},
+  "auts": [{"name": "Checkout Web", "environments": ["staging"]}]
+}

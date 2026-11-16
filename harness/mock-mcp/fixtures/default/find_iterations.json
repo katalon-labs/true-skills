@@ -1,0 +1,33 @@
+[
+  {
+    "result": {
+      "sprints": [
+        {
+          "id": 701,
+          "name": "Sprint 42",
+          "state": "ACTIVE",
+          "startDate": "2026-10-12",
+          "endDate": "2026-10-25"
+        },
+        {
+          "id": 700,
+          "name": "Sprint 41",
+          "state": "CLOSED",
+          "startDate": "2026-09-28",
+          "endDate": "2026-10-11"
+        }
+      ],
+      "releases": [
+        {
+          "id": 801,
+          "name": "Release 2026.10",
+          "closed": false,
+          "startTime": "2026-10-01T00:00:00Z",
+          "endTime": "2026-10-31T00:00:00Z"
+        }
+      ],
+      "page_number": 0,
+      "next_page_token": null
+    }
+  }
+]

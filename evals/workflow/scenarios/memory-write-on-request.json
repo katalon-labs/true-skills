@@ -1,0 +1,66 @@
+{
+  "id": "memory-write-on-request",
+  "skill": "project-memory",
+  "description": "A user asks to remember a rule. The agent checks existing memory, previews the headline and body in the user words, writes once after a yes, omits project_id, and says it is the person own memory.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Remember this: always add the CEL ticket key at the end of every test case name."
+    },
+    {
+      "text": "Yes, save it.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "project-memory"
+    },
+    {
+      "id": "memory-listed-first",
+      "type": "order",
+      "before": {
+        "tool": "memory_list"
+      },
+      "after": {
+        "tool": "memory_write"
+      }
+    },
+    {
+      "id": "written-once",
+      "type": "called",
+      "tool": "memory_write",
+      "max": 1
+    },
+    {
+      "id": "own-words",
+      "type": "called",
+      "tool": "memory_write",
+      "matchRegex": {
+        "body": "always add the CEL ticket key at the end of every test case name"
+      }
+    },
+    {
+      "id": "project-id-omitted",
+      "type": "called",
+      "tool": "memory_write",
+      "absent": [
+        "project_id"
+      ]
+    },
+    {
+      "id": "own-memory-said",
+      "type": "says",
+      "pattern": [
+        "own memory|personal memory|your memory"
+      ]
+    },
+    {
+      "id": "no-forget",
+      "type": "not-called",
+      "tool": "memory_forget"
+    }
+  ]
+}

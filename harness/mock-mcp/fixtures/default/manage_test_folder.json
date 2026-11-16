@@ -1,0 +1,21 @@
+[
+  {
+    "result": {
+      "action": "CREATE",
+      "id": 312,
+      "path": "Test Cases/Reports",
+      "result": "applied"
+    }
+  },
+  {
+    "match": {
+      "payload": {
+        "action": "DELETE"
+      }
+    },
+    "result": {
+      "action": "DELETE",
+      "result": "applied"
+    }
+  }
+]

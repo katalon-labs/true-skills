@@ -1,0 +1,318 @@
+[
+  {
+    "match": {
+      "key": "CEL-6"
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88601
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-7"
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88602
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-8"
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1005,
+          "name": "Login lockout after five failures",
+          "path": "Test Cases/Authentication/Login",
+          "status": "PUBLISHED",
+          "priority": "CRITICAL",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_COMPLETE",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88603
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1005,
+          "name": "Login lockout after five failures",
+          "path": "Test Cases/Authentication/Login",
+          "status": "PUBLISHED",
+          "priority": "CRITICAL",
+          "testType": "AUTOMATED",
+          "automationStatus": "AUTOMATION_COMPLETE",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-9"
+    },
+    "result": {
+      "items": [],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 0,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88604
+    },
+    "result": {
+      "items": [],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 0,
+      "next_page_token": null
+    }
+  },
+  {
+    "result": {
+      "items": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link",
+          "path": "Test Cases/Authentication/Password Reset",
+          "status": "PUBLISHED",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "MANUAL_ONLY",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "after": {
+      "tool": "manage_requirement_test_case_linkages",
+      "match": {
+        "action": "link",
+        "requirement_ids": [
+          88604
+        ]
+      }
+    },
+    "match": {
+      "key": "CEL-9"
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  },
+  {
+    "after": {
+      "tool": "manage_requirement_test_case_linkages",
+      "match": {
+        "action": "link",
+        "requirement_ids": [
+          88604
+        ]
+      }
+    },
+    "match": {
+      "requirement_id": 88604
+    },
+    "result": {
+      "items": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code",
+          "path": "Test Cases/Checkout",
+          "status": "PUBLISHED",
+          "priority": "HIGH",
+          "testType": "MANUAL",
+          "automationStatus": "AUTOMATION_CANDIDATE",
+          "testProjectId": 500
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code",
+          "path": "Test Cases/Checkout",
+          "status": "DRAFT",
+          "priority": "MEDIUM",
+          "testType": "MANUAL",
+          "automationStatus": "TO_BE_ASSESSED",
+          "testProjectId": 500
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 2,
+      "next_page_token": null
+    }
+  }
+]

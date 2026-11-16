@@ -1,0 +1,8 @@
+[
+  {
+    "result": {
+      "storagePath": "apps/28459/upload-3f9a.apk",
+      "instruction": "curl -X PUT --upload-file <path-to-app> \"https://uploads.mock.katalon.invalid/apps/28459/upload-3f9a.apk\""
+    }
+  }
+]

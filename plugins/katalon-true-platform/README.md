@@ -2,7 +2,7 @@
 
 # Katalon True Platform Plugin
 
-Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The platform wrappers live in `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`; the `skills/` and `assets/` folders are shared.
+Plugin for Claude Code, Codex, and Cursor. It bundles 22 Katalon True Platform (formerly TestOps) testing skills. The manifests live in `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, and the standard `plugin.json`. The `skills/` and `assets/` folders are shared.
 
 ## Included skills
 
@@ -10,10 +10,12 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 - `test-plan` - Plan and prioritize Katalon testing.
 - `test-estimation` - Size and resource a test cycle.
 - `create-test-cases` - Create and link Katalon manual tests.
+- `truetest-journeys` - Turn real user traffic into coverage.
 - `test-data` - Design, seed, and tear down test data.
 - `exploratory-charter` - Charter and run an exploratory session.
 - `test-management` - Organize and trace Katalon test assets.
 - `test-review` - Review coverage and quality before the pipeline.
+- `test-environments` - Make the app under test reachable and runnable.
 - `execute-test` - Run Katalon cases or suites.
 - `upload-report` - Upload and verify Katalon reports.
 - `test-case-to-playwright` - Generate Playwright from Katalon cases.
@@ -23,11 +25,12 @@ Claude Code + Codex plugin bundling Katalon True Platform/TestOps workflows. The
 - `release-analyze` - Assess release testing readiness.
 - `test-reporting` - Metrics and stakeholder reporting.
 - `test-maintenance` - Repair and evolve the regression suite.
+- `project-memory` - Load and save team conventions.
 - `get-started` - Connect and pick a default project.
 - `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
 
 ## Bundled MCP server
 
-`.mcp.json` points at `https://platform.katalon.io/mcp`, the canonical endpoint. Nothing to edit: on first use the browser opens for sign-in and you pick your workspace. Enterprises on a dedicated Katalon domain can substitute `https://<your.sub.domain>.katalon.io/mcp`. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
+`.mcp.json` points at `https://platform.katalon.io/mcp`. Nothing to edit: on first use the browser opens for sign-in and you pick your workspace. Enterprises on a dedicated Katalon domain can use `https://<your.sub.domain>.katalon.io/mcp` instead. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
 
-Distributed from the repository root marketplaces (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`) and as an [Agent Plugins standard](https://agent-plugins.org) plugin (`plugin.json` + `mcp.json` + `skills/`, spec 1.0.0) for any conformant client. For install instructions across all supported agents, see the [repository README](https://github.com/katalon-labs/true-skills#install).
+Distributed from the repository root marketplaces (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`, `.cursor-plugin/marketplace.json`) and as an [Agent Plugins standard](https://agent-plugins.org) plugin. For other agents, see [docs/connect.md](https://github.com/katalon-labs/true-skills/blob/main/docs/connect.md) and the [repository README](https://github.com/katalon-labs/true-skills#install).

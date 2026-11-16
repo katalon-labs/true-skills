@@ -1,0 +1,13 @@
+{
+  "_comment": "Fixture: what the platform returned for execution 9055. All data is fictional.",
+  "project": "Catalog Web", "repository": "Catalog Web Tests",
+  "execution": {"id": 9055, "cloud_execution_id": "cx-2b81de", "name": "Search Regression", "type": "AUTOMATED", "build": "312", "configurations": ["Chrome 143 on Windows"]},
+  "failed_results": [
+    {"result_id": 880201, "test_case": "TC-6201", "name": "Search shows the results list", "step": "Wait for the results", "error": "Timeout 15000ms waiting for the results list", "history": "build 311: 10 runs, 5 pass and 5 fail, same build, same environment. build 312: 1 fail."},
+    {"result_id": 880202, "test_case": "TC-6202", "name": "Filter by in-stock items", "step": "Check the result count", "error": "Expected 12 results but was 0", "history": "build 311: 10 of 10 pass. build 312: 3 of 3 fail with the same message."},
+    {"result_id": 880203, "test_case": "TC-6203", "name": "Sort by price low to high", "step": "Check the first price", "error": "Expected 9.99 but was 129.00", "history": "build 311: 10 of 10 pass. build 312: 3 of 3 fail with the same message."}
+  ],
+  "stability": {"filter_type": "ITERATION", "return_tests": ["FLAKY", "NEW_FAILURE"], "flaky": ["TC-6201"], "new_failure": ["TC-6202", "TC-6203"]},
+  "existing_defects": "fetch_defects for result IDs 880201, 880202 and 880203: result 880203 links to DEF-731 (Sort by price ignores the currency, status Open). Results 880201 and 880202 have no linked defect.",
+  "alm": "list_alm_integrations returned one Jira integration and one connection, both usable."
+}

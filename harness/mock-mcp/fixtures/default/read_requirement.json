@@ -1,0 +1,197 @@
+[
+  {
+    "match": {
+      "key": "CEL-6"
+    },
+    "result": {
+      "id": 88601,
+      "key": "CEL-6",
+      "summary": "Customer can reset password through an emailed link",
+      "status": "Open",
+      "assignee": null,
+      "externalIssueId": 140183,
+      "source": "JIRA",
+      "description": "Customer can reset password through an emailed link.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Customer can reset password through an emailed link\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88601
+    },
+    "result": {
+      "id": 88601,
+      "key": "CEL-6",
+      "summary": "Customer can reset password through an emailed link",
+      "status": "Open",
+      "assignee": null,
+      "externalIssueId": 140183,
+      "source": "JIRA",
+      "description": "Customer can reset password through an emailed link.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Customer can reset password through an emailed link\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-7"
+    },
+    "result": {
+      "id": 88602,
+      "key": "CEL-7",
+      "summary": "Checkout applies discount codes",
+      "status": "In Progress",
+      "assignee": null,
+      "externalIssueId": 140184,
+      "source": "JIRA",
+      "description": "Checkout applies discount codes.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Checkout applies discount codes\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88602
+    },
+    "result": {
+      "id": 88602,
+      "key": "CEL-7",
+      "summary": "Checkout applies discount codes",
+      "status": "In Progress",
+      "assignee": null,
+      "externalIssueId": 140184,
+      "source": "JIRA",
+      "description": "Checkout applies discount codes.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Checkout applies discount codes\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-8"
+    },
+    "result": {
+      "id": 88603,
+      "key": "CEL-8",
+      "summary": "Account locks after five failed logins",
+      "status": "Done",
+      "assignee": null,
+      "externalIssueId": 140185,
+      "source": "JIRA",
+      "description": "Account locks after five failed logins.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Account locks after five failed logins\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88603
+    },
+    "result": {
+      "id": 88603,
+      "key": "CEL-8",
+      "summary": "Account locks after five failed logins",
+      "status": "Done",
+      "assignee": null,
+      "externalIssueId": 140185,
+      "source": "JIRA",
+      "description": "Account locks after five failed logins.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Account locks after five failed logins\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "key": "CEL-9"
+    },
+    "result": {
+      "id": 88604,
+      "key": "CEL-9",
+      "summary": "Customer can export order history to CSV",
+      "status": "Open",
+      "assignee": null,
+      "externalIssueId": 140186,
+      "source": "JIRA",
+      "description": "Customer can export order history to CSV.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Customer can export order history to CSV\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "match": {
+      "requirement_id": 88604
+    },
+    "result": {
+      "id": 88604,
+      "key": "CEL-9",
+      "summary": "Customer can export order history to CSV",
+      "status": "Open",
+      "assignee": null,
+      "externalIssueId": 140186,
+      "source": "JIRA",
+      "description": "Customer can export order history to CSV.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Customer can export order history to CSV\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  },
+  {
+    "result": {
+      "id": 88601,
+      "key": "CEL-6",
+      "summary": "Customer can reset password through an emailed link",
+      "status": "Open",
+      "assignee": null,
+      "externalIssueId": 140183,
+      "source": "JIRA",
+      "description": "Customer can reset password through an emailed link.",
+      "customFields": [
+        {
+          "name": "Acceptance criteria",
+          "value": "Given the feature \"Customer can reset password through an emailed link\", the main flow and one failure path are covered."
+        }
+      ],
+      "attachments": []
+    }
+  }
+]

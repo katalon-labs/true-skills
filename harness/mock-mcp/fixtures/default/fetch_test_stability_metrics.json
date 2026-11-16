@@ -1,0 +1,25 @@
+[
+  {
+    "result": {
+      "flaky": 1,
+      "alwaysFailing": 0,
+      "newFailures": 1,
+      "slow": 0,
+      "tests": {
+        "FLAKY": [
+          {
+            "testCaseId": 1003,
+            "name": "Checkout applies valid discount code",
+            "flakeRate": 0.22
+          }
+        ],
+        "NEW_FAILURE": [
+          {
+            "testCaseId": 1005,
+            "name": "Login lockout after five failures"
+          }
+        ]
+      }
+    }
+  }
+]

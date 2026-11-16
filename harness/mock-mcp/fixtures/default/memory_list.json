@@ -1,0 +1,39 @@
+[
+  {
+    "result": {
+      "available": true,
+      "agent_rules_enabled": true,
+      "memory_enabled": true,
+      "revision": "rev-0007",
+      "policy": null,
+      "records": [
+        {
+          "id": "e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091",
+          "scope": "project",
+          "kind": "convention",
+          "headline": "Test cases: name starts with the feature area, then the behavior",
+          "status": "active",
+          "created_at": "2026-09-02T08:00:00Z"
+        },
+        {
+          "id": "f6a7b8c9-d0e1-4f2a-9b4c-5d6e7f8091a2",
+          "scope": "user",
+          "kind": "preference",
+          "headline": "Test folders: \"Folder name - YYYYMMDD\"",
+          "status": "active",
+          "created_at": "2026-10-01T08:00:00Z"
+        }
+      ],
+      "pages": [
+        {
+          "slug": "skill.seed-session",
+          "description": "How to seed a session for regression tests."
+        }
+      ],
+      "budget": {
+        "truncated": false
+      },
+      "next_cursor": null
+    }
+  }
+]

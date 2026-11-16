@@ -1,0 +1,46 @@
+{
+  "scenario": "manage-link-requirement",
+  "kind": "fail-guesses-requirement",
+  "expect": "fail",
+  "violates": [
+    "skill",
+    "confirm-before-write",
+    "requirement-resolved",
+    "link-read-back"
+  ],
+  "note": "Uses no skill, guesses the requirement ID, links with no preview and no yes, and never reads the coverage back.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Link test cases 1003 and 1004 to requirement CEL-9.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "mcp__katalon__manage_requirement_test_case_linkages",
+      "args": {
+        "project_id": 28459,
+        "action": "link",
+        "requirement_ids": [
+          88604
+        ],
+        "test_case_ids": [
+          1003,
+          1004
+        ]
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t1",
+      "isError": false,
+      "text": "{\"action\":\"link\",\"results\":[{\"requirement_id\":88604,\"status\":\"updated\"}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Linked 1003 and 1004 to CEL-9."
+    }
+  ]
+}

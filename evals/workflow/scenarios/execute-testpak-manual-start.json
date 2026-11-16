@@ -1,0 +1,91 @@
+{
+  "id": "execute-testpak-manual-start",
+  "skill": "execute-test",
+  "description": "A TestPak the user will test by hand. The agent reads the AUT list, shows the environments, previews the run, and starts it in MANUAL mode only after a yes.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Create a TestPak for the Authentication Regression suite. I will test it by hand."
+    },
+    {
+      "text": "Use the Staging environment."
+    },
+    {
+      "text": "Yes, create it and start it.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "execute-test"
+    },
+    {
+      "id": "run-is-manual",
+      "type": "called",
+      "tool": "create_test_run",
+      "match": {
+        "mode": "manual"
+      }
+    },
+    {
+      "id": "auts-first",
+      "type": "order",
+      "before": {
+        "tool": "read_auts"
+      },
+      "after": {
+        "tool": "create_test_run"
+      }
+    },
+    {
+      "id": "environment-asked",
+      "type": "asked-before",
+      "tool": "create_test_run",
+      "question": [
+        "Staging",
+        "QA"
+      ]
+    },
+    {
+      "id": "manual-start",
+      "type": "called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "action": "START",
+          "execution_mode": "MANUAL"
+        }
+      }
+    },
+    {
+      "id": "no-ai-launch",
+      "type": "not-called",
+      "tools": [
+        "create_manual_ai_session"
+      ]
+    },
+    {
+      "id": "no-ai-start",
+      "type": "not-called",
+      "tool": "update_test_run",
+      "match": {
+        "update": {
+          "execution_mode": "KATALON_AI"
+        }
+      }
+    },
+    {
+      "id": "run-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "create_test_run"
+      },
+      "reads": [
+        "read_execution",
+        "list_executions"
+      ]
+    }
+  ]
+}

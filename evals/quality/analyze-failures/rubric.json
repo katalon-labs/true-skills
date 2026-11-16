@@ -1,0 +1,194 @@
+{
+  "skill": "analyze-failures",
+  "checks": [
+    {
+      "id": "cluster-count",
+      "type": "cluster-count",
+      "desc": "Failures are grouped by signature into the expected number of clusters",
+      "params": {
+        "min": "$expect.min_clusters",
+        "max": "$expect.max_clusters"
+      }
+    },
+    {
+      "id": "cluster-fields",
+      "type": "cluster-fields",
+      "desc": "Every cluster has a classification, likely cause, evidence, cases and action",
+      "params": {
+        "labels": [
+          "Classification",
+          "Likely cause",
+          "Evidence",
+          "Cases",
+          "Action"
+        ]
+      }
+    },
+    {
+      "id": "classification-vocabulary",
+      "type": "label-in",
+      "desc": "Each classification is product, automation or environment",
+      "params": {
+        "label": "Classification",
+        "allowed": [
+          "product",
+          "automation",
+          "environment"
+        ],
+        "all": true
+      }
+    },
+    {
+      "id": "classification-correct",
+      "type": "cluster-classification",
+      "desc": "Each case sits in a cluster with the right classification",
+      "params": {
+        "map": "$expect.classification"
+      }
+    },
+    {
+      "id": "no-verdict-block",
+      "type": "block-contains",
+      "desc": "Blocked, incomplete and stuck sessions are listed apart under No verdict",
+      "when": "no_verdict",
+      "params": {
+        "heading": "No verdict",
+        "ids": "$expect.no_verdict"
+      }
+    },
+    {
+      "id": "no-verdict-not-forced",
+      "type": "block-excludes",
+      "desc": "Cases without a verdict are not forced into a cluster",
+      "when": "no_verdict",
+      "params": {
+        "ids": "$expect.no_verdict"
+      }
+    },
+    {
+      "id": "history-before-flaky",
+      "type": "near-all",
+      "desc": "A flaky label rests on run history on the same build, with counts",
+      "when": "flaky_cases",
+      "params": {
+        "values": "$expect.flaky_cases",
+        "pattern": "(\\d+ (of|out of) (the last )?\\d+|\\d+ runs|same build|history|window)",
+        "window": 500
+      }
+    },
+    {
+      "id": "no-defects-filed-unasked",
+      "type": "absent",
+      "desc": "Does not claim to have filed defects the user did not ask for",
+      "when": "defects_not_requested",
+      "params": {
+        "pattern": "(\\bI (have )?(created|filed)\\b(?! (nothing|no |any))|defect (was |has been )?(created|filed)|created defect|filed defect)"
+      }
+    },
+    {
+      "id": "defect-preview-and-confirm",
+      "type": "present",
+      "desc": "A requested defect is previewed and waits for one confirmation",
+      "when": "defect_targets",
+      "params": {
+        "patterns": [
+          "(preview|draft)",
+          "(confirm|go ahead|approve)"
+        ]
+      }
+    },
+    {
+      "id": "defect-targets-named",
+      "type": "contains-all",
+      "desc": "The product failures to file are named",
+      "when": "defect_targets",
+      "params": {
+        "values": "$expect.defect_targets"
+      }
+    },
+    {
+      "id": "linked-defect-not-refiled",
+      "type": "near-all",
+      "desc": "A failure that already has a linked defect is not filed again",
+      "when": "already_linked",
+      "params": {
+        "values": "$expect.already_linked",
+        "pattern": "(already linked|existing defect|already has|has an owner|DEF-\\d+)",
+        "window": 300
+      }
+    },
+    {
+      "id": "no-defect-for-nonproduct",
+      "type": "not-near-any",
+      "desc": "No defect is proposed for an automation or environment failure",
+      "when": "nonproduct_ids",
+      "params": {
+        "values": "$expect.nonproduct_ids",
+        "pattern": "(create_defect|file (a )?defect|new defect|defect preview)",
+        "window": 160
+      }
+    },
+    {
+      "id": "rerun-asks-first",
+      "type": "present",
+      "desc": "A rerun waits for the user's consent",
+      "when": "rerun_suggested",
+      "params": {
+        "pattern": "(rerun[^.\\n]*(ask|consent|approv|confirm|your yes)|(ask|consent|approv|confirm)[^.\\n]*rerun)"
+      }
+    },
+    {
+      "id": "no-rerun-loop",
+      "type": "absent",
+      "desc": "No rerun until green",
+      "params": {
+        "pattern": "(rerun|retry)[^.\\n]*until (green|pass)"
+      }
+    },
+    {
+      "id": "zero-stability-cross-checked",
+      "type": "present",
+      "desc": "An all-zero stability result is cross-checked against find_test_results",
+      "when": "cross_check_zero",
+      "params": {
+        "patterns": [
+          "cross-?check",
+          "find_test_results"
+        ]
+      }
+    },
+    {
+      "id": "missing-input-named",
+      "type": "present",
+      "desc": "A missing input is named as blocked, not guessed",
+      "when": "blocked_input",
+      "params": {
+        "pattern": "(blocked|cannot|can't|not available|unavailable)[^\\n]*(cloud|execution ID|log|details?)"
+      }
+    },
+    {
+      "id": "grounded-keys",
+      "type": "grounded-ids",
+      "desc": "Every case or defect key exists in the fixture",
+      "params": {
+        "pattern": "\\b(?:TC|DEF|CHK|PAY|SHP)-\\d+\\b"
+      }
+    },
+    {
+      "id": "no-invented-stack-frame",
+      "type": "grounded-ids",
+      "desc": "Every stack frame quoted exists in the fixture",
+      "params": {
+        "pattern": "\\bat\\s+[\\w$.<>]+\\([\\w$./-]+:\\d+(?::\\d+)?\\)"
+      }
+    },
+    {
+      "id": "style-no-em-dash",
+      "type": "absent",
+      "desc": "House style: no em dash",
+      "params": {
+        "pattern": "\\u2014"
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "scenario": "s1",
+  "expectFail": ["names-charset", "verbatim-strings", "typo-flagged", "atomic-split", "case-shape", "no-premature-writes", "no-full-coverage-claim", "no-selectors-in-steps"],
+  "note": "Planted: colon in a name, typo corrected silently, letter and number rules merged, a one-step case, a claim of writes already done, a complete coverage claim, a Playwright locator in a manual step."
+}

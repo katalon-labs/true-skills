@@ -1,0 +1,13 @@
+{
+  "_comment": "Fixture: what the platform returned for Release 6.1 of Insurance Claims Web. Data is incomplete on purpose. All data is fictional.",
+  "project": "Insurance Claims Web", "repository": "Claims Web Tests",
+  "iteration": {"type": "RELEASE", "name": "6.1", "start": "2026-10-01", "end": "2026-10-09"},
+  "today": "2026-10-20",
+  "thresholds": null,
+  "requirement_metrics": {"total": 11, "covered": 10, "uncovered": ["CLM-40"], "with_passing_evidence": null},
+  "list_executions": {"called_with": "no start_time or end_time (default window: last 24 hours)", "result": []},
+  "find_test_results": {"filter": "COMMON, testCaseId TC-8101 to TC-8110, last 14 days", "rerun_note": "TC-8103 (P1) failed in execution 9330 and passed on an unmodified rerun in execution 9331", "failed": ["TC-8103 in execution 9330", "TC-8107 in execution 9330", "TC-8108 in execution 9331", "TC-8110 in execution 9331", "TC-8102 in execution 9331", "TC-8105 in execution 9331"]},
+  "stability": {"filter_type": "ITERATION", "flaky": 0, "always_failing": 0, "new_failures": 0, "return_tests": null, "note": "all zeros while find_test_results shows 6 failed results"},
+  "defect_metrics": {"error": "tool returned an upstream timeout, no data"},
+  "configuration_metrics": {"configuration_type": "OS", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": []}
+}

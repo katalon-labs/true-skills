@@ -1,0 +1,9 @@
+[
+  {
+    "result": {
+      "status": "STARTED",
+      "accepted_sessions": 1,
+      "message": "Generation is queued, not complete."
+    }
+  }
+]

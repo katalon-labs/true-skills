@@ -1,0 +1,50 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 3001,
+          "name": "Nightly Regression",
+          "executionMode": "SEQUENTIAL",
+          "suiteCount": 2
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "collection_id": 3001
+    },
+    "result": {
+      "id": 3001,
+      "name": "Nightly Regression",
+      "executionMode": "SEQUENTIAL",
+      "testSuiteEntries": [
+        {
+          "id": 1,
+          "entityId": 2003,
+          "sortOrder": 0,
+          "profileId": 201,
+          "testProjectId": 500,
+          "testSuiteId": 2003,
+          "runEnabled": true,
+          "name": "Login Automated Suite"
+        },
+        {
+          "id": 2,
+          "entityId": 2004,
+          "sortOrder": 1,
+          "profileId": 201,
+          "testProjectId": 500,
+          "testSuiteId": 2004,
+          "runEnabled": true,
+          "name": "Orders API Suite"
+        }
+      ]
+    }
+  }
+]

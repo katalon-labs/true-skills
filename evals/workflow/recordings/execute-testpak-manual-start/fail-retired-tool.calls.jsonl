@@ -1,0 +1,2 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"read_auts","args":{"project_id":28459},"outcome":"ok","fixture":"default/read_auts.json#0","isError":false}
+{"ts":"2026-10-20T09:00:01.000Z","seq":2,"scenario":"default","transport":"recorded","method":"tools/call","tool":"create_manual_test_run","args":{"project_id":28459,"name":"Authentication Regression TestPak","test_suite_ids":[2001]},"outcome":"unknown_tool","isError":true}

@@ -1,0 +1,8 @@
+[
+  {
+    "result": {
+      "slug": "skill.seed-session",
+      "body": "Seed a session with the login fixture, then open the target page."
+    }
+  }
+]

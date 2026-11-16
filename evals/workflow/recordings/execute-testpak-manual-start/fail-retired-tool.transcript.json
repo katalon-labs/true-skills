@@ -1,0 +1,82 @@
+{
+  "scenario": "execute-testpak-manual-start",
+  "kind": "fail-retired-tool",
+  "expect": "fail",
+  "violates": [
+    "no-unknown-tools",
+    "run-is-manual"
+  ],
+  "note": "Calls a retired tool name. The mock answers with an unknown tool error.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Create a TestPak for the Authentication Regression suite. I will test it by hand.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_auts",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"auts\":[{\"id\":41,\"name\":\"Celestial Web\",\"clientCode\":\"celestial-web\",\"environments\":[{\"id\":411,\"name\":\"Staging\",\"url\":\"https://staging.celestial.example.com\"},{\"id\":412,\"name\":\"QA\",\"url\":\"https://qa.celestial.example.com\"}]}]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Environments are Staging and QA. Which one?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Use the Staging environment.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Preview: create a TestPak on Staging and start it. Reply yes."
+    },
+    {
+      "type": "user",
+      "turn": 2,
+      "text": "Yes, create it and start it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__create_manual_test_run",
+      "args": {
+        "project_id": 28459,
+        "name": "Authentication Regression TestPak",
+        "test_suite_ids": [
+          2001
+        ]
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": true,
+      "text": "Unknown tool: create_manual_test_run"
+    },
+    {
+      "type": "assistant",
+      "text": "The run could not be created."
+    }
+  ]
+}

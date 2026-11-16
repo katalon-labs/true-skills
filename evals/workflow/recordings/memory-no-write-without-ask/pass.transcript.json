@@ -1,0 +1,63 @@
+{
+  "scenario": "memory-no-write-without-ask",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Load our team conventions for this project, then draft names for three login test cases. We usually put the feature area first in test case names.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:project-memory"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__memory_list",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"available\":true,\"agent_rules_enabled\":true,\"memory_enabled\":true,\"revision\":\"rev-0007\",\"policy\":null,\"records\":[{\"id\":\"e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091\",\"scope\":\"project\",\"kind\":\"convention\",\"headline\":\"Test cases: name starts with the feature area, then the behavior\",\"status\":\"active\",\"created_at\":\"2026-09-02T08:00:00Z\"},{\"id\":\"f6a7b8c9-d0e1-4f2a-9b4c-5d6e7f8091a2\",\"scope\":\"user\",\"kind\":\"preference\",\"headline\":\"Test folders: \\\"Folder name - YYYYMMDD\\\"\",\"status\":\"active\",\"created_at\":\"2026-10-01T08:00:00Z\"}],\"pages\":[{\"slug\":\"skill.seed-session\",\"description\":\"How to seed a session for regression tests.\"}],\"budget\":{\"truncated\":false},\"next_cursor\":null}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__memory_read",
+      "args": {
+        "record_ids": [
+          "e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091"
+        ]
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"records\":[{\"id\":\"e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091\",\"scope\":\"project\",\"kind\":\"convention\",\"headline\":\"Test cases: name starts with the feature area, then the behavior\",\"status\":\"active\",\"created_at\":\"2026-09-02T08:00:00Z\",\"body\":\"Name every test case with the feature area first, then the behavior, for example \\\"Checkout - applies valid discount code\\\".\",\"cites\":[]}],\"not_found\":[]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Following the team convention: the feature area comes first, then the behavior. Names: \"Login - accepts valid credentials\", \"Login - rejects a wrong password\", \"Login - locks the account after five failures\". Do you want me to save the feature-area habit as your own memory? Say no and I drop it."
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "No, do not save anything. Just the names.",
+      "confirms": false
+    },
+    {
+      "type": "assistant",
+      "text": "Nothing saved. The three names stand as written."
+    }
+  ]
+}

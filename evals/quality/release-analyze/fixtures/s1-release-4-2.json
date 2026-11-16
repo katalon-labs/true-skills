@@ -1,0 +1,19 @@
+{
+  "_comment": "Fixture: what the platform returned for Release 4.2 of Payments Web. All data is fictional.",
+  "project": "Payments Web", "repository": "Payments Web Tests",
+  "iteration": {"type": "RELEASE", "name": "4.2", "start": "2026-09-14", "end": "2026-09-30"},
+  "thresholds": null,
+  "requirement_metrics": {"total": 14, "covered": 13, "uncovered": ["PAY-312"], "with_passing_evidence": 11, "without_passing_evidence": ["PAY-305", "PAY-309"], "critical": ["PAY-301", "PAY-305", "PAY-309"]},
+  "test_case_metrics": {"total": 142, "automated": 96, "manual": 46, "unexecuted": 6, "stale": 3},
+  "executions": [
+    {"id": 9120, "name": "Release 4.2 regression", "started": "2026-09-29T21:00:00Z", "total": 142, "passed": 130, "failed": 8, "blocked": 2, "not_run": 2, "pass_rate": 0.915},
+    {"id": 9104, "name": "Release 4.2 smoke", "started": "2026-09-28T08:00:00Z", "total": 20, "passed": 20, "failed": 0}
+  ],
+  "failed_p0_p1": [
+    {"test_case": "TC-7001", "title": "Pay by card", "priority": "P0", "execution": 9120, "linked_defects": ["DEF-912"]},
+    {"test_case": "TC-7004", "title": "Refund a card payment", "priority": "P1", "execution": 9120, "linked_defects": []}
+  ],
+  "defect_metrics": {"resolution_state": "UNRESOLVED", "critical": 1, "high": 2, "medium": 5, "open": [{"key": "DEF-912", "priority": "critical", "summary": "Card payment returns a 500 for 3-D Secure cards", "release_blocking_in_tracker": true}]},
+  "stability": {"flaky": 3, "always_failing": 1, "new_failures": 2},
+  "configuration_metrics": {"configuration_type": "BROWSER", "coverage_threshold": 0.8, "pass_threshold": 0.95, "rows": [{"browser": "Chrome", "coverage": 0.96, "pass_rate": 0.93}, {"browser": "Safari", "coverage": 0.84, "pass_rate": 0.9}]}
+}

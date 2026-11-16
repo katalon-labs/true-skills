@@ -2,3 +2,10 @@ interface:
   display_name: "Katalon Test Maintenance"
   short_description: "Repair and evolve the regression suite"
   default_prompt: "Use $test-maintenance to which cases went flaky this month, and which should we repair vs regenerate?"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

@@ -1,0 +1,23 @@
+[
+  {
+    "result": {
+      "health": "AT_RISK",
+      "platforms": [
+        {
+          "name": "Windows 11 / Chrome",
+          "coverage": 0.92,
+          "passRate": 0.97
+        },
+        {
+          "name": "macOS 14 / Safari",
+          "coverage": 0.55,
+          "passRate": 0.9
+        }
+      ],
+      "thresholds": {
+        "coverage": 0.8,
+        "pass": 0.95
+      }
+    }
+  }
+]

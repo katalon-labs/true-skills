@@ -1,0 +1,20 @@
+{
+  "id": "s3",
+  "title": "Empty execution list, all-zero stability and a defect tool timeout",
+  "prompt": "Release 6.1 of Insurance Claims Web, give me the readiness call.",
+  "fixture": "../fixtures/s3-release-6-1.json",
+  "expect": {
+    "verdict_not": "Ready",
+    "confidence_allowed": [
+      "Low"
+    ],
+    "cross_check": true,
+    "window_gap": true,
+    "iteration": "6.1",
+    "window_start": "2026-10-01",
+    "rerun_pass_case": "TC-8103"
+  },
+  "idKeys": [
+    "rerun_pass_case"
+  ]
+}

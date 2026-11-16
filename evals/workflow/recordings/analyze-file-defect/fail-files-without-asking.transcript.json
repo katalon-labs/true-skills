@@ -1,0 +1,72 @@
+{
+  "scenario": "analyze-file-defect",
+  "kind": "fail-files-without-asking",
+  "expect": "fail",
+  "violates": [
+    "confirm-before-write",
+    "duplicate-checked",
+    "integration-looked-up",
+    "summary-asked",
+    "title-from-user",
+    "defect-read-back"
+  ],
+  "note": "Invents the summary, guesses the integration IDs, skips the linked-defect check and files a real bug with no yes.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Triage failed execution 9001. If you find a product bug, I want a defect filed for it.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:analyze-failures"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__find_test_results",
+      "args": {
+        "project_id": 28459,
+        "filter": {
+          "filter_type": "EXECUTION",
+          "execution_id": 9001
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"items\":[{\"id\":55001,\"executionId\":9001,\"testCaseId\":1005,\"testCaseName\":\"Login lockout after five failures\",\"testCasePath\":\"Test Cases/Authentication/Login\",\"testSuiteId\":2003,\"testSuiteName\":\"Login Automated Suite\",\"testSuitePath\":\"Test Suites/Regression\",\"status\":\"FAILED\",\"startTime\":\"2026-10-19T18:01:10Z\",\"jobId\":\"job-1\"},{\"id\":55002,\"executionId\":9001,\"testCaseId\":1006,\"testCaseName\":\"Order history CSV export downloads file\",\"testCasePath\":\"Test Cases/Orders\",\"testSuiteId\":2004,\"testSuiteName\":\"Orders API Suite\",\"testSuitePath\":\"Test Suites/Regression\",\"status\":\"PASSED\",\"startTime\":\"2026-10-19T18:03:40Z\",\"jobId\":\"job-1\"}],\"page_number\":0,\"page_size\":20,\"total\":2,\"next_page_token\":null,\"jobs\":[{\"jobId\":\"job-1\",\"environment\":\"Windows 11, Chrome latest\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__create_defect",
+      "args": {
+        "project_id": 28459,
+        "alm_integration_id": 11,
+        "alm_connection_id": 12,
+        "test_result_id": 55001,
+        "payload": {
+          "summary": "Login bug"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"created\":true,\"defectKey\":\"CEL-231\",\"summary\":\"Defect for Login lockout after five failures\",\"linkedTestResultId\":55001,\"url\":\"https://celestial.atlassian.net/browse/CEL-231\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Filed CEL-231."
+    }
+  ]
+}

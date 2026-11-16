@@ -1,0 +1,54 @@
+[
+  {
+    "result": {
+      "executions": [
+        {
+          "executionId": "tc-exec-7f3a21",
+          "createdDate": "2026-10-19T18:00:02Z",
+          "status": "FAILED"
+        },
+        {
+          "executionId": "tc-exec-2b9e40",
+          "createdDate": "2026-10-19T09:00:00Z",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "execution_id": "tc-exec-7f3a21"
+    },
+    "result": {
+      "executionId": "tc-exec-7f3a21",
+      "sessions": [
+        {
+          "sessionId": "s-1",
+          "outputs": [
+            {
+              "priorityRank": 0,
+              "type": "VIDEO",
+              "fileName": "session.mp4",
+              "size": 1843200,
+              "url": "https://mock.katalon.invalid/artifacts/session.mp4?sig=mock"
+            },
+            {
+              "priorityRank": 1,
+              "type": "LOG",
+              "fileName": "execution.log",
+              "size": 20481,
+              "url": null
+            },
+            {
+              "priorityRank": 2,
+              "type": "SCREENSHOT",
+              "fileName": "failure.png",
+              "size": 90112,
+              "url": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

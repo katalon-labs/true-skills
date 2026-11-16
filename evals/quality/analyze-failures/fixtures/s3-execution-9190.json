@@ -1,0 +1,15 @@
+{
+  "_comment": "Fixture: what the platform returned for execution 9190. Some data is missing on purpose. All data is fictional.",
+  "project": "Shop Mobile", "repository": "Shop Mobile Tests",
+  "execution": {"id": 9190, "cloud_execution_id": null, "name": "Mobile Smoke", "type": "AUTOMATED", "build": "88", "configurations": ["Pixel 8 Android 15", "Galaxy S24 Android 15"], "note": "the cloud execution ID is not known, so list_execution_outputs cannot be called"},
+  "failed_results": [
+    {"result_id": 990301, "test_case": "TC-6302", "name": "Open the cart", "step": "Open the cart", "error": "App crashed: java.lang.NullPointerException at com.shop.cart.CartService.total(CartService.java:88)", "config": "Pixel 8", "details": "present"},
+    {"result_id": 990303, "test_case": "TC-6303", "name": "Change the cart quantity", "step": "Open the cart", "error": "App crashed: java.lang.NullPointerException at com.shop.cart.CartService.total(CartService.java:88)", "config": "Galaxy S24", "details": "present"},
+    {"result_id": 990304, "test_case": "TC-6304", "name": "Sign in from the home screen", "step": "Tap Sign in", "error": "Element not found: accessibility id 'login'", "config": "Pixel 8", "details": "error text only, no stack trace, no log content", "history": "10 of 10 pass on build 87, the screen was redesigned in build 88"}
+  ],
+  "no_verdict_results": [
+    {"test_case": "TC-6301", "name": "Run with AI: add an item", "status": "IN_TESTING", "reason": "the Run with AI session has not finished"}
+  ],
+  "stability": {"filter_type": "EXECUTION", "execution_id": 9190, "return_tests": null, "flaky": 0, "always_failing": 0, "new_failures": 0, "note": "all zeros while find_test_results shows 3 failed results"},
+  "existing_defects": "fetch_defects returned no linked defect for the 3 failed results."
+}

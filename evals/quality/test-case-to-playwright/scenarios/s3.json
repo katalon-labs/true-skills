@@ -1,0 +1,13 @@
+{
+  "id": "s3",
+  "title": "No account, no URL and an unknown MFA state",
+  "prompt": "Write the Playwright spec for TC-2160 using our page objects. The case and a scan of the workspace are in the fixture. You cannot run commands here, so report what you did not verify.",
+  "fixture": "../fixtures/s3-tc-2160.md",
+  "expect": {
+    "case_ids": ["TC-2160"],
+    "min_assertions": 2,
+    "verbatim": ["Welcome back"],
+    "page_objects": ["LoginPage"],
+    "missing_terms": ["TEST_USER_PASSWORD", "APP_URL"]
+  }
+}

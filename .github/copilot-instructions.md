@@ -2,38 +2,14 @@
 
 # Katalon True Platform - Copilot instructions
 
-This repository ships the Katalon True Platform testing toolkit as GitHub Copilot **Agent Skills** in `.github/skills/`. Copilot discovers them automatically (coding agent, code review, Copilot CLI, agent mode in VS Code, and JetBrains agent mode in public preview) and loads the matching skill when a request fits its description. The same skills are also available as prompt files in `.github/prompts/` for explicit `/name` invocation in VS Code chat.
-
-## Skills
-
-- `platform-setup` - Install and connect the Katalon MCP.
-- `test-plan` - Plan and prioritize Katalon testing.
-- `test-estimation` - Size and resource a test cycle.
-- `create-test-cases` - Create and link Katalon manual tests.
-- `test-data` - Design, seed, and tear down test data.
-- `exploratory-charter` - Charter and run an exploratory session.
-- `test-management` - Organize and trace Katalon test assets.
-- `test-review` - Review coverage and quality before the pipeline.
-- `execute-test` - Run Katalon cases or suites.
-- `upload-report` - Upload and verify Katalon reports.
-- `test-case-to-playwright` - Generate Playwright from Katalon cases.
-- `test-case-to-katalon-studio` - Generate Katalon Studio tests from cases.
-- `playwright-execute` - Run Playwright and upload Katalon reports.
-- `analyze-failures` - Triage failures and file defects.
-- `release-analyze` - Assess release testing readiness.
-- `test-reporting` - Metrics and stakeholder reporting.
-- `test-maintenance` - Repair and evolve the regression suite.
-- `get-started` - Connect and pick a default project.
-- `true-platform-testing` - Route and run the full 7-stage testing lifecycle.
+This repository holds 22 Katalon True Platform (formerly TestOps) testing skills in `.agents/skills/`. Copilot loads the matching skill when a request fits its description.
 
 ## Katalon MCP server
 
-These workflows depend on the Katalon MCP server.
+The skills need the Katalon MCP server at `https://platform.katalon.io/mcp`.
 
-- **VS Code**: `.vscode/mcp.json` (included) defines the `katalon-prod-mcp` server as a remote HTTP server on `https://platform.katalon.io/mcp`. Start it and VS Code signs you in through the browser OAuth flow - no subdomain to supply.
-- **Copilot CLI**: `.github/mcp.json` (included) is auto-loaded and needs no edits, or register interactively with `/mcp add` (type `http`, URL `https://platform.katalon.io/mcp`).
-- **Copilot coding agent / code review**: skills work out of the box, but neither surface supports OAuth-protected remote MCP servers yet, so Katalon platform operations should run from VS Code or the CLI.
+- **VS Code**: `.vscode/mcp.json` is included. Start the server and sign in through the browser.
+- **Copilot CLI**: `.github/mcp.json` is included. The Copilot docs do not describe OAuth for remote servers, so test sign-in first.
+- **Copilot coding agent and code review**: the skills load, but these surfaces cannot sign in to OAuth-protected remote MCP servers. Run platform operations from VS Code or the CLI.
 
-Authentication is a browser/OAuth flow - never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.
-
-When a request matches a skill's description, load that skill and follow it. Prefer Katalon MCP tools for platform operations. Always check for existing Katalon coverage before creating new test cases.
+Other clients: see [docs/connect.md](../docs/connect.md). Authentication is a browser OAuth flow. Never paste passwords, tokens, cookies, JWTs, or callback URLs into chat.

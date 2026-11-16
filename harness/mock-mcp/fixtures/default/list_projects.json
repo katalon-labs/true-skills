@@ -1,0 +1,20 @@
+[
+  {
+    "result": {
+      "projects": [
+        {
+          "id": 28459,
+          "name": "Celestial Web App",
+          "key": "CEL",
+          "role": "OWNER"
+        },
+        {
+          "id": 28460,
+          "name": "Orbit Mobile",
+          "key": "ORB",
+          "role": "MEMBER"
+        }
+      ]
+    }
+  }
+]

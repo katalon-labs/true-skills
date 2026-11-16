@@ -1,0 +1,96 @@
+{
+  "scenario": "create-cases-from-requirement",
+  "kind": "fail-automated-and-bad-name",
+  "expect": "fail",
+  "violates": [
+    "existing-checked",
+    "no-automated-create",
+    "name-charset",
+    "cases-read-back"
+  ],
+  "note": "Skips the duplicate check, asks for an automated case (creates nothing), uses a name that starts with a symbol, and never reads back.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Design manual test cases for requirement CEL-9, customer export of order history to CSV. Put them in Celestial Web Tests.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:create-test-cases"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_requirement",
+      "args": {
+        "project_id": 28459,
+        "key": "CEL-9"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"id\":88604,\"key\":\"CEL-9\",\"summary\":\"Customer can export order history to CSV\",\"status\":\"Open\",\"assignee\":null,\"externalIssueId\":140186,\"source\":\"JIRA\",\"description\":\"Customer can export order history to CSV.\",\"customFields\":[{\"name\":\"Acceptance criteria\",\"value\":\"Given the feature \\\"Customer can export order history to CSV\\\", the main flow and one failure path are covered.\"}],\"attachments\":[]}"
+    },
+    {
+      "type": "assistant",
+      "text": "Plan: 1 case for CEL-9. Create it?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Yes, create those cases.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__create_test_case",
+      "args": {
+        "project_id": 28459,
+        "repository_id": 500,
+        "test_case_type": "AUTOMATED",
+        "test_case": {
+          "name": "#Export order history",
+          "description": "Checks that #export order history.",
+          "preCondition": "A customer with at least one past order is signed in.",
+          "priority": "MEDIUM",
+          "assigneeUUID": null,
+          "content": {
+            "steps": [
+              {
+                "name": "Open Order history and choose Export CSV",
+                "context": {
+                  "expectedResult": "A CSV file downloads"
+                }
+              }
+            ]
+          },
+          "linkedRequirementIds": [
+            88604
+          ],
+          "featureAreas": [],
+          "customTestTypes": [],
+          "path": "Test Cases/Orders"
+        }
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"created\":false,\"id\":null,\"message\":\"No test case was created. Generate the automation script, then upload it as a report.\",\"next_action\":\"generate_automation_script\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Created the case."
+    }
+  ]
+}

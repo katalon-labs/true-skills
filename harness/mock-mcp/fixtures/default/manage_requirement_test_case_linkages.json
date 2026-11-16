@@ -1,0 +1,27 @@
+[
+  {
+    "result": {
+      "action": "link",
+      "results": [
+        {
+          "requirement_id": 88604,
+          "status": "updated"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "action": "unlink"
+    },
+    "result": {
+      "action": "unlink",
+      "results": [
+        {
+          "requirement_id": 88604,
+          "status": "updated"
+        }
+      ]
+    }
+  }
+]

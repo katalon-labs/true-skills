@@ -1,0 +1,60 @@
+{
+  "id": "execute-rerun-reads-first",
+  "skill": "execute-test",
+  "description": "A rerun request that gives only an execution ID. The agent reads the execution to confirm the type, previews the cost, and reruns only after a yes.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "Rerun execution 9001."
+    },
+    {
+      "text": "Yes, rerun it.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "execute-test"
+    },
+    {
+      "id": "read-before-rerun",
+      "type": "order",
+      "before": {
+        "tool": "read_execution",
+        "match": {
+          "execution_id": 9001
+        }
+      },
+      "after": {
+        "tool": "rerun_execution"
+      }
+    },
+    {
+      "id": "rerun-called",
+      "type": "called",
+      "tool": "rerun_execution",
+      "match": {
+        "execution_id": 9001
+      },
+      "max": 1
+    },
+    {
+      "id": "no-testpak-restart",
+      "type": "not-called",
+      "tool": "update_test_run"
+    },
+    {
+      "id": "rerun-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "rerun_execution"
+      },
+      "reads": [
+        "read_execution",
+        "list_executions"
+      ]
+    }
+  ]
+}

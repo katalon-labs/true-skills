@@ -1,0 +1,80 @@
+{
+  "scenario": "execute-rerun-reads-first",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Rerun execution 9001.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:execute-test"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__read_execution",
+      "args": {
+        "execution_id": 9001,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"name\":\"Nightly Regression 2026-10-19\",\"status\":\"FAILED\",\"executionType\":\"AUTOMATED\",\"startTime\":\"2026-10-19T18:00:00Z\",\"passed\":1,\"failed\":1,\"total\":2,\"executionPath\":\"/executions/9001\",\"projectId\":28459}"
+    },
+    {
+      "type": "assistant",
+      "text": "Execution 9001 \"Nightly Regression 2026-10-19\" is an automated run and it failed (1 of 2 passed). A rerun uses Katalon Test Execution - Cloud minutes and can change data in the AUT. Rerun it now?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Yes, rerun it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__rerun_execution",
+      "args": {
+        "execution_id": 9001,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"rerun\":true,\"sourceExecutionId\":9001,\"executionId\":9104,\"status\":\"QUEUED\",\"executionPath\":\"/executions/9104\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t4",
+      "name": "mcp__katalon__read_execution",
+      "args": {
+        "execution_id": 9001,
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t4",
+      "isError": false,
+      "text": "{\"executionId\":9001,\"name\":\"Nightly Regression 2026-10-19\",\"status\":\"FAILED\",\"executionType\":\"AUTOMATED\",\"startTime\":\"2026-10-19T18:00:00Z\",\"passed\":1,\"failed\":1,\"total\":2,\"executionPath\":\"/executions/9001\",\"projectId\":28459}"
+    },
+    {
+      "type": "assistant",
+      "text": "The rerun is queued for execution 9001."
+    }
+  ]
+}

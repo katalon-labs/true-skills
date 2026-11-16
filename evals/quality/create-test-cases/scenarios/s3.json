@@ -1,0 +1,12 @@
+{
+  "id": "s3",
+  "title": "Free-text spec, no requirement to link",
+  "prompt": "Here is a spec I pasted, there is no ticket for it yet. Design the manual cases and show me the plan. Do not write anything until I say so.",
+  "fixture": "../fixtures/s3-transfer.md",
+  "expect": {
+    "min_cases": 7,
+    "condition_groups": [["minimum", "1.00"], ["maximum", "5,000.00", "above the maximum"], ["daily", "10,000.00"], ["insufficient"], ["same account", "differ", "source and target"]],
+    "verbatim": ["Transfer limit exceeded", "Insufficient funds"],
+    "no_links": true
+  }
+}

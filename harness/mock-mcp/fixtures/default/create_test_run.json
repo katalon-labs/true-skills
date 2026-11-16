@@ -1,0 +1,44 @@
+[
+  {
+    "result": {
+      "executionId": 9101,
+      "name": "Mock run",
+      "executionPath": "/executions/9101",
+      "manualExecutionId": 7101,
+      "testSuites": [
+        {
+          "testSuiteId": 2001,
+          "testProjectId": 500
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "mode": "automated"
+    },
+    "result": {
+      "executionId": 9102,
+      "name": "Mock automated run",
+      "status": "QUEUED",
+      "executionPath": "/executions/9102"
+    }
+  },
+  {
+    "match": {
+      "mode": "manual"
+    },
+    "result": {
+      "executionId": 9101,
+      "name": "Mock TestPak",
+      "executionPath": "/executions/9101",
+      "manualExecutionId": 7101,
+      "testSuites": [
+        {
+          "testSuiteId": 2001,
+          "testProjectId": 500
+        }
+      ]
+    }
+  }
+]

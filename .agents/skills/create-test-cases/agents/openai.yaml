@@ -1,0 +1,11 @@
+interface:
+  display_name: "Katalon Create Test Cases"
+  short_description: "Create and link Katalon manual tests"
+  default_prompt: "Use $create-test-cases to design and import manual test cases from requirement CEL-6."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

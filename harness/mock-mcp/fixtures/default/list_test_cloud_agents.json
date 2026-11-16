@@ -1,0 +1,18 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "id": 61,
+          "name": "qa-runner-01",
+          "status": "ACTIVE",
+          "os": "linux",
+          "browsers": [
+            "chrome"
+          ]
+        }
+      ],
+      "page_token": null
+    }
+  }
+]

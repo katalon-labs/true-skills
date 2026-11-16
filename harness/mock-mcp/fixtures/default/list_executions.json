@@ -1,0 +1,65 @@
+[
+  {
+    "result": {
+      "items": [
+        {
+          "executionId": 9001,
+          "name": "Nightly Regression 2026-10-19",
+          "status": "FAILED",
+          "executionType": "AUTOMATED",
+          "startTime": "2026-10-19T18:00:00Z",
+          "passed": 1,
+          "failed": 1,
+          "total": 2
+        },
+        {
+          "executionId": 9002,
+          "name": "Auth Manual TestPak",
+          "status": "RUNNING",
+          "executionType": "MANUAL",
+          "startTime": "2026-10-20T08:30:00Z",
+          "passed": 0,
+          "failed": 0,
+          "total": 2
+        },
+        {
+          "executionId": 9003,
+          "name": "Checkout Smoke 2026-10-18",
+          "status": "PASSED",
+          "executionType": "AUTOMATED",
+          "startTime": "2026-10-18T18:00:00Z",
+          "passed": 3,
+          "failed": 0,
+          "total": 3
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 3,
+      "next_page_token": null
+    }
+  },
+  {
+    "match": {
+      "status": "FAILED"
+    },
+    "result": {
+      "items": [
+        {
+          "executionId": 9001,
+          "name": "Nightly Regression 2026-10-19",
+          "status": "FAILED",
+          "executionType": "AUTOMATED",
+          "startTime": "2026-10-19T18:00:00Z",
+          "passed": 1,
+          "failed": 1,
+          "total": 2
+        }
+      ],
+      "page_number": 0,
+      "page_size": 20,
+      "total": 1,
+      "next_page_token": null
+    }
+  }
+]

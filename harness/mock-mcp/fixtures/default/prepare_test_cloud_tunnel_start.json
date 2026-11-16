@@ -1,0 +1,26 @@
+[
+  {
+    "result": {
+      "guide": "VPN guidance only. Pass manual_execution_mode RUN_WITH_AI for the tunnel setup commands.",
+      "commands": []
+    }
+  },
+  {
+    "match": {
+      "manual_execution_mode": "RUN_WITH_AI"
+    },
+    "result": {
+      "guide": "Download the tunnel client, then run the config command and start command shown below.",
+      "commands": [
+        "katalon-tunnel config --api-key <key-id>",
+        "katalon-tunnel start"
+      ],
+      "downloads": [
+        {
+          "platform": "macOS",
+          "url": "https://downloads.mock.katalon.invalid/tunnel-macos"
+        }
+      ]
+    }
+  }
+]

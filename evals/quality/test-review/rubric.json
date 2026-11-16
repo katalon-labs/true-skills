@@ -1,0 +1,186 @@
+{
+  "skill": "test-review",
+  "checks": [
+    {
+      "id": "template-fields",
+      "type": "sections-present",
+      "desc": "Output follows the review template",
+      "params": {
+        "labels": [
+          "Verdict",
+          "Coverage",
+          "Quality flags",
+          "Reliability",
+          "Conventions",
+          "Fix list",
+          "Risk if run as-is"
+        ]
+      }
+    },
+    {
+      "id": "verdict-vocabulary",
+      "type": "label-in",
+      "desc": "Verdict is exactly one of the three allowed words",
+      "params": {
+        "label": "Verdict",
+        "allowed": [
+          "Approve",
+          "Approve with fixes",
+          "Reject for pipeline"
+        ]
+      }
+    },
+    {
+      "id": "verdict-expected",
+      "type": "label-in",
+      "desc": "Verdict matches the decision table for this fixture",
+      "params": {
+        "label": "Verdict",
+        "allowed": [
+          "$expect.verdict"
+        ]
+      }
+    },
+    {
+      "id": "weak-cases-named",
+      "type": "contains-all",
+      "desc": "Every weak case is named, not described in general",
+      "when": "weak_cases",
+      "params": {
+        "values": "$expect.weak_cases"
+      }
+    },
+    {
+      "id": "orphans-named",
+      "type": "contains-all",
+      "desc": "Every requirement with no case is named",
+      "when": "orphans",
+      "params": {
+        "values": "$expect.orphans"
+      }
+    },
+    {
+      "id": "unconfirmed-labelled",
+      "type": "near-all",
+      "desc": "A stability signal from fewer than 10 runs is labelled unconfirmed",
+      "when": "unconfirmed_cases",
+      "params": {
+        "values": "$expect.unconfirmed_cases",
+        "pattern": "unconfirmed",
+        "window": 350
+      }
+    },
+    {
+      "id": "atomicity-reason",
+      "type": "near-all",
+      "desc": "A case that mixes two business rules is flagged with the reason",
+      "when": "atomicity_case",
+      "params": {
+        "values": [
+          "$expect.atomicity_case"
+        ],
+        "pattern": "(two|2) (business )?(rules|behaviou?rs)|one behaviou?r|split",
+        "window": 400
+      }
+    },
+    {
+      "id": "run-counts-reported",
+      "type": "present",
+      "desc": "Stability signals state the run count",
+      "when": "weak_cases",
+      "params": {
+        "pattern": "\\b\\d+\\s+(recent\\s+)?runs?\\b"
+      }
+    },
+    {
+      "id": "thresholds-stated",
+      "type": "present",
+      "desc": "Coverage and pass thresholds are stated",
+      "params": {
+        "patterns": [
+          "threshold[^\\n.]*\\d",
+          "\\b(80|0\\.8|95|0\\.95)\\b"
+        ]
+      }
+    },
+    {
+      "id": "partial-page-disclosed",
+      "type": "present",
+      "desc": "A partial page of cases is not reported as the total",
+      "when": "partial_page",
+      "params": {
+        "pattern": "(partial|page \\d+ of \\d+|first page|not a total|incomplete)"
+      }
+    },
+    {
+      "id": "zero-failure-caveat",
+      "type": "present",
+      "desc": "A history with zero failures is not read as proof the cases can fail",
+      "when": "zero_failures",
+      "params": {
+        "patterns": [
+          "(zero|no) failures",
+          "(prove|proof|show|evidence)[^\\n.]*(can fail|catch|detect)"
+        ]
+      }
+    },
+    {
+      "id": "memory-unavailable-said",
+      "type": "present",
+      "desc": "Unavailable memory is reported, not read as no conventions",
+      "when": "memory_unavailable",
+      "params": {
+        "pattern": "memory[^\\n.]*unavailable|unavailable[^\\n.]*memory"
+      }
+    },
+    {
+      "id": "no-no-conventions-claim",
+      "type": "absent",
+      "desc": "Never infers that the team has no conventions from a failed memory read",
+      "when": "memory_unavailable",
+      "params": {
+        "pattern": "(team|project) has no (saved )?conventions"
+      }
+    },
+    {
+      "id": "no-script-review-claim",
+      "type": "absent",
+      "desc": "Does not claim to have reviewed code, locators or the object repository",
+      "params": {
+        "pattern": "(reviewed|checked|inspected|audited)\\s+(the\\s+)?(script|locator|object repository|groovy|selectors?)"
+      }
+    },
+    {
+      "id": "no-run-started",
+      "type": "absent",
+      "desc": "Review does not start a run",
+      "params": {
+        "pattern": "(started|launched|kicked off|triggered)\\s+(a|the)\\s+(test\\s+)?(run|execution)"
+      }
+    },
+    {
+      "id": "fix-list-actions",
+      "type": "present",
+      "desc": "The fix list pairs each case with an action",
+      "params": {
+        "pattern": "Fix list\\s*:[\\s\\S]*->"
+      }
+    },
+    {
+      "id": "grounded-keys",
+      "type": "grounded-ids",
+      "desc": "Every case or requirement key exists in the fixture",
+      "params": {
+        "pattern": "\\b(?:TC|CEL|PAY|CHK|DEF|SHP)-\\d+\\b"
+      }
+    },
+    {
+      "id": "style-no-em-dash",
+      "type": "absent",
+      "desc": "House style: no em dash",
+      "params": {
+        "pattern": "\\u2014"
+      }
+    }
+  ]
+}

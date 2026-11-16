@@ -1,0 +1,60 @@
+{
+  "scenario": "environments-private-aut-tunnel-pick",
+  "kind": "fail-picks-tunnel-itself",
+  "expect": "fail",
+  "violates": [
+    "private-choice-asked",
+    "pick-asked",
+    "pick-from-user"
+  ],
+  "note": "Builds the tunnel payload with no question, because only one tunnel is active.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "I need to run my suite against our intranet staging site. Set up private access.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:test-environments"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__list_test_cloud_tunnels",
+      "args": {
+        "project_id": 28459
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"tunnels\":[{\"id\":\"tun-5d2c\",\"startedBy\":\"dana.reyes\",\"status\":\"ACTIVE\",\"startedAt\":\"2026-10-20T07:55:00Z\"}]}"
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__build_private_local_testing_config",
+      "args": {
+        "mode": "tunnel",
+        "selected_tunnel": "tun-5d2c"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"enabled\":true,\"mode\":\"tunnel\",\"selectedTunnel\":null,\"includeApiCalls\":false}"
+    },
+    {
+      "type": "assistant",
+      "text": "I used the only active tunnel."
+    }
+  ]
+}

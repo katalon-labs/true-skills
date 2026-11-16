@@ -1,0 +1,49 @@
+{
+  "scenario": "environments-stop-tunnel",
+  "kind": "fail-stops-without-naming",
+  "expect": "fail",
+  "violates": [
+    "confirm-before-write",
+    "tunnels-listed-first",
+    "tunnel-named",
+    "stop-authorized",
+    "tunnels-read-back",
+    "tunnel-stopped-reported"
+  ],
+  "note": "Stops a tunnel with no listing, no warning about the runs on it, and no yes.",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Stop the tunnel, I am done testing.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:test-environments"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__stop_test_cloud_tunnel",
+      "args": {
+        "project_id": 28459,
+        "tunnel_id": "tun-5d2c"
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"stopped\":true,\"tunnel_id\":\"tun-5d2c\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Stopped the tunnel."
+    }
+  ]
+}

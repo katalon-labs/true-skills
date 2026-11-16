@@ -1,0 +1,1 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"memory_write","args":{"kind":"preference","headline":"CEL key","body":"User likes ticket keys in names","project_id":28459},"outcome":"ok","fixture":"default/memory_write.json#0","isError":false}

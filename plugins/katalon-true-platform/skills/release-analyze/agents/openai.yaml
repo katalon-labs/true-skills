@@ -2,3 +2,10 @@ interface:
   display_name: "Katalon Release Analyze"
   short_description: "Assess release testing readiness"
   default_prompt: "Use $release-analyze to assess whether this Katalon release is ready based on testing quality metrics."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

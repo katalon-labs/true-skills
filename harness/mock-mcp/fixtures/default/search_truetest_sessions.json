@@ -1,0 +1,31 @@
+[
+  {
+    "result": {
+      "sessions": [
+        {
+          "session_reference": "sref_opaque_a1b2c3",
+          "session_id": "cust-sess-1001",
+          "start_time": "2026-10-18T09:12:00Z",
+          "steps": 7,
+          "duration_ms": 84200,
+          "custom_attributes": {
+            "serviceGroup": "Checkout"
+          },
+          "session_replay_url": "/truetest/replay/cust-sess-1001"
+        },
+        {
+          "session_reference": "sref_opaque_d4e5f6",
+          "session_id": "cust-sess-1002",
+          "start_time": "2026-10-18T10:40:00Z",
+          "steps": 5,
+          "duration_ms": 51000,
+          "custom_attributes": {
+            "serviceGroup": "Orders"
+          },
+          "session_replay_url": "/truetest/replay/cust-sess-1002"
+        }
+      ],
+      "next_page_token": null
+    }
+  }
+]

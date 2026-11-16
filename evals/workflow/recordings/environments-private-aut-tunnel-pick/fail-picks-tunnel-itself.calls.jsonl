@@ -1,0 +1,2 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"list_test_cloud_tunnels","args":{"project_id":28459},"outcome":"ok","fixture":"default/list_test_cloud_tunnels.json#0","isError":false}
+{"ts":"2026-10-20T09:00:01.000Z","seq":2,"scenario":"default","transport":"recorded","method":"tools/call","tool":"build_private_local_testing_config","args":{"mode":"tunnel","selected_tunnel":"tun-5d2c"},"outcome":"ok","fixture":"default/build_private_local_testing_config.json#0","isError":false}

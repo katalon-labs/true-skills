@@ -1,0 +1,11 @@
+interface:
+  display_name: "Katalon TrueTest Journeys"
+  short_description: "Turn real user traffic into coverage"
+  default_prompt: "Use $truetest-journeys to find the user flows we do not test yet from TrueTest sessions and queue cases for them."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "katalon-prod-mcp"
+      description: "Katalon True Platform MCP server"
+      transport: "streamable_http"
+      url: "https://platform.katalon.io/mcp"

@@ -1,0 +1,12 @@
+{
+  "id": "s2",
+  "title": "Mixed-rule case, vague expected result, a signal from 6 runs, thin Safari coverage",
+  "prompt": "Is the Regression Web suite ready for the pipeline? Verdict plus the cases to fix.",
+  "fixture": "../fixtures/s2-regression-web.json",
+  "expect": {
+    "verdict": "Approve with fixes",
+    "weak_cases": ["TC-5120", "TC-5133"],
+    "unconfirmed_cases": ["TC-5133"],
+    "atomicity_case": "TC-5120"
+  }
+}

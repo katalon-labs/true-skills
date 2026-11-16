@@ -1,0 +1,15 @@
+{
+  "id": "s1",
+  "title": "Three signatures and two results with no verdict",
+  "prompt": "Triage the failures in execution 8842: which are product bugs, flaky tests, or environment? Do not file anything. The platform data is in the fixture.",
+  "fixture": "../fixtures/s1-execution-8842.json",
+  "expect": {
+    "min_clusters": 3,
+    "max_clusters": 3,
+    "classification": {"TC-6101": "automation", "TC-6102": "automation", "TC-6105": "automation", "TC-6108": "automation", "TC-6110": "environment", "TC-6111": "environment", "TC-6120": "product", "TC-6121": "product"},
+    "no_verdict": ["TC-6130", "TC-6131"],
+    "defects_not_requested": true,
+    "rerun_suggested": true,
+    "idKeys": ["no_verdict"]
+  }
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "match": {
+      "test_suite_id": 2001
+    },
+    "result": {
+      "id": 2001,
+      "name": "Authentication Regression",
+      "path": "Test Suites/Regression",
+      "testType": "MANUAL",
+      "type": "TESTOPS",
+      "source": "USER",
+      "testProjectId": 500,
+      "testFolderId": 311,
+      "testCases": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link"
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_suite_id": 2002
+    },
+    "result": {
+      "id": 2002,
+      "name": "Checkout Manual Suite",
+      "path": "Test Suites/Regression",
+      "testType": "MANUAL",
+      "type": "TESTOPS",
+      "source": "USER",
+      "testProjectId": 500,
+      "testFolderId": 311,
+      "testCases": [
+        {
+          "id": 1003,
+          "name": "Checkout applies valid discount code"
+        },
+        {
+          "id": 1004,
+          "name": "Checkout rejects expired discount code"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_suite_id": 2003
+    },
+    "result": {
+      "id": 2003,
+      "name": "Login Automated Suite",
+      "path": "Test Suites/Regression",
+      "testType": "AUTOMATED",
+      "type": "TESTOPS",
+      "source": "USER",
+      "testProjectId": 500,
+      "testFolderId": 311,
+      "testCases": [
+        {
+          "id": 1005,
+          "name": "Login lockout after five failures"
+        }
+      ]
+    }
+  },
+  {
+    "match": {
+      "test_suite_id": 2004
+    },
+    "result": {
+      "id": 2004,
+      "name": "Orders API Suite",
+      "path": "Test Suites/Regression",
+      "testType": "AUTOMATED",
+      "type": "TESTOPS",
+      "source": "USER",
+      "testProjectId": 500,
+      "testFolderId": 311,
+      "testCases": [
+        {
+          "id": 1006,
+          "name": "Order history CSV export downloads file"
+        }
+      ]
+    }
+  },
+  {
+    "result": {
+      "id": 2001,
+      "name": "Authentication Regression",
+      "path": "Test Suites/Regression",
+      "testType": "MANUAL",
+      "type": "TESTOPS",
+      "source": "USER",
+      "testProjectId": 500,
+      "testFolderId": 311,
+      "testCases": [
+        {
+          "id": 1001,
+          "name": "Password reset sends email link"
+        },
+        {
+          "id": 1002,
+          "name": "Password reset rejects expired link"
+        }
+      ]
+    }
+  }
+]

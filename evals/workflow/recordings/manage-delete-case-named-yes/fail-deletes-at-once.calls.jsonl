@@ -1,0 +1,1 @@
+{"ts":"2026-10-20T09:00:00.000Z","seq":1,"scenario":"default","transport":"recorded","method":"tools/call","tool":"delete_test_case","args":{"project_id":28459,"repository_id":500,"test_case_id":1004},"outcome":"ok","fixture":"default/delete_test_case.json#0","isError":false}

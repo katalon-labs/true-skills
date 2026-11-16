@@ -1,0 +1,25 @@
+[
+  {
+    "result": {
+      "window": "last 28 days",
+      "totals": {
+        "testCases": 6,
+        "automated": 2,
+        "manual": 4
+      },
+      "executionStats": {
+        "passed": 14,
+        "failed": 2,
+        "error": 0,
+        "incomplete": 1
+      },
+      "automationStatus": {
+        "AUTOMATION_COMPLETE": 1,
+        "AUTOMATION_IN_PROGRESS": 1,
+        "AUTOMATION_CANDIDATE": 1,
+        "TO_BE_ASSESSED": 1,
+        "MANUAL_ONLY": 2
+      }
+    }
+  }
+]

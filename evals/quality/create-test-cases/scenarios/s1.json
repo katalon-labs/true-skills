@@ -1,0 +1,13 @@
+{
+  "id": "s1",
+  "title": "Password rule with a typo in the source error text",
+  "prompt": "Design manual test cases for CEL-6 in the Cellphone Shop project. Show me the plan first and wait for my confirmation before you write anything. The fixture holds what the platform returned.",
+  "fixture": "../fixtures/s1-cel-6.md",
+  "expect": {
+    "min_cases": 6,
+    "condition_groups": [["7 character"], ["8 character", "exactly 8"], ["letters only", "only letters", "no number", "without a number"], ["numbers only", "only numbers", "digits only", "no letter", "without a letter"], ["space"]],
+    "verbatim": ["Pasword must contain at least 8 characters", "Password must contain a letter and a number", "Password cannot contain spaces"],
+    "typo": "Pasword",
+    "requirement_key": "CEL-6"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "scenario": "memory-write-on-request",
+  "kind": "pass",
+  "expect": "pass",
+  "events": [
+    {
+      "type": "user",
+      "turn": 0,
+      "text": "Remember this: always add the CEL ticket key at the end of every test case name.",
+      "confirms": false
+    },
+    {
+      "type": "tool_call",
+      "id": "t1",
+      "name": "Skill",
+      "args": {
+        "skill": "katalon-true-platform:project-memory"
+      }
+    },
+    {
+      "type": "tool_call",
+      "id": "t2",
+      "name": "mcp__katalon__memory_list",
+      "args": {}
+    },
+    {
+      "type": "tool_result",
+      "id": "t2",
+      "isError": false,
+      "text": "{\"available\":true,\"agent_rules_enabled\":true,\"memory_enabled\":true,\"revision\":\"rev-0007\",\"policy\":null,\"records\":[{\"id\":\"e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8091\",\"scope\":\"project\",\"kind\":\"convention\",\"headline\":\"Test cases: name starts with the feature area, then the behavior\",\"status\":\"active\",\"created_at\":\"2026-09-02T08:00:00Z\"},{\"id\":\"f6a7b8c9-d0e1-4f2a-9b4c-5d6e7f8091a2\",\"scope\":\"user\",\"kind\":\"preference\",\"headline\":\"Test folders: \\\"Folder name - YYYYMMDD\\\"\",\"status\":\"active\",\"created_at\":\"2026-10-01T08:00:00Z\"}],\"pages\":[{\"slug\":\"skill.seed-session\",\"description\":\"How to seed a session for regression tests.\"}],\"budget\":{\"truncated\":false},\"next_cursor\":null}"
+    },
+    {
+      "type": "assistant",
+      "text": "Nothing in memory says this yet. Preview. Kind: convention. Headline: Test case names end with the CEL ticket key. Body in your words: \"Always add the CEL ticket key at the end of every test case name.\" Save it as your own memory?"
+    },
+    {
+      "type": "user",
+      "turn": 1,
+      "text": "Yes, save it.",
+      "confirms": true
+    },
+    {
+      "type": "tool_call",
+      "id": "t3",
+      "name": "mcp__katalon__memory_write",
+      "args": {
+        "kind": "convention",
+        "headline": "Test case names end with the CEL ticket key",
+        "body": "Always add the CEL ticket key at the end of every test case name."
+      }
+    },
+    {
+      "type": "tool_result",
+      "id": "t3",
+      "isError": false,
+      "text": "{\"saved\":true,\"duplicate\":false,\"record_id\":\"a7b8c9d0-e1f2-4a3b-9c5d-6e7f8091a2b3\",\"redacted\":[],\"scope\":\"user\"}"
+    },
+    {
+      "type": "assistant",
+      "text": "Saved as your own memory, not a project rule. Nothing was redacted. A project admin can make it a team rule on the Agent Rules screen."
+    }
+  ]
+}

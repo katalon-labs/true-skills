@@ -1,0 +1,121 @@
+{
+  "id": "truetest-uncovered-flow",
+  "skill": "truetest-journeys",
+  "description": "Find the biggest uncovered user flow. The agent reads the active journey map, compares coverage, previews the flow, queues generation from that flow once after a yes, and reads it back with the flow ID.",
+  "fixture": "default",
+  "turns": [
+    {
+      "text": "What do real users do on Celestial Web that we do not test? Cover the biggest gap."
+    },
+    {
+      "text": "Use the production environment."
+    },
+    {
+      "text": "Yes, generate cases for the order history CSV export flow.",
+      "confirms": true
+    }
+  ],
+  "assertions": [
+    {
+      "id": "skill",
+      "type": "skill-loaded",
+      "skill": "truetest-journeys"
+    },
+    {
+      "id": "aut-resolved-first",
+      "type": "order",
+      "before": {
+        "tool": "list_truetest_auts"
+      },
+      "after": {
+        "tool": "search_truetest_journey_maps"
+      }
+    },
+    {
+      "id": "map-read-first",
+      "type": "order",
+      "before": {
+        "tool": "get_truetest_journey_map"
+      },
+      "after": {
+        "tool": "create_truetest_test_case_from_flow"
+      }
+    },
+    {
+      "id": "flow-queued-once",
+      "type": "called",
+      "tool": "create_truetest_test_case_from_flow",
+      "match": {
+        "map_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+        "flow_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+      },
+      "max": 1
+    },
+    {
+      "id": "no-map-build",
+      "type": "not-called",
+      "tool": "create_truetest_journey_map"
+    },
+    {
+      "id": "no-session-generation",
+      "type": "not-called",
+      "tool": "create_truetest_test_case_from_session"
+    },
+    {
+      "id": "no-raw-events",
+      "type": "not-called",
+      "tool": "get_truetest_session",
+      "match": {
+        "include_raw_events": true
+      }
+    },
+    {
+      "id": "flow-read-back",
+      "type": "read-back",
+      "after": {
+        "tool": "create_truetest_test_case_from_flow"
+      },
+      "reads": [
+        "get_truetest_journey_map"
+      ],
+      "readMatch": {
+        "flow_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+      }
+    },
+    {
+      "id": "reports-queued",
+      "type": "says",
+      "pattern": [
+        "queued"
+      ]
+    },
+    {
+      "id": "memory-read-only",
+      "type": "not-called",
+      "tools": [
+        "memory_write",
+        "memory_forget"
+      ]
+    },
+    {
+      "id": "no-completion-claim",
+      "type": "never-says",
+      "pattern": [
+        {
+          "re": "generated the cases|cases (were |have been )?created",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": "no-pii-echo",
+      "type": "never-says",
+      "pattern": [
+        {
+          "re": "[\\w.+-]+@(?!example\\.com)[\\w-]+\\.[a-z]{2,}",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

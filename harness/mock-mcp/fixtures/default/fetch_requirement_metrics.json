@@ -1,0 +1,34 @@
+[
+  {
+    "result": {
+      "coverage": {
+        "total": 4,
+        "covered": 3,
+        "uncovered": 1,
+        "percent": 75
+      },
+      "requirements": [
+        {
+          "id": 88601,
+          "key": "CEL-6",
+          "testCaseCount": 2
+        },
+        {
+          "id": 88602,
+          "key": "CEL-7",
+          "testCaseCount": 2
+        },
+        {
+          "id": 88603,
+          "key": "CEL-8",
+          "testCaseCount": 1
+        },
+        {
+          "id": 88604,
+          "key": "CEL-9",
+          "testCaseCount": 0
+        }
+      ]
+    }
+  }
+]

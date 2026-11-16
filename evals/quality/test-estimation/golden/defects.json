@@ -1,0 +1,5 @@
+{
+  "scenario": "s1",
+  "expectFail": ["confidence-label", "confidence-allowed", "buckets-add-up", "counts-used", "serialized-part-named", "both-resourcing-answers", "evidence-sourced", "no-single-number", "no-false-precision", "no-quadrature", "no-interval-claim"],
+  "note": "Planted: an invalid confidence word, a Likely total that the buckets do not reach, no case counts, no serialized line, no fixed-team answer, evidence with no team-supplied tag, false precision, root-sum-square and a confidence interval claim."
+}

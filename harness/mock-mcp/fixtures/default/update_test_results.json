@@ -1,0 +1,13 @@
+[
+  {
+    "result": {
+      "outcome": "applied",
+      "test_case_id": 1001,
+      "status": "PASSED",
+      "readback": {
+        "status": "PASSED",
+        "stepsRecorded": 3
+      }
+    }
+  }
+]

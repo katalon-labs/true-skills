@@ -1,0 +1,25 @@
+[
+  {
+    "result": {
+      "auts": [
+        {
+          "id": 41,
+          "name": "Celestial Web",
+          "clientCode": "celestial-web",
+          "environments": [
+            {
+              "id": 411,
+              "name": "Staging",
+              "url": "https://staging.celestial.example.com"
+            },
+            {
+              "id": 412,
+              "name": "QA",
+              "url": "https://qa.celestial.example.com"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

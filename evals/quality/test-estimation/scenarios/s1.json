@@ -1,0 +1,11 @@
+{
+  "id": "s1",
+  "title": "Full inputs with tagged provenance",
+  "prompt": "How long will it take to test release 5.1 of Parcel Tracker, and how many testers do I need? We have 2 testers. Inputs are in the fixture. You cannot run code.",
+  "fixture": "../fixtures/s1-parcel-tracker-5-1.md",
+  "expect": {
+    "confidence_allowed": ["Medium", "High"],
+    "counts": ["160", "22"],
+    "concurrency": true
+  }
+}
