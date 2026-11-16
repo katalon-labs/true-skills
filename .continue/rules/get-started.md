@@ -31,6 +31,7 @@ Name tools by bare name. Clients add a prefix. Claude Code uses `mcp__<server>__
    - One repository and at most one AUT environment: use them and do not ask.
    - More than one of either: ask one combined question, for example "Which repository and which environment should Run with AI use by default?" Offer at most three options for each.
    - No AUT environment: leave the target unset. Say that Run with AI asks for it on first use.
+   - The target here is the AUT environment. It says nothing about the browser. Run with AI uses Linux Chrome unless the organization set an environment allow-list. An allow-list can add a full picker or a named list. Windows and macOS need a TestCloud desktop licence. Do not promise a browser at onboarding. Say what the person will see when they run.
 3. **Keep the choice.** State the project, repository, and environment that this conversation will use. Repeat their IDs on later calls. If the client lists a settings tool, save `default_project_id`, `default_repository_id`, and `default_aut_environment_id` with it. Leave out any value the user did not choose. Without a settings tool, offer to note the names, never secrets, in the agent's own memory or project instructions.
 4. **First step.** If the client lists a Katalon home view, call it. Otherwise end with these starter prompts:
    - "Which requirements in my next release have no tests?"

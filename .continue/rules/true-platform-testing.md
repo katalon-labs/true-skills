@@ -37,19 +37,21 @@ Ask who is in front of you before you ask which stage they are in.
 | Stage | Skill | Use when |
 |---|---|---|
 | 1 Plan | `test-plan`, `test-estimation` | scope, risk order, executable folders and suites, effort |
-| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements, or cases from real user sessions |
+| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data (including datasets for manual cases), charters, or automation from requirements, or cases from real user sessions |
 | 3 Manage | `test-management` | organize inventory, trace requirements |
 | 4 Review | `test-review` | verdict on coverage and quality before the pipeline |
 | 5 Execute | `test-environments`, `execute-test`, `playwright-execute`, `upload-report` | app, browser, device, or tunnel setup first, then manual, Run with AI, automated, Playwright, report upload |
 | 6 Analyze | `analyze-failures`, `release-analyze`, `test-reporting` | failure triage and defects, ship call, stakeholder summary |
 | 7 Maintain | `test-maintenance` | repair flaky or broken cases and feed gaps back to plan |
-| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions |
+| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions, Agent Rules, the Sources switch |
 
 For multi-skill plays read `references/combination-recipes.md`. For copy-paste prompts read `references/prompt-recipes.md`. For every MCP tool by group read `references/mcp-tool-index.md`.
 
 ## Load Memory at Session Start
 
 At the start of every session, before the first skill runs, call `memory_list` once through `project-memory` and apply what it returns. Memory is optional. If it is empty or unavailable, say so and go on. Only the user's request triggers `memory_write` or `memory_forget`.
+
+Read memory before any run setup, and read the team's rules first. Rules can name the environment, the data, or the naming the run must follow. An empty read can also mean the person switched project memory off for that chat. `project-memory` explains how to tell the two apart.
 
 ## Resolve Context Once
 
@@ -92,7 +94,7 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 ## Capability Boundary
 
-State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. Datasets, Agent Rule writes, and bulk Configure are web UI or Katalon AI features with no tool in production tool lists yet. A tool that is not in your tool list does not exist for you: use the web UI and say so. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
 
 
 ## References
@@ -118,7 +120,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Notes were reviewed against release notes through 2026-11-16, live re-capture pending. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -137,6 +139,7 @@ Requirements and ALM
 
 Test cases, folders, suites
 - `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- Tags, feature areas, and custom test types are writable on create and update, and `find_test_cases` filters by tag and custom test type. Check your tool list for the exact parameters.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
@@ -182,7 +185,11 @@ Team memory (Kai)
 - Look up another user to set an assignee.
 - Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Author release gates, custom field definitions, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI. Writing agent rules is not available through the MCP. Tags and custom test types on a test case are writable (see Available).
+- Datasets and data binding for manual cases. The tools for them are not in production tool lists yet. If your tool list shows dataset tools, use them. Otherwise use the web UI.
+- Bulk Configure for suites and collections (execution profile and configuration for many selected tests). Build one run at a time with `build_run_configuration` and `create_test_run`.
+- The Manage Automated Schedule page. `list_schedule`, `read_schedule_detail`, and `update_schedule_configuration` cover schedule data. Use the UI for the page itself.
+- Report filters in the Test Results Analysis report (source, profile, and more filters). Use the UI.
 - Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
@@ -195,9 +202,18 @@ Team memory (Kai)
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
 - Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
 - `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. The web dialog has opened with Separate selected since 2026-10-29, but the MCP call still takes the user's answer.
+- The Run with AI environment comes from an organization allow-list, and it governs the web UI and the MCP start alike. With no allow-list set, hosted AI runs Linux Chrome only. An organization can allow the full picker or a named list of environments. Windows and macOS need a Test Execution - Cloud (formerly TestCloud) desktop licence. A beta browser build is replaced by the newest stable one. Do not promise an environment before the run dialog or the start result shows it.
 - `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
 - `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
+- `create_defect` files a real Jira or Azure DevOps ticket. Never test it on a customer integration. Jira integrations whose bug type has its own ID, and company-managed Jira projects with a required custom field, work since the November 2026 releases. Report Defect with attachments on a manual result can still fail the filing. The fix lands in the 2026-11-18 release. Before that date, expect a possible failure and tell the user.
+- A 403 or "access denied" does not prove a permission problem. It can mean the requested environment, browser version, or dataset value is not available. Check the requested values first.
+- A write that times out (HTTP 504 or BACKEND_TIMEOUT) can still land or not. Read back with the matching find tool before any retry. Never create a duplicate to replace a write that may have landed.
+- Protected MCP calls return an error envelope with a `code`, a `message`, and a `retry` hint. Handle the codes this way:
+  - CREDENTIAL_REJECTED: the stored credential was rejected. The user fixes it on the API key settings page. Do not retry.
+  - BACKEND_TIMEOUT: the backend was too slow. A write may have landed. Read back first.
+  - BACKEND_UNAVAILABLE (HTTP 502, 503, 504): retry a read once, later. Read back before you retry a write.
+  - BACKEND_SERVER_ERROR: report it. Read back before you retry a write.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
 - `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
@@ -331,7 +347,8 @@ CROSS-CUTTING .. get-started (first run) . platform-setup (connect) . true-platf
 ## Stage boundaries (outside the MCP)
 
 - Object and action capture, data design, resilience design (stage 2): Katalon Studio desktop.
-- Custom fields, tags, Git settings, governance (stage 3): the True Platform UI.
+- Custom fields, Git settings, governance (stage 3): the True Platform UI. Since November 2026 tags, feature areas, and custom test types are writable through `create_test_case` and `update_test_cases`, and `find_test_cases` filters on tags and custom test types.
+- Datasets and data binding for manual cases (stages 2 and 5): the True Platform UI and Katalon AI. The data tools are not in production tool lists yet.
 - Code and object review, local debug (stage 4): Katalon Studio desktop.
 - Stopping a running automated execution and Live Monitor (stage 5): the True Platform UI. The MCP can end a TestPak run, including hosted Run with AI, with `update_test_run`. It can rerun an automated execution and read results.
 - Self-healing and Time Capsule (stages 6 and 7): product features outside the MCP.
@@ -386,6 +403,11 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Delete an old app, or stop a tunnel | `test-environments` | destructive: needs a typed yes that names the target |
 | Load our team's conventions before we start | `project-memory` | read once at session start. Empty or missing memory is not an error |
 | Remember that we always do X | `project-memory` | stored as the person's own memory. A project-wide rule is set by a project admin on the Agent Rules screen |
+| Bind a dataset to a manual case, or run a case once per data row | `test-data` | datasets bind to manual cases only. They live in the web UI and Katalon AI. The dataset tools are not in production tool lists yet. Use them only if your tool list shows them |
+| Add a team rule, or ask why the agent ignored a rule | `project-memory` | a project admin sets Agent Rules in the web UI. New rules get an automatic tag. This skill cannot create one |
+| Review proposed rules or memories | `project-memory` | the Needs your review list holds them in the web UI. Accept all and Dismiss all live there |
+| Katalon AI seems to ignore our memory | `project-memory` | the Sources switch can turn Project memory off for one chat. An empty read can mean that |
+| Custom Instructions are going away | `project-memory` | they end 2026-11-20. Active personal ones moved to proposed Agent Rules. Project-scope ones did not move |
 | Turn TC-1042 into a Playwright spec | `test-case-to-playwright` | none |
 | Turn TC-1042 into a Katalon Studio test | `test-case-to-katalon-studio` | none |
 | Get my Playwright run into the platform | `playwright-execute` | none |
@@ -408,7 +430,7 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 
 # MCP tool index
 
-Every tool on the live Katalon True Platform MCP server, grouped by area. The server exposes 74 tools, captured 2026-10-20. Parameters are in each tool's own schema. This page lists the job of each tool and the rule that most often goes wrong.
+Every tool on the live Katalon True Platform MCP server, grouped by area. The server exposed 74 tools when last captured live, on 2026-10-20. This page was reviewed against release notes on 2026-11-16 and a live re-capture is pending. Parameters are in each tool's own schema. This page lists the job of each tool and the rule that most often goes wrong.
 
 Class: R reads or builds a payload. W writes. C needs confirmation because it uses Test Execution - Cloud minutes, launches a hosted browser, queues generation, or reaches Jira or Azure DevOps. D is destructive and needs an explicit yes that names the target. Stage: 1 plan, 2 design, 3 manage, 4 review, 5 execute, 6 analyze, 7 maintain.
 
@@ -438,10 +460,10 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `find_test_cases` | R | Filtered list of cases. Pages start at 0. | 2, 3 |
+| `find_test_cases` | R | Filtered list of cases. Pages start at 0. Since November 2026 it also filters on tags and custom test types (name lists). A name filter takes an array, and a comma-joined string matches nothing. | 2, 3 |
 | `read_test_cases` | R | Many cases by ID. `content_type` FLOW returns steps. | 2, 4 |
-| `create_test_case` | W | Create a manual case. AUTOMATED creates nothing. | 2 |
-| `update_test_cases` | W | Batched edits, one `action` per field. Batch every change to one case in one call. | 2, 7 |
+| `create_test_case` | W | Create a manual case. AUTOMATED creates nothing. Since November 2026 it accepts tags, feature areas, custom test types, and linked requirement IDs. It does not take linked case IDs or a folder. | 2 |
+| `update_test_cases` | W | Batched edits, one `action` per field. Batch every change to one case in one call. Check your tool schema for the tag, feature area, and custom test type actions before you rely on them. | 2, 7 |
 | `move_test_case` | W | Move a case to a folder. | 3, 7 |
 | `duplicate_test_case` | W | Copy a case in place. | 7 |
 | `delete_test_case` | D | Delete a case. | 3 |
@@ -517,13 +539,30 @@ Owner skill: `truetest-journeys`.
 | `list_truetest_auts` | R | Linked AUTs. | 2 |
 | `list_truetest_tracking_environments` | R | Tracking environments. | 2 |
 | `search_truetest_sessions` | R | Captured sessions. Window up to 31 days. | 2 |
-| `get_truetest_session` | R | One session with replay steps. | 2 |
+| `get_truetest_session` | R | One session with replay steps and a bounded console log. Treat console text as sensitive. | 2 |
 | `search_truetest_journey_maps` | R | Journey maps. | 2 |
-| `get_truetest_journey_map` | R | One journey map, in pages. Also shows the cases linked to a flow. | 2 |
+| `get_truetest_journey_map` | R | One journey map, in pages. Pages and transitions are the full sets, so follow both page tokens to the end. Also shows the cases linked to a flow. | 2 |
 | `create_truetest_journey_map` | W | Start a journey map job. | 2 |
 | `get_truetest_journey_map_request` | R | Poll a journey map job. Do not resubmit on error. | 2 |
 | `create_truetest_test_case_from_session` | W, C | Queue case generation from 1 to 25 sessions. Needs user approval. | 2 |
 | `create_truetest_test_case_from_flow` | W, C | Queue case generation for one journey-map flow. Confirm before you run it on a flow that has cases. | 2 |
+
+## Announced, not in production tool lists yet
+
+These names are not in every tool list yet. Use one only if your tool list shows it. Otherwise use the web UI and say so. Never call a name from memory.
+
+| Tool | Class | What it does | Stage |
+|---|---|---|---|
+| `find_datasets` | R | List datasets for manual cases, or read one with its rows. Owner skill: `test-data`. Not in every tool list yet. | 2, 5 |
+| `manage_dataset` | W, D | Create, edit, or delete a dataset. Delete needs a yes that names the dataset. Not in every tool list yet. | 2 |
+| `read_test_case_data` | R | A case's variables, dataset binding, iteration count, and pre-run check. Not in every tool list yet. | 2, 5 |
+| `manage_test_case_data` | W | Link or unlink a dataset for one or many cases. Manual cases only. Not in every tool list yet. | 2 |
+| `find_vault_params` | R | List vault parameters. It never returns a secret value. Not in every tool list yet. | 2 |
+| `manage_vault_params` | W, D | Create, update, or delete a vault parameter. Not in every tool list yet. | 2 |
+| `find_run_iterations` | R | List the data-row iterations of a run, or read one. Not in every tool list yet. | 5, 6 |
+| `update_run_iteration` | W | Set a verdict, mark, or defect on one or many iterations. Not in every tool list yet. | 5, 6 |
+| `create_truetest_journey_map_gap_analysis` | W, C | Start a gap analysis between two journey maps. Needs approval. It uses compute and sends emails. Owner skill: `truetest-journeys`. Not in every tool list yet. | 2 |
+| `get_truetest_journey_map_gap_analysis` | R | Read a gap analysis. Not in every tool list yet. | 2 |
 
 ## Team memory (Kai)
 
@@ -531,7 +570,7 @@ Owner skill: `project-memory`. Every session calls `memory_list` once at the sta
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. | all |
+| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. Read memory before run setup, rules first. | all |
 | `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | all |
 | `memory_read_page` | R | One distilled guidance page by slug. | all |
 | `memory_write` | W | Store one note in the user's own words. Only when the user asks. | none |
@@ -641,6 +680,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

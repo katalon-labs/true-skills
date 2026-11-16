@@ -17,7 +17,7 @@ Read this when a run needs a browser, an OS, a device, a Katalon Test Execution 
 
 Common fields: `type` (`desktop_browser`, `mobile_device`), `platform`, `platformVersion`, `browser`, `browserVersion`, `browserVersionType` (`dev`, `beta`, `stable`), `device.deviceName`, `device.manufacturer`, `capabilities.automation.supported`, `capabilities.automation.devicePoolType`.
 
-Paging:
+Paging (a page holds up to 50 rows):
 
 1. Leave `page_token` and `offset` out on the first call.
 2. Copy `page_token` and `next_offset` from the response into the next call.
@@ -57,7 +57,35 @@ If `create_test_run` later returns INVALID_ENVIRONMENT, read `compatibleConfigur
 
 A TestPak (manual run) takes `browser`, `browser_version`, `os` and `os_version` as plain fields. Read real values from the catalog. Never guess a version and never pass `latest` there. Omit `os_version` and `browser_version` when the user gave none.
 
-Run with AI starts one hosted Chrome on Windows or Linux. Browser catalog work does not apply. Settle the AUT and private access, then hand off.
+Run with AI does not use the catalog. See "Run with AI environments" below. Settle the AUT and private access, then hand off.
+
+## Run with AI environments
+
+An organization admin sets which environments Run with AI may use. The rule covers the web UI and the MCP `START` call.
+
+| Organization setting | What the user gets |
+|---|---|
+| No list set | Linux Chrome only, on the newest stable version. No OS or browser picker. |
+| List allows everything | The full picker. |
+| List names pairs | Only those pairs. The first is the default. `latest` is rejected and the run pins a concrete stable version. |
+
+- Windows and macOS rows need a Test Execution - Cloud desktop license. Native mobile without it is refused with `TESTCLOUD_LICENSE_REQUIRED`.
+- A beta build is replaced by the newest stable build of the same browser. For example, a request for a Windows Chrome beta runs on the newest stable Windows Chrome. Say this in the readiness summary.
+- Do not offer a pair the organization does not list. A missing picker can mean "Linux Chrome only", not a bug.
+- A 403 or "access denied" for one version can mean that version is unavailable. Check the requested values before you suspect permissions.
+- The picker shows Linux Chrome and Chrome (headless) with versions from 151 down on one reviewed tenant. Versions change often. Read the picker, not this file.
+- A Windows case that needs a client certificate carries `[cert: <profile>]` in its precondition. See `execute-test`.
+
+## Desktop Browser live testing
+
+Live Testing has three tabs: Desktop Browser, Mobile Native App and Mobile Browser. Since November 2026 the Desktop Browser tab is a native form. It is a web UI page with no MCP tool.
+
+1. Enter the URL to open.
+2. Select Configuration. It is a drill: OS (Windows or macOS), OS version, browser, browser version, then screen resolution. Windows lists Chrome, Firefox, Microsoft Edge, Brave, DuckDuckGo and Opera. macOS lists Safari as well. A pre-release version carries a BETA label. The lists come from the environment service and can differ from older pages.
+3. Start Test. Starting is billed. Ask the user before you open a session for them.
+4. A Private/Local Testing toggle is on the form. A link at the top right switches back to the old experience. Switching changes a saved user preference. Do not click it unasked.
+
+For an automated or Run with AI run, use the catalog and the rules above. Live testing does not feed a run.
 
 ## Agents
 

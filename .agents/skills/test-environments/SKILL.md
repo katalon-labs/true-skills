@@ -4,7 +4,7 @@ description: Gets an application under test ready to run on Katalon Test Executi
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. Uploading an app needs a terminal that can run the curl command the server returns.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -21,7 +21,7 @@ Available:
 - Read AUTs and their environments with `read_auts`, and execution profiles with `find_execution_profiles`.
 - Read the browser and device catalog with `list_test_cloud_environments`, and agents with `list_test_cloud_agents`.
 - List apps with `list_test_cloud_apps`. Upload one with `get_upload_test_cloud_app_url` and `create_test_cloud_app`. Manage aliases with `manage_test_cloud_dynamic_app`. Remove apps with `delete_test_cloud_app`.
-- List tunnels with `list_test_cloud_tunnels`, get setup steps with `prepare_test_cloud_tunnel_start`, and stop one with `stop_test_cloud_tunnel`.
+- List tunnels with `list_test_cloud_tunnels` (it needs `project_id`), get setup steps with `prepare_test_cloud_tunnel_start`, and stop one with `stop_test_cloud_tunnel`.
 - Build the payloads for a run with `build_run_configuration` and `build_private_local_testing_config`. Both builders only return a payload and change nothing.
 
 Not available:
@@ -29,7 +29,9 @@ Not available:
 - Create or edit an AUT or its environments. Use the platform UI.
 - Start a tunnel. The user runs the tunnel client. This skill gives the commands.
 - Show which runs or aliases use an app, or the UDID of a private device.
+- Change which environments Run with AI may use. An organization admin sets that list.
 - Run a test. Hand off to `execute-test`.
+- Open a live test session. Live testing is a web UI page, and starting one is billed.
 
 Read `references/write-policy.md` before any write.
 
@@ -50,6 +52,8 @@ Read `references/write-policy.md` before any write.
 | To check why a tunnel or an AUT is not reachable | Diagnose with the tunnel list | `references/private-aut-and-tunnels.md` |
 | To remove an app or stop a tunnel | Destructive path below | the same two files |
 | A profile or an agent for an automated run | `find_execution_profiles`, `list_test_cloud_agents` | `references/browsers-and-devices.md` |
+| To try a site by hand in a hosted desktop browser | Send the user to Live Testing, Desktop Browser | `references/browsers-and-devices.md` |
+| To know which environments Run with AI offers | Read the Run with AI environment rules | `references/browsers-and-devices.md` |
 
 ## AUT and environment
 
@@ -86,7 +90,8 @@ Preparing an environment is not consent to run. `execute-test` shows the run pre
 
 - Choose `config_type` from the environment the user wants, not from the suite name. A suite named API can still run in a browser.
 - A mobile device with no uploaded app means a browser configuration. Use MOBILE_NATIVE only for an app run with a known app.
-- Run with AI uses one hosted Chrome on Windows or Linux. The catalog does not apply to it. It still needs the AUT and any private access.
+- Run with AI does not use the catalog. The organization sets its environments. With no list set, it is Linux Chrome on the newest stable version. A list can add Windows or other pairs, and Windows and macOS need a Test Execution - Cloud desktop license. The first pair in the list is the default. Without a license, native mobile is refused with `TESTCLOUD_LICENSE_REQUIRED`. A beta browser build is replaced by the newest stable build of that browser. Run with AI still needs the AUT and any private access. See `references/browsers-and-devices.md`.
+- `list_test_cloud_environments` returns up to 50 rows a page. Follow `page_token` until it is null. Linux Chrome and Firefox versions were refreshed in October 2026, so a cached list is stale.
 - Never guess `browser_version` or `os_version` for a manual run, and never pass `latest` there. Read real values from the catalog.
 - Device availability (BUSY) changes by the minute. A BUSY device is not an invalid choice for a later run.
 - Setup text from `prepare_test_cloud_tunnel_start` can contain API keys. Show it only to the user. Never save it to a file, a note or a commit.

@@ -1,10 +1,10 @@
 ---
 name: create-test-cases
-description: Designs manual test cases from a synced requirement key such as CEL-6, a pasted requirement, or captured TrueTest sessions. Then creates, updates, and links them in Katalon True Platform (formerly TestOps) after a coverage and duplicate check. Use when a written requirement or real user behavior exists and cases do not. Not for unscripted exploration (exploratory-charter) or inventory cleanup (test-management). For the manual tester.
+description: Designs manual test cases from a synced requirement key such as CEL-6, a pasted requirement, or captured TrueTest sessions. Then creates, updates, tags, and links them in Katalon True Platform (formerly TestOps) after a coverage and duplicate check. Use when a written requirement or real user behavior exists and cases do not. Not for unscripted exploration (exploratory-charter) or inventory cleanup (test-management). For the manual tester.
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -14,7 +14,7 @@ This skill covers test design and import: read a requirement, design cases, chec
 
 ## What the MCP can and cannot do
 
-- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases, manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
+- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases (including tags, feature areas, and custom test types), manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
 - **Cannot:** create requirements (they sync from Jira or Azure DevOps), create a formal Test Plan entity, or inspect the live application.
 - **Test plan workaround:** create or reuse a named folder and suite as the executable planning structure.
 
@@ -67,20 +67,26 @@ Each case targets one validation condition (one acceptance line). It must still 
 ## Platform constraints
 
 - Test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Keep `@`, `:`, and `/` out of titles. Put them in descriptions or steps. Folder paths may use `/`.
+- A name with `%` or `$` is rejected. Katalon AI once retried after a second approval and saved the name without those characters. Leave both out.
 - Test case names start with a letter or digit. `path` starts with `Test Cases` or `Test Cases/`.
 - Prefer `update_test_cases` over delete and recreate. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
+- `create_test_case` takes every writable field since 2026-11-05: tags, feature areas, custom test types, and linked requirement IDs. A new tag name is created on the fly. It does not take `linkedTestCaseIds`, `linkedRequirementKeys`, or `testFolderId`. Set the folder with `path`. Link a requirement key with `manage_requirement_test_case_linkages`.
+- A write can time out. `create_test_case` returned HTTP 504 under concurrent load. Do not assume the case was or was not created. Read back with `find_test_cases` before any retry.
+- A short prompt such as "detail 2 test case" can read as a create request. If the intent is ambiguous, ask whether the user wants to read or to create before you call `create_test_case`.
 - `create_test_case` with `test_case_type` `AUTOMATED` creates nothing. It returns the next action for script generation. Create manual cases only.
 - Suites reject a mix of MANUAL and AUTOMATED cases.
 - No tool looks up assignees or the signed-in user. Leave the assignee empty unless the user supplies a valid UUID.
 - A step that calls another case uses the step `action` object (`type` `call`, `test_case_id`, `version`). Never write it as a plain step named "Call test case 12".
 - `update_test_cases` with `UPDATE_CONTENT` replaces all steps. Send the complete step list and keep Call Test Case steps. Omit `context` or include `expectedResult`. Never send `context: {}`.
+- `update_test_cases` also sets or clears tags, feature areas, and custom test types, and `origin` is read-only. The action names for these lists are not in the confirmed contract. Read the tool schema before the first call and use only the actions it lists. Each list clears on its own, so send an empty list only to clear it.
+- Katalon AI and other agents can report an update that did not land. Never trust the call result alone. Read the case back.
 
 ## Check existing cases
 
 This step is mandatory before every create, including retries after a partial failure.
 
 1. If requirement IDs are known, call `find_test_cases_by_requirement`. Pass exactly one of the requirement identifiers it accepts.
-2. Search with `find_test_cases` by requirement key, title keywords, feature area, and target folder.
+2. Search with `find_test_cases` by requirement key, title keywords, feature area, tags, custom test type, and target folder. The `tags` and `customTestTypes` filters take name lists. An unknown name returns an error that lists the valid names and runs no search. The name filter takes an array, so send `name =in= ["logout","log out"]`. A comma-joined string matches nothing.
 3. Run `search` with `types: ["test_case"]` and `include_documents: false` for the same wording. It finds cases that keyword filters miss. Judge "exists" by the result tier (exact or strong), never by score alone. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that a case is absent. Cases created in the last few minutes may not be searchable yet, so hedge any absence claim.
 4. Read likely matches with `read_test_cases` (`content_type` `FLOW` for steps) when the title alone cannot settle coverage. A `search` hit gives a title and ref only.
 5. Reuse, update, move, or link existing cases that already cover the behavior.
@@ -99,9 +105,13 @@ Follow `references/write-policy.md`. One write set gets one confirmation. For mo
    2. `update_test_cases` for revisions. Put every change to one case in one call: actions run in order, so separate calls for one case race. Each item is `{action, test_case_data: {id, ...}}` with one action per field (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, `UPDATE_CONTENT`). `repository_id` is required.
    3. `manage_requirement_test_case_linkages` with `action` `link`, `requirement_ids`, `test_case_ids`, and `project_id`, only after the requirement IDs are known. The call is many-to-many and runs per requirement in parallel. A partial failure leaves some requirements updated, so read back with `find_test_cases_by_requirement`.
    4. `manage_test_folder` or `move_test_case` when organization was requested or is clearly needed.
-4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Compare the result with the plan. Report any mismatch.
+4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Add `include_attributes` to check tags, feature areas, custom test types, author, and assignee (the assignee comes back as a UUID only). Compare the result with the plan. Report any mismatch. After a timeout, read back with `find_test_cases` before you retry.
 
 Case shape: title, description, pre-condition, steps, expected results, test data, priority, requirement links.
+
+## Agent rules and Call Test Case steps
+
+Katalon AI drafts add a Call Test Case step at step 1 when an agent rule names a shared flow such as a login case (since the 2026-11-05 release). An explicit call in the prompt wins over the rule. When you draft by hand and a rule names a shared flow, write the step as a call action and read the target case first with `read_test_cases`. Check for a duplicate call step before you write. Known gaps are in `references/agent-rule-calls.md`.
 
 ## Suites
 
@@ -122,6 +132,6 @@ State what was reused, updated, created, linked, and left uncovered. Name the ri
 ## Hand-offs
 
 - Unscripted discovery first: `exploratory-charter`.
-- Values, fixtures, and cleanup for the cases: `test-data`.
+- Values, fixtures, cleanup, and datasets for the cases: `test-data`.
 - Inventory hygiene and traceability audits: `test-management`.
 - Running the cases: `execute-test`.

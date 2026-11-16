@@ -4,7 +4,7 @@ description: Routes Katalon True Platform (formerly TestOps) testing requests to
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -39,19 +39,21 @@ Ask who is in front of you before you ask which stage they are in.
 | Stage | Skill | Use when |
 |---|---|---|
 | 1 Plan | `test-plan`, `test-estimation` | scope, risk order, executable folders and suites, effort |
-| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data, charters, or automation from requirements, or cases from real user sessions |
+| 2 Design | `create-test-cases`, `truetest-journeys`, `test-data`, `exploratory-charter`, `test-case-to-playwright`, `test-case-to-katalon-studio` | author cases, data (including datasets for manual cases), charters, or automation from requirements, or cases from real user sessions |
 | 3 Manage | `test-management` | organize inventory, trace requirements |
 | 4 Review | `test-review` | verdict on coverage and quality before the pipeline |
 | 5 Execute | `test-environments`, `execute-test`, `playwright-execute`, `upload-report` | app, browser, device, or tunnel setup first, then manual, Run with AI, automated, Playwright, report upload |
 | 6 Analyze | `analyze-failures`, `release-analyze`, `test-reporting` | failure triage and defects, ship call, stakeholder summary |
 | 7 Maintain | `test-maintenance` | repair flaky or broken cases and feed gaps back to plan |
-| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions |
+| Setup | `get-started`, `platform-setup`, `project-memory` | first run, connection, sign-in, tunnel diagnosis, saved team conventions, Agent Rules, the Sources switch |
 
 For multi-skill plays read `references/combination-recipes.md`. For copy-paste prompts read `references/prompt-recipes.md`. For every MCP tool by group read `references/mcp-tool-index.md`.
 
 ## Load Memory at Session Start
 
 At the start of every session, before the first skill runs, call `memory_list` once through `project-memory` and apply what it returns. Memory is optional. If it is empty or unavailable, say so and go on. Only the user's request triggers `memory_write` or `memory_forget`.
+
+Read memory before any run setup, and read the team's rules first. Rules can name the environment, the data, or the naming the run must follow. An empty read can also mean the person switched project memory off for that chat. `project-memory` explains how to tell the two apart.
 
 ## Resolve Context Once
 
@@ -94,7 +96,7 @@ If the client cannot load another skill, open that skill's instruction file in t
 
 ## Capability Boundary
 
-State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
+State the boundary before you promise a workflow. The MCP can run both manual and automated runs, start and end a TestPak (including hosted Run with AI) with `update_test_run`, rerun an automated execution, read and edit schedules, record manual results, upload evidence, manage Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, search the Knowledge Base, and read the team's Kai memory. It cannot create requirements, create a formal Test Plan entity, stop a running automated execution, look up users, or inspect the live AUT. Datasets, Agent Rule writes, and bulk Configure are web UI or Katalon AI features with no tool in production tool lists yet. A tool that is not in your tool list does not exist for you: use the web UI and say so. The full list and the quirks every skill keeps are in `references/capability-boundaries.md`. Use a browser tool or Playwright to explore the AUT.
 
 
 ## References

@@ -65,7 +65,8 @@ CROSS-CUTTING .. get-started (first run) . platform-setup (connect) . true-platf
 ## Stage boundaries (outside the MCP)
 
 - Object and action capture, data design, resilience design (stage 2): Katalon Studio desktop.
-- Custom fields, tags, Git settings, governance (stage 3): the True Platform UI.
+- Custom fields, Git settings, governance (stage 3): the True Platform UI. Since November 2026 tags, feature areas, and custom test types are writable through `create_test_case` and `update_test_cases`, and `find_test_cases` filters on tags and custom test types.
+- Datasets and data binding for manual cases (stages 2 and 5): the True Platform UI and Katalon AI. The data tools are not in production tool lists yet.
 - Code and object review, local debug (stage 4): Katalon Studio desktop.
 - Stopping a running automated execution and Live Monitor (stage 5): the True Platform UI. The MCP can end a TestPak run, including hosted Run with AI, with `update_test_run`. It can rerun an automated execution and read results.
 - Self-healing and Time Capsule (stages 6 and 7): product features outside the MCP.
@@ -120,6 +121,11 @@ When no skill owns a row, route to the fallback and state the boundary out loud.
 | Delete an old app, or stop a tunnel | `test-environments` | destructive: needs a typed yes that names the target |
 | Load our team's conventions before we start | `project-memory` | read once at session start. Empty or missing memory is not an error |
 | Remember that we always do X | `project-memory` | stored as the person's own memory. A project-wide rule is set by a project admin on the Agent Rules screen |
+| Bind a dataset to a manual case, or run a case once per data row | `test-data` | datasets bind to manual cases only. They live in the web UI and Katalon AI. The dataset tools are not in production tool lists yet. Use them only if your tool list shows them |
+| Add a team rule, or ask why the agent ignored a rule | `project-memory` | a project admin sets Agent Rules in the web UI. New rules get an automatic tag. This skill cannot create one |
+| Review proposed rules or memories | `project-memory` | the Needs your review list holds them in the web UI. Accept all and Dismiss all live there |
+| Katalon AI seems to ignore our memory | `project-memory` | the Sources switch can turn Project memory off for one chat. An empty read can mean that |
+| Custom Instructions are going away | `project-memory` | they end 2026-11-20. Active personal ones moved to proposed Agent Rules. Project-scope ones did not move |
 | Turn TC-1042 into a Playwright spec | `test-case-to-playwright` | none |
 | Turn TC-1042 into a Katalon Studio test | `test-case-to-katalon-studio` | none |
 | Get my Playwright run into the platform | `playwright-execute` | none |

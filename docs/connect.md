@@ -22,12 +22,13 @@ The server name in every snippet is `katalon-prod-mcp`. The skills in this repo 
 | Cline | none | `cline_mcp_settings.json` (user level) |
 | Continue | `.continue/mcpServers/katalon.yaml` | `.continue/mcpServers/katalon.yaml` in the project |
 | Gemini CLI | none | `settings.json` (project `.gemini/settings.json` or user level) |
+| Antigravity CLI | none | `.agents/skills/` for skills, or `agy plugin import gemini` |
 | OpenCode | none | `opencode.json` in the project |
 | Amp | none | `.amp/settings.json` or `~/.config/amp/settings.json` |
 | Zed | none | Zed `settings.json` |
 | Agent Plugins clients | `mcp.json` | `mcp.json` at the plugin root |
 
-Clients that read a skills folder find the skills without more files. `.agents/skills/` serves Codex, Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Junie, Factory, Augment, Roo, and Windsurf or Devin Desktop. Kiro reads `.kiro/skills/` and Cline reads `.cline/skills/`.
+Clients that read a skills folder find the skills without more files. `.agents/skills/` serves Codex, Cursor, Copilot, Gemini CLI, Antigravity CLI, OpenCode, Amp, Zed, Junie, Factory, Augment, Roo, and Windsurf or Devin Desktop. Kiro reads `.kiro/skills/` and Cline reads `.cline/skills/`.
 
 ## Snippets
 
@@ -46,7 +47,7 @@ File: `.mcp.json` in the project, or `~/.claude.json`.
 }
 ```
 
-Or run `claude mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. Run `/mcp` in a session to sign in. Type `http` is the documented value. An entry with `url` and no `type` is read as stdio and skipped.
+Or run `claude mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. Run `/mcp` in a session to sign in. Scheduled tasks and `/loop` ask before they run a skill that declares `allowed-tools` or hooks. No skill in this repo declares either today. If you add one, put `Skill(skill-name)` in `permissions.allow` so the unattended run does not stall. Type `http` is the documented value. An entry with `url` and no `type` is read as stdio and skipped.
 
 ### Codex
 
@@ -58,7 +59,7 @@ url = "https://platform.katalon.io/mcp"
 auth = "oauth"
 ```
 
-Or run `codex mcp add katalon-prod-mcp --url https://platform.katalon.io/mcp`. Then run `codex mcp login katalon-prod-mcp`. OAuth is the default, so set no token. Codex reads the project file only when you trust the project.
+Or run `codex mcp add katalon-prod-mcp --url https://platform.katalon.io/mcp`. Then run `codex mcp login katalon-prod-mcp`. OAuth is the default, so set no token. Codex reads the project file only when you trust the project. Since 0.168, Codex uses an MCP tool's read-only hint when it decides what to approve on its own. Only the server sets that hint. This repo cannot, and write tools still ask.
 
 ### Cursor
 
@@ -126,7 +127,7 @@ File: `.kiro/settings/mcp.json` in the workspace, or `~/.kiro/settings/mcp.json`
 }
 ```
 
-Kiro runs the browser sign-in itself. In the CLI, run `/mcp auth`. Kiro reads remote servers natively. The `mcp-remote` wrapper is not needed.
+Kiro runs the browser sign-in itself. In the CLI, run `/mcp auth`. Kiro reads remote servers natively. The `mcp-remote` wrapper is not needed. Kiro administrators can set allow, deny, or ask rules per MCP tool name. Name the Katalon tools in those rules, for example allow `list_projects` and ask for `update_test_cases`.
 
 ### Windsurf and Devin Desktop
 
@@ -191,7 +192,11 @@ File: `settings.json` (project `.gemini/settings.json` or user level).
 }
 ```
 
-Or run `gemini mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. The repo root also carries `gemini-extension.json` for `gemini extensions install`. `httpUrl` means Streamable HTTP. The key `url` means SSE.
+Or run `gemini mcp add --transport http katalon-prod-mcp https://platform.katalon.io/mcp`. The repo root also carries `gemini-extension.json` for `gemini extensions install`. `httpUrl` means Streamable HTTP. The key `url` means SSE. The extension file serves Gemini CLI enterprise and API-key users. Google moved consumer Gemini CLI users to Antigravity CLI on 2026-06-18.
+
+### Antigravity CLI
+
+Antigravity CLI reads workspace skills from `.agents/skills/`, so copy that folder into your project. To bring in the Gemini CLI extension instead, run `agy plugin import gemini`. This repo does not test that import. Check that the skills and the `katalon-prod-mcp` server appear after it runs. If the server is missing, add it with the Gemini CLI snippet above, then sign in through the browser.
 
 ### OpenCode
 
@@ -287,7 +292,7 @@ Each client picks its own transport value. Claude Code and Copilot use `http`. T
 
 ## Sources
 
-Checked 2026-10-20.
+Checked 2026-10-20. Release notes for Claude Code, Codex, Kiro, and Antigravity CLI reviewed 2026-11-16.
 
 - Claude Code: https://code.claude.com/docs/en/mcp
 - Codex: https://learn.chatgpt.com/docs/extend/mcp?surface=cli
@@ -299,6 +304,7 @@ Checked 2026-10-20.
 - Cline: https://docs.cline.bot/mcp/configuring-mcp-servers
 - Continue: https://docs.continue.dev/customize/deep-dives/mcp
 - Gemini CLI: https://geminicli.com/docs/tools/mcp-server/
+- Antigravity CLI: https://developers.googleblog.com/en/an-important-update-transitioning-gemini-cli-to-antigravity-cli/
 - OpenCode: https://opencode.ai/docs/mcp-servers/
 - Amp: https://ampcode.com/docs/customize/mcp
 - Zed: https://zed.dev/docs/ai/mcp

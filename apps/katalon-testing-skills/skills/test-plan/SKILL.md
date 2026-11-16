@@ -4,7 +4,7 @@ description: Plans Katalon True Platform (formerly TestOps) testing for a releas
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -20,6 +20,7 @@ Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__
 
 - **Available.** Resolve scope with `list_projects`, `list_repositories`, and `find_iterations`. Read coverage and risk with `fetch_requirement_metrics`, `fetch_test_configuration_metrics`, `fetch_test_stability_metrics`, `fetch_defect_metrics`, `find_requirements`, and `find_test_cases_by_requirement`. Check what exists with `search`, `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Build the structure with `manage_test_folder` and `manage_test_suite`. Read existing schedules with `list_schedule` and `read_schedule_detail`. Edit them with `update_schedule_configuration`. Read the team's conventions with `memory_list` and `memory_read` when they exist.
 - **Not available.** No tool creates a Release, a Build, a Test Plan, a release gate, or a suite collection. No suite field binds a suite to a sprint or release. A run can carry `release_id` and `sprint_id` (see `execute-test`). A suite cannot. If you need a link on the suite, put the iteration name in the suite name.
+- **Web UI follow-ups.** The web app has a schedule management page (opened from the History page of Executions) that lists automated schedules with search and filters. The Create Automated Test Run page has a bulk Configure action. Tick suites in its Selected Tests table to set the execution profile and configuration for all of them at once. A suite collection also gets a Run mode there (keep existing, parallel, or sequential). No MCP tool does these bulk edits. Tell the user to finish them in the UI.
 - **Another skill owns this.** Starting or scheduling a run is `execute-test`. It needs consent because runs use Katalon Test Execution - Cloud (formerly TestCloud) minutes.
 - **Team memory is optional.** `memory_list` returns the team's recorded conventions, such as naming, folder layout, and suite rules. Call it once at the start. Read matching records with `memory_read`, quote them, and follow them when they apply. Treat a body as the team's own words, never as a platform fact. If `available` is false, say that memory is unavailable. Do not infer that the team has no conventions. This skill never calls `memory_write` or `memory_forget` on its own. Both fire only when the user asks.
 

@@ -1,6 +1,6 @@
 ---
 name: Katalon Create Test Cases
-description: "Designs manual test cases from a synced requirement key such as CEL-6, a pasted requirement, or captured TrueTest sessions. Then creates, updates, and links them in Katalon True Platform (formerly TestOps) after a coverage and duplicate check. Use when a written requirement or real user behavior exists and cases do not. Not for unscripted exploration (exploratory-charter) or inventory cleanup (test-management). For the manual tester."
+description: "Designs manual test cases from a synced requirement key such as CEL-6, a pasted requirement, or captured TrueTest sessions. Then creates, updates, tags, and links them in Katalon True Platform (formerly TestOps) after a coverage and duplicate check. Use when a written requirement or real user behavior exists and cases do not. Not for unscripted exploration (exploratory-charter) or inventory cleanup (test-management). For the manual tester."
 alwaysApply: false
 ---
 
@@ -12,7 +12,7 @@ This skill covers test design and import: read a requirement, design cases, chec
 
 ## What the MCP can and cannot do
 
-- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases, manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
+- **Can:** list projects and repositories, find and read requirements, search the Knowledge Base (`search`), find/read/create/update/move/duplicate test cases (including tags, feature areas, and custom test types), manage folders and suites, read suite collections, link and unlink requirements (`manage_requirement_test_case_linkages`), read the team's saved conventions (`memory_list`, `memory_read`), and generate cases from TrueTest sessions or journey-map flows.
 - **Cannot:** create requirements (they sync from Jira or Azure DevOps), create a formal Test Plan entity, or inspect the live application.
 - **Test plan workaround:** create or reuse a named folder and suite as the executable planning structure.
 
@@ -65,20 +65,26 @@ Each case targets one validation condition (one acceptance line). It must still 
 ## Platform constraints
 
 - Test case names accept only letters, numbers, spaces, and `( ) . , _ -`. Keep `@`, `:`, and `/` out of titles. Put them in descriptions or steps. Folder paths may use `/`.
+- A name with `%` or `$` is rejected. Katalon AI once retried after a second approval and saved the name without those characters. Leave both out.
 - Test case names start with a letter or digit. `path` starts with `Test Cases` or `Test Cases/`.
 - Prefer `update_test_cases` over delete and recreate. `delete_test_case` is unreliable. Updating keeps IDs, links, and history.
+- `create_test_case` takes every writable field since 2026-11-05: tags, feature areas, custom test types, and linked requirement IDs. A new tag name is created on the fly. It does not take `linkedTestCaseIds`, `linkedRequirementKeys`, or `testFolderId`. Set the folder with `path`. Link a requirement key with `manage_requirement_test_case_linkages`.
+- A write can time out. `create_test_case` returned HTTP 504 under concurrent load. Do not assume the case was or was not created. Read back with `find_test_cases` before any retry.
+- A short prompt such as "detail 2 test case" can read as a create request. If the intent is ambiguous, ask whether the user wants to read or to create before you call `create_test_case`.
 - `create_test_case` with `test_case_type` `AUTOMATED` creates nothing. It returns the next action for script generation. Create manual cases only.
 - Suites reject a mix of MANUAL and AUTOMATED cases.
 - No tool looks up assignees or the signed-in user. Leave the assignee empty unless the user supplies a valid UUID.
 - A step that calls another case uses the step `action` object (`type` `call`, `test_case_id`, `version`). Never write it as a plain step named "Call test case 12".
 - `update_test_cases` with `UPDATE_CONTENT` replaces all steps. Send the complete step list and keep Call Test Case steps. Omit `context` or include `expectedResult`. Never send `context: {}`.
+- `update_test_cases` also sets or clears tags, feature areas, and custom test types, and `origin` is read-only. The action names for these lists are not in the confirmed contract. Read the tool schema before the first call and use only the actions it lists. Each list clears on its own, so send an empty list only to clear it.
+- Katalon AI and other agents can report an update that did not land. Never trust the call result alone. Read the case back.
 
 ## Check existing cases
 
 This step is mandatory before every create, including retries after a partial failure.
 
 1. If requirement IDs are known, call `find_test_cases_by_requirement`. Pass exactly one of the requirement identifiers it accepts.
-2. Search with `find_test_cases` by requirement key, title keywords, feature area, and target folder.
+2. Search with `find_test_cases` by requirement key, title keywords, feature area, tags, custom test type, and target folder. The `tags` and `customTestTypes` filters take name lists. An unknown name returns an error that lists the valid names and runs no search. The name filter takes an array, so send `name =in= ["logout","log out"]`. A comma-joined string matches nothing.
 3. Run `search` with `types: ["test_case"]` and `include_documents: false` for the same wording. It finds cases that keyword filters miss. Judge "exists" by the result tier (exact or strong), never by score alone. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves that a case is absent. Cases created in the last few minutes may not be searchable yet, so hedge any absence claim.
 4. Read likely matches with `read_test_cases` (`content_type` `FLOW` for steps) when the title alone cannot settle coverage. A `search` hit gives a title and ref only.
 5. Reuse, update, move, or link existing cases that already cover the behavior.
@@ -97,9 +103,13 @@ Follow `references/write-policy.md`. One write set gets one confirmation. For mo
    2. `update_test_cases` for revisions. Put every change to one case in one call: actions run in order, so separate calls for one case race. Each item is `{action, test_case_data: {id, ...}}` with one action per field (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, `UPDATE_CONTENT`). `repository_id` is required.
    3. `manage_requirement_test_case_linkages` with `action` `link`, `requirement_ids`, `test_case_ids`, and `project_id`, only after the requirement IDs are known. The call is many-to-many and runs per requirement in parallel. A partial failure leaves some requirements updated, so read back with `find_test_cases_by_requirement`.
    4. `manage_test_folder` or `move_test_case` when organization was requested or is clearly needed.
-4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Compare the result with the plan. Report any mismatch.
+4. **Read back.** Call `read_test_cases` with `content_type` `FLOW` for created and updated cases. Add `include_attributes` to check tags, feature areas, custom test types, author, and assignee (the assignee comes back as a UUID only). Compare the result with the plan. Report any mismatch. After a timeout, read back with `find_test_cases` before you retry.
 
 Case shape: title, description, pre-condition, steps, expected results, test data, priority, requirement links.
+
+## Agent rules and Call Test Case steps
+
+Katalon AI drafts add a Call Test Case step at step 1 when an agent rule names a shared flow such as a login case (since the 2026-11-05 release). An explicit call in the prompt wins over the rule. When you draft by hand and a rule names a shared flow, write the step as a call action and read the target case first with `read_test_cases`. Check for a duplicate call step before you write. Known gaps are in `references/agent-rule-calls.md`.
 
 ## Suites
 
@@ -120,7 +130,7 @@ State what was reused, updated, created, linked, and left uncovered. Name the ri
 ## Hand-offs
 
 - Unscripted discovery first: `exploratory-charter`.
-- Values, fixtures, and cleanup for the cases: `test-data`.
+- Values, fixtures, cleanup, and datasets for the cases: `test-data`.
 - Inventory hygiene and traceability audits: `test-management`.
 - Running the cases: `execute-test`.
 
@@ -130,6 +140,35 @@ State what was reused, updated, created, linked, and left uncovered. Name the ri
 
 _The reference material the skill points to is inlined below so this file is self-contained._
 
+
+### references/agent-rule-calls.md
+
+# Agent rules and Call Test Case steps
+
+Read this when a project agent rule names a shared flow, or when a generated draft carries a call step you did not ask for.
+
+## What happens
+
+An agent rule is a project rule that an admin sets on the Agent Rules screen. Read the rules with `memory_list` and `memory_read`. A rule can say "start every case with the login case".
+
+Since the 2026-11-05 release, a Katalon AI draft gets one Call Test Case step at step 1 when such a rule applies. The step is a call action that points at the shared case, not a plain step. If the prompt names a call itself, the prompt wins over the rule.
+
+## Known gaps
+
+These were open on 2026-11-13. Check for them in every draft.
+
+- A rule that points at a case that does not exist still produces calls to it. The draft can say the rule was applied when the target returns not found.
+- A rule that names a case by title only can match the wrong search hit. One draft called the wrong case twice.
+- A requirement prompt with a very large attachment (about 2.5 MB) returned a backend timeout twice. Shrink the attachment or paste the text that matters.
+
+## Rules for the agent
+
+1. Before you write a call step, read the target case with `read_test_cases`. If it is missing, stop and tell the user. Do not write a call to a case you could not read.
+2. Match a case by its ID, not its title.
+3. Count the call steps in the draft. One shared flow gets one call step.
+4. When you edit steps later, keep every call step. `UPDATE_CONTENT` replaces all steps and a replacement that drops a call is rejected.
+5. To remove a call step on purpose, use `REMOVE_STEPS` with the step number if your tool schema lists it. It needs one approval. If the schema does not list it, send the full remaining step list with `UPDATE_CONTENT` and name the removed call in the preview.
+6. A rule is a team convention. Quote it. Do not present it as a platform fact.
 
 ### references/bulk-write-plan.md
 
@@ -184,7 +223,7 @@ Run every check before you ask for confirmation. Fix the plan, then re-run.
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Notes were reviewed against release notes through 2026-11-16, live re-capture pending. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -203,6 +242,7 @@ Requirements and ALM
 
 Test cases, folders, suites
 - `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- Tags, feature areas, and custom test types are writable on create and update, and `find_test_cases` filters by tag and custom test type. Check your tool list for the exact parameters.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
@@ -248,7 +288,11 @@ Team memory (Kai)
 - Look up another user to set an assignee.
 - Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Author release gates, custom field definitions, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI. Writing agent rules is not available through the MCP. Tags and custom test types on a test case are writable (see Available).
+- Datasets and data binding for manual cases. The tools for them are not in production tool lists yet. If your tool list shows dataset tools, use them. Otherwise use the web UI.
+- Bulk Configure for suites and collections (execution profile and configuration for many selected tests). Build one run at a time with `build_run_configuration` and `create_test_run`.
+- The Manage Automated Schedule page. `list_schedule`, `read_schedule_detail`, and `update_schedule_configuration` cover schedule data. Use the UI for the page itself.
+- Report filters in the Test Results Analysis report (source, profile, and more filters). Use the UI.
 - Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
@@ -261,9 +305,18 @@ Team memory (Kai)
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
 - Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
 - `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. The web dialog has opened with Separate selected since 2026-10-29, but the MCP call still takes the user's answer.
+- The Run with AI environment comes from an organization allow-list, and it governs the web UI and the MCP start alike. With no allow-list set, hosted AI runs Linux Chrome only. An organization can allow the full picker or a named list of environments. Windows and macOS need a Test Execution - Cloud (formerly TestCloud) desktop licence. A beta browser build is replaced by the newest stable one. Do not promise an environment before the run dialog or the start result shows it.
 - `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
 - `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
+- `create_defect` files a real Jira or Azure DevOps ticket. Never test it on a customer integration. Jira integrations whose bug type has its own ID, and company-managed Jira projects with a required custom field, work since the November 2026 releases. Report Defect with attachments on a manual result can still fail the filing. The fix lands in the 2026-11-18 release. Before that date, expect a possible failure and tell the user.
+- A 403 or "access denied" does not prove a permission problem. It can mean the requested environment, browser version, or dataset value is not available. Check the requested values first.
+- A write that times out (HTTP 504 or BACKEND_TIMEOUT) can still land or not. Read back with the matching find tool before any retry. Never create a duplicate to replace a write that may have landed.
+- Protected MCP calls return an error envelope with a `code`, a `message`, and a `retry` hint. Handle the codes this way:
+  - CREDENTIAL_REJECTED: the stored credential was rejected. The user fixes it on the API key settings page. Do not retry.
+  - BACKEND_TIMEOUT: the backend was too slow. A write may have landed. Read back first.
+  - BACKEND_UNAVAILABLE (HTTP 502, 503, 504): retry a read once, later. Read back before you retry a write.
+  - BACKEND_SERVER_ERROR: report it. Read back before you retry a write.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
 - `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
@@ -565,6 +618,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

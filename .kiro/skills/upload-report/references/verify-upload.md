@@ -35,6 +35,10 @@ Do not use `list_execution_outputs` here. It uses TestCloud string IDs, which up
 
 For JUnit, compare failed plus errored together. A test can sit under a different failure class on the platform than in the XML.
 
+## Repeat uploads
+
+A repeat upload of the same test-reports batch (same finished batch, same file list) can return HTTP 200 and store nothing. This is a known gap as of November 2026. The upload step then looks successful and no new execution appears. Treat that as unverified. Upload again with new or changed files, or report that the platform holds no new run.
+
 ## Link
 
 Use the link the upload tool returned. If none came back, take the link from the read tools. Their `resource_url` host can fail for `.katalon.io` tenants. If so, build the link from the tenant host the user uses, and say it is a built link.

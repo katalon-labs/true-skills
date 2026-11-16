@@ -16,7 +16,7 @@ The Katalon MCP can count the work. It cannot measure the effort. Tool names are
 
 - **Available.** Case and suite counts: `find_test_cases` (its COMMON filter queries `testType` and `automationStatus`), `read_test_suite`, `find_test_cases_by_requirement`. Uncovered requirements: `fetch_requirement_metrics`. Automated and manual split, and execution statistics: `fetch_test_case_metrics`. Failure and flake burden: `fetch_test_stability_metrics`, `find_test_results`. Configuration matrix: `fetch_test_configuration_metrics`. Cycle window: `find_iterations`. Existing automated cadence: `list_schedule`, `read_schedule_detail`. A past execution: `list_executions`, `read_execution`, and `find_test_results` with filter_type `EXECUTION`.
 - **Not available.** How long a person takes. No tool books effort against a case, a run, or a person. A manual run's open and close times are calendar time, not work. The platform also holds no roster, capacity, PTO, calendar, rate, cost model, or field for the estimate, and no cross-cycle average.
-- **Looks like data and is not.** Session concurrency. `list_test_cloud_environments`, `find_execution_profiles`, and `list_test_cloud_agents` list environments, profiles, and agents. The docs do not show a parallel-session limit in them. Tag concurrency as team-supplied.
+- **Looks like data and is not.** Session concurrency. `list_test_cloud_environments`, `find_execution_profiles`, and `list_test_cloud_agents` list environments, profiles, and agents. The docs do not show a parallel-session limit in them. Tag concurrency as team-supplied. In the web app, the Run with AI parallel default follows the number of selected cases. The effective maximum is an organization and licence setting, and the dialog shows it. There is no fixed cap to quote. Ask the team, or read the number the dialog shows.
 - **Field check.** Read one execution with `read_execution` and confirm that an elapsed-time field exists before you model on it. If it is absent, ask for the figure and tag it team-supplied. A missing field is never zero.
 
 Every per-unit rate is team-supplied. Tag each one in the output. See `references/mcp-evidence-map.md` for the signal map and the checklist of questions for the human.
@@ -316,7 +316,7 @@ None of these exist in the platform. Ask for each one the chosen buckets need. R
 
 ## Things that look like MCP facts and are not
 
-- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team.
+- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team. For Run with AI, the parallel default follows the selected case count and the effective maximum is an organization and licence setting that the run dialog shows. Take it from the dialog or the team.
 - **A manual run's duration.** Open and close times are calendar time. A run left open over a weekend is not a weekend of work.
 - **Production traffic, change frequency, and defect rates.** No tool returns them. If the human supplies them from TrueTest, an analytics product, or Jira, use them and cite the source.
 

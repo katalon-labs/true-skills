@@ -4,7 +4,7 @@ description: Converts Katalon True Platform manual test cases into Katalon Studi
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server, network access, and a local Katalon Studio Test Project checkout. Running from the command line also needs a Katalon Test Execution - Local licence and a Java runtime.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -119,6 +119,7 @@ Studio has no page-object classes. `Object Repository/` is the equivalent layer,
 - Use test case variables for anything the manual case parameterizes, with a safe `<defaultValue>`. Use `GlobalVariable` for environment values that come from a profile.
 - Use `setEncryptedText` only when the source value is Katalon-encrypted. Use `setText` otherwise. Mark a credential variable `<masked>true</masked>`.
 - Put shared logic in `Keywords/` as a Groovy class with `@Keyword` methods, and call it through `CustomKeywords`. See `references/groovy-authoring.md`.
+- Studio 11.6 and later add author and last-modified metadata to each `.tc`. Keep it when you edit a file. Do not hand-write it. See `references/studio-project-anatomy.md`.
 - Keep one Studio case aligned to one platform case unless the project groups scenarios differently.
 - Do not invent credentials, URLs, record IDs, account state, or selectors. Ask, or leave one narrow TODO that names the missing value.
 

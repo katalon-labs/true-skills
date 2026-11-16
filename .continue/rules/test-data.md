@@ -1,6 +1,6 @@
 ---
 name: Katalon Test Data
-description: "Designs the data a Katalon True Platform (formerly TestOps) test case runs on. Covers which values and records a case needs, keeping literals and credentials out of steps, and how to seed and reset state for manual and automated lanes. Use when the steps are settled and values, fixtures, or cleanup block the run. Not for writing steps (create-test-cases) or code (test-case-to-playwright). For the manual tester and the automation tester."
+description: "Designs the data a Katalon True Platform (formerly TestOps) test case runs on. Covers which values and records a case needs, Datasets in the web UI, keeping literals and credentials out of steps, and how to seed and reset state for manual and automated lanes. The MCP has no confirmed test data tool; dataset tools are not in production tool lists yet. Use when the steps are settled and values, fixtures, or cleanup block the run. Not for writing steps (create-test-cases) or code (test-case-to-playwright). For the manual tester and the automation tester."
 alwaysApply: false
 ---
 
@@ -14,16 +14,17 @@ One artifact serves both lanes. Call it the data contract: what must exist, whic
 
 ## What the MCP can and cannot do
 
-Three different things in the Katalon world are called "test data". The MCP reaches only one of them.
+Four different things in the Katalon world are called "test data". The MCP reaches only one of them, the case body. Datasets are web UI only until the dataset tools reach production tool lists.
 
 - **Can:** resolve scope (`list_projects`, `list_repositories`), read the requirement the data must satisfy (`find_requirements`, `read_requirement`), find the cases (`find_test_cases`, `find_test_cases_by_requirement`, `search`, `read_test_cases`), write the Pre-condition and the per-step Test Data column (`create_test_case`, `update_test_cases`), read the target environment (`read_auts`), read the team's saved data conventions (`memory_list`, `memory_read`), and group data-dependent cases (`manage_test_folder`, `find_test_suites`, `read_test_suite`, `manage_test_suite`).
 - **Cannot, at all:**
   - **Test-data entities.** A standalone Test Data object (CSV, Excel, internal, database) is a Katalon Studio desktop artifact. The MCP does not create, read, or bind it.
-  - **Secrets and variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings, Configurations, Secrets & Variables. Steps reference them as `{KEY}`. They apply to cloud-hosted execution only and are scoped to the project. No tool reads or writes them.
+  - **Datasets.** A dataset is a table of rows that a manual case binds to in the web UI. No tool in the confirmed contract reads or writes one. Read `references/datasets.md` before you plan a data-driven manual case.
+  - **Secrets and variables.** Project `SECRET` and `VAR` entries live in the platform UI under Settings, Configurations, Secrets & Variables. Steps reference them as `<<KEY>>`. They apply to cloud-hosted execution only and are scoped to the project. No tool reads or writes them.
   - **Seeding, teardown, database access, or API calls.** Nothing in the MCP creates or destroys application state.
   - **Requirement creation.** Requirements sync from Jira or Azure DevOps. Create them there, then find and link.
-- **Do not invent tools.** No tool exists for test data, fixtures, secrets, seeding, environment reset, or database queries. When a workflow seems to need one, use the workaround below and state the boundary.
-- **Run with AI reads the case body only.** Data that is missing from the Pre-condition and the Test Data column never reaches the AI runner. The placement rule below follows from this.
+- **Do not invent tools.** No confirmed tool exists for fixtures, secrets, seeding, environment reset, or database queries. Eight dataset and vault parameter tools are announced but are not in every tool list yet (`find_datasets`, `manage_dataset`, `read_test_case_data`, `manage_test_case_data`, `find_vault_params`, `manage_vault_params`, `find_run_iterations`, `update_run_iteration`). Use one only if your tool list shows it. Otherwise use the web UI. When a workflow seems to need any other tool, use the workaround below and state the boundary.
+- **Run with AI reads the case body and, on a dataset-bound manual case, one dataset row per session.** Data that is missing from the Pre-condition, the Test Data column, and the bound dataset never reaches the AI runner. The placement rule below follows from this.
 - **Workaround, the data contract that needs no missing tool:**
   - Manual lane: the Pre-condition plus the per-step Test Data column (`context.data` on each step), written with `update_test_cases`.
   - Automation lane: a checked-in fixture or factory, plus the seed command named in the case Pre-condition so both lanes start from the same state.
@@ -59,10 +60,10 @@ Concrete values do not belong in step text or in a spec file. They belong in a n
 
 | Data | Manual lane | Automation lane |
 |---|---|---|
-| Values the step consumes | per-step Test Data column | typed fixture or factory module |
+| Values the step consumes | per-step Test Data column, or a dataset column when one case runs on many rows | typed fixture or factory module |
 | State that must pre-exist | case Pre-condition, with the seed command named | `globalSetup` or a fixture that creates it |
 | Environment or AUT URL | Pre-condition, or the AUT environment from `read_auts` | config or env var, never a literal in a spec |
-| Credentials and tokens | `{KEY}` reference to Secrets & Variables | environment variable, never checked in |
+| Credentials and tokens | `<<KEY>>` reference to Secrets & Variables | environment variable, never checked in |
 | Cleanup | an explicit reset step in the Pre-condition or final step | teardown in the fixture that created the state |
 
 Two rules follow from it.
@@ -74,10 +75,10 @@ Two rules follow from it.
 
 This rule is hard.
 
-- Never write a password, token, API key, cookie, JWT, or MFA code into a step, a Test Data column, a fixture file, a Pre-condition, or the chat.
-- Reference a platform secret as `{KEY}`. Tell the human to create it in Settings, Configurations, Secrets & Variables. That page is UI-only.
+- Never write a password, token, API key, cookie, JWT, or MFA code into a step, a Test Data column, a dataset, a fixture file, a Pre-condition, or the chat. Dataset values show in step titles, the AI log, and row labels.
+- Reference a platform secret as `<<KEY>>`. Tell the human to create it in Settings, Configurations, Secrets & Variables. That page is UI-only.
 - In code, read from an environment variable. Commit only the variable name.
-- If a user pastes a real credential, do not store it in a case or a file. Ask them to add it as a secret and use the `{KEY}` reference.
+- If a user pastes a real credential, do not store it in a case or a file. Ask them to add it as a secret and use the `<<KEY>>` reference.
 - Production clones carry real people's data. Mask or synthesize identifying fields before anything goes into a case, a fixture, or a report. Details are in `references/data-design.md`.
 
 ## Seed and teardown
@@ -167,7 +168,7 @@ Manual lane: TC-2101, TC-2102, TC-2103 updated after your confirmation. Pre-cond
 Automation lane: fixtures/loyalty-data.ts creates and tears down the shopper in one factory.
 Credentials: LOYALTY_PASSWORD referenced as {LOYALTY_PASSWORD} and as an env var. Not stored in any case or file.
 Second-run check: pending. Run the suite twice with no reset between runs before trusting these cases.
-Boundary: the Katalon MCP has no test-data, seeding, or secrets tool. {LOYALTY_PASSWORD} must be created by hand
+Boundary: the Katalon MCP has no confirmed test-data, seeding, or secrets tool. {LOYALTY_PASSWORD} must be created by hand
   in Settings, Configurations, Secrets & Variables, which is UI-only and applies to cloud-hosted runs only.
 ```
 
@@ -183,12 +184,13 @@ Boundary: the Katalon MCP has no test-data, seeding, or secrets tool. {LOYALTY_P
 
 - No cases exist yet: `create-test-cases`, then come back for the data.
 - Turning the case into code, where the fixture lives: `test-case-to-playwright`.
+- Running a dataset-bound case with AI: `execute-test`.
 - Running the cases once the data exists: `execute-test`, or `playwright-execute` for the coded lane.
 - A red run that may be a data problem: `analyze-failures`. It routes environment and data failures back here.
 - Cases that keep breaking on stale data: `test-maintenance`.
 - Scoping the cycle before any of this: `test-plan`.
 
-Read `references/data-design.md` before deriving data classes or choosing a strategy. Read `references/seed-and-teardown.md` before writing any seed or teardown.
+Read `references/data-design.md` before deriving data classes or choosing a strategy. Read `references/seed-and-teardown.md` before writing any seed or teardown. Read `references/datasets.md` when one manual case must run on many rows of values.
 
 ---
 
@@ -248,7 +250,7 @@ A step that reads `Enter the loyalty email` survives a data change. A step that 
 
 Credentials are not test data and never live with it.
 
-- Platform secrets live in Settings -> Configurations -> Secrets & Variables and are referenced as `{KEY}`. The page is UI-only; the MCP has no tool for it, and secrets apply to cloud-hosted execution only.
+- Platform secrets live in Settings -> Configurations -> Secrets & Variables and are referenced as `<<KEY>>`. The page is UI-only; the MCP has no tool for it, and secrets apply to cloud-hosted execution only.
 - Code reads credentials from environment variables. Commit the variable name, never the value.
 - Never paste a password, token, cookie, JWT, or MFA code into chat, a case, or a file, and never ask a user to.
 
@@ -265,6 +267,67 @@ Run this before declaring a data design done.
 - [ ] Every seed has a teardown written at the same time.
 - [ ] The design says which environment it targets, and it is not production.
 - [ ] The boundary pair produces different expected outcomes; if the just-below and at-the-boundary values are expected to reach the same result, the values do not exercise the boundary.
+
+### references/datasets.md
+
+# Datasets
+
+Read this when one manual case must run on many rows of values. A dataset is a named table of rows and columns in a project. A manual case binds to one dataset. The platform runs the case once per row.
+
+## What is available where
+
+| Surface | Status |
+|---|---|
+| Web UI | Live in production since 2026-11-05. |
+| Katalon AI chat (Kai) | Works on datasets. Some bound-case bugs were still open in mid November 2026. |
+| MCP | Eight tools are announced and are not in every tool list yet. Use one only if your tool list shows it. Otherwise use the web UI. |
+
+The eight names are `find_datasets`, `manage_dataset`, `read_test_case_data`, `manage_test_case_data`, `find_vault_params`, `manage_vault_params`, `find_run_iterations`, and `update_run_iteration`. These names are not in every tool list yet. When they appear, read each schema before the first call. Vault parameter values are never returned by any of them.
+
+Datasets bind to manual cases only. An automated case keeps its data in the fixture (see `seed-and-teardown.md`).
+
+## Create a dataset in the web UI
+
+1. Open Tests, then Datasets in the project. The list shows name, description, rows, columns, and linked test cases. It has a search box.
+2. Choose New dataset. Give it a name and an optional description. A name takes Unicode letters, digits, and underscores, up to 64 characters, with no leading digit.
+3. Open the dataset. Add columns and rows by hand, or choose Import CSV.
+4. Import CSV has three steps: upload, field mapping, preview. The preview offers merge or replace. Import saves at once.
+5. Export CSV downloads the rows.
+
+Import limits:
+
+- 1000 rows and 50 columns at most.
+- There is no partial column import. A file with more than 50 columns does not import its first 50. Cut the columns first.
+- The upload does not reject a file that is not CSV. Check the file before you upload.
+- The mapping step maps each CSV column to a dataset column name. Check the names there before you import.
+
+## Bind a case to a dataset
+
+1. Write the step text with `<<column_name>>` placeholders where a value goes. Put them in the step, the test data, or the expected result.
+2. Open the case, then the DATA tab. The Variables table lists each placeholder with where it resolves from. An unlinked placeholder reads Unresolved.
+3. Choose the dataset in the Select a dataset field and choose Link. The tab then shows the iteration count and the rows. Unlink removes the binding.
+4. A placeholder that matches no dataset column and no vault parameter shows a warning on the DATA tab.
+
+Rules and gotchas:
+
+- Secrets stay in vault parameters (Secrets & Variables), not in dataset columns. A placeholder that names a vault parameter resolves at run time and its value is never returned. Without a linked dataset it shows as a raw chip on the DATA tab.
+- Dataset values display as plain text. A value such as `<b>x</b>` shows literally.
+- Link on a case that other cases call showed only a warning and did not link when captured on 2026-11-06. Check the DATA tab after you link.
+- An unresolved placeholder fails its row with `Parameter not found: <name>`. The DATA tab and the Run with AI dialog show no warning for it. The dataset page does. Check the placeholders before you run.
+
+## Runs on a bound case
+
+- Run with AI starts one AI session per data row. The AI SESSIONS tab shows the rows. The single-case Run with AI dialog does not show the row count, so state the row count to the user before you ask for consent. Each row uses Test Execution - Cloud minutes.
+- A manual run in the run player steps through the rows. Each row takes its own verdict. A row with no verdict becomes Skipped when the run ends.
+- The run Tests tab has Iterations and Dataset columns. The end-of-run summary counts cases, not rows. Re-run options work at case level.
+- A 403 or "access denied" on a data call is not proof of a permission problem. It can mean that a requested value or environment is unavailable. Check the values first.
+
+## Design rules for the data
+
+- One dataset row is one data class from the design step in `SKILL.md`. Name the class in a column such as `scenario`.
+- Put the expected value in a column too (`expected_each`). The step compares against `<<expected_each>>`, so the oracle travels with the row.
+- Keep a dataset small enough to read. A row that nobody can explain is a row nobody can debug.
+- Never put a real person's data in a dataset. Mask or synthesize it.
 
 ### references/seed-and-teardown.md
 
@@ -409,6 +472,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

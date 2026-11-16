@@ -42,6 +42,8 @@ Extract for each case:
 - AUT URL, roles or accounts, environment, browser or device assumptions, and cleanup needs.
 - Selectors or business data that need human input.
 
+A Git-backed Playwright repository shows in Test Cases as folders that the web app treats as read-only for create, move, and rename (since November 2026). The spec files live in git. Do not try to create, move, or rename those cases in the platform. Whether `manage_test_folder` accepts a Git-backed repository is unverified. Do not rely on it.
+
 `create_test_case` with `test_case_type` `AUTOMATED` creates nothing and returns the next action for script generation. Do not use it to register the generated spec. This skill reads the platform and writes only local files.
 
 ## Framework Resolution

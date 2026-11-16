@@ -4,7 +4,7 @@ description: Runs a Playwright test or suite, uploads the report to Katalon True
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. Also needs Node.js 18 or later, @playwright/test, and @katalon/playwright-reporter.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -53,6 +53,8 @@ Resolve each value from the repo or environment first. Ask only for what is miss
 4. Check `@katalon/playwright-reporter` is installed. Install it only when the user allows dependency changes. Read `references/write-policy.md` first.
 5. Check the report `outputDir` is fixed, preferably `./reports`.
 6. Show every command with secrets hidden.
+
+A Git-backed Playwright repository linked to the project shows in Test Cases as read-only folders (no create, move, or rename in the web app, since November 2026). The specs are the test of record. Change them in git, not in the platform.
 
 Read `references/playwright-katalon-reporting.md` before you edit config or write an upload command.
 

@@ -4,7 +4,7 @@ description: Assesses whether a Katalon True Platform (formerly TestOps) release
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -22,6 +22,7 @@ State the MCP boundary before you promise an assessment.
 
 - Available through the Katalon MCP: project and repository discovery, iterations, requirements, test cases, suites, executions and results, metrics on requirements, test cases, defects, and configurations, stability metrics, and the defects linked to results, cases, and executions.
 - Not available: creating a formal Test Plan entity, inspecting the live AUT UI, guaranteeing that a Run with AI session completes, a count of reopened defects or release-blocking flags (take them from the tracker), and judging product or business readiness beyond test evidence.
+- Web UI only: Release Health, Analytics and Trends, and Test Results Analysis. No MCP tool reads them. Point the person to them for a visual check. Analytics and Trends and Live Monitor take a multi-project filter (since late October 2026). Select All on a very large number of projects can leave widgets blank. Pick the projects instead.
 - If MCP tools are unavailable, give only a framework and mark confidence Low until data is verified.
 
 Read `references/capability-boundaries.md` when capability scope is unclear.

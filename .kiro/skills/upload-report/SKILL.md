@@ -4,7 +4,7 @@ description: Uploads finished Katalon Studio, JUnit XML, or Playwright reports t
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. Uploads also need Java (Report Uploader), the Katalon CLI (Studio reports), or Node.js 18 or later (Playwright reporter), by report type.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -21,6 +21,9 @@ MCP clients can add a prefix to tool names (Claude Code uses `mcp__<server>__<to
 - Katalon Test Execution - Local (formerly KRE) runs Studio suites. With an API key, organization ID, and project ID set, it uploads results by itself.
 - Report Uploader sends Studio and JUnit reports. Its `type` values are `katalon`, `junit`, and `katalon_recorder`.
 - `@katalon/playwright-reporter` uploads Playwright data during `npx playwright test`, or later with `playwright-reporter upload`.
+
+- A repeat upload of the same test-reports batch (same finished batch, same file list) can return HTTP 200 and store nothing. As of November 2026 the fix is not shipped. A 200 is not proof. Verify that the run appears (see below). To upload again, send new or changed report files.
+- Katalon Test Execution - Local (formerly KRE) takes `-retry=<n>` and `-retryStrategy`. See `references/cli-report-upload.md`.
 
 Read `references/capability-boundaries.md` when tool availability is unclear. Read `references/cli-report-upload.md` before you write any command. Read `references/write-policy.md` before an install, a download, or an upload.
 

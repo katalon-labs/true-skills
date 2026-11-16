@@ -58,6 +58,6 @@ None of these exist in the platform. Ask for each one the chosen buckets need. R
 
 ## Things that look like MCP facts and are not
 
-- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team.
+- **Session concurrency.** `list_test_cloud_environments` lists environments. `find_execution_profiles` lists profiles. `list_test_cloud_agents` lists agents. The docs do not show a parallel-session limit in any of them. Ask the team. For Run with AI, the parallel default follows the selected case count and the effective maximum is an organization and licence setting that the run dialog shows. Take it from the dialog or the team.
 - **A manual run's duration.** Open and close times are calendar time. A run left open over a weekend is not a weekend of work.
 - **Production traffic, change frequency, and defect rates.** No tool returns them. If the human supplies them from TrueTest, an analytics product, or Jira, use them and cite the source.

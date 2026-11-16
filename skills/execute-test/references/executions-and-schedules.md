@@ -1,6 +1,6 @@
 # Executions, schedules, rerun
 
-Read this when you must find a run, read or edit a schedule, or rerun an execution. Parameters follow the live tool schemas captured 2026-10-20.
+Read this when you must find a run, read or edit a schedule, or rerun an execution. Parameters follow the live tool schemas captured 2026-10-20. Web UI facts follow the product as reviewed 2026-11-16.
 
 ## Two ID spaces
 
@@ -11,6 +11,8 @@ Read this when you must find a run, read or edit a schedule, or rerun an executi
 | `list_execution_outputs` | TestCloud string `execution_id` | Without an ID: the last 5 executions in 24 hours. With an ID: artifact URLs. Use `download_offset` to page. |
 
 No tool converts one ID into the other. Do not pass a numeric ID to `list_execution_outputs`. Do not pass a string ID to `read_execution`.
+
+A manual run has more IDs. See "Four IDs" in `testpak-and-run-with-ai.md`.
 
 ## Find a run
 
@@ -32,6 +34,17 @@ No tool converts one ID into the other. Do not pass a numeric ID to `list_execut
 
 To create a schedule, build it with `build_schedule` and pass it in `schedule` of `create_test_run` with `mode: "automated"`.
 
+### Two schedule pages in the web UI
+
+The word schedule names two different pages. Send the user to the right one.
+
+- Manage Automated Schedule is a button at the top right of Executions History. It opens the schedule list: search by name, filter by Status (Active or Inactive), Repository and Next Run From, and a Create button. This is the page behind `list_schedule` and `update_schedule_configuration`.
+- The SCHEDULE tab next to RUN is a calendar-style list of runs grouped by date. It shows runs, not schedules.
+
+### A schedule that did not run
+
+If the schedule owner is no longer a member of the project, the platform skips the run before it starts. No run, execution or job is created, so `list_executions` shows nothing. The owner gets a notification that the scheduled run failed to start and was disabled. The schedule turns inactive after the first failed trigger. It stays inactive when the owner is added back. When a user says an expected run never appeared, read the schedule with `read_schedule_detail`, check its status and owner, and say so. Ask the user before you change the owner or set the schedule active again.
+
 Update steps:
 
 1. Call `list_schedule`, then `read_schedule_detail` for each target.
@@ -48,3 +61,15 @@ Update steps:
 - A rerun uses Katalon Test Execution - Cloud minutes. Show a preview and get a yes first.
 - Never rerun an unchanged failing test only to get a green result. A rerun that passes after a failure is a flaky result. Report it as flaky.
 - After the call, find the new execution with `list_executions` and read its results.
+
+## Bulk Configure and collection Run mode
+
+These are web UI follow-ups. No MCP tool edits them, and `build_run_configuration` with `create_test_run` configures one run.
+
+- On the Create Automated Test Run page, tick suites in the Selected Tests table. A Configure button opens "Edit selected test(s)". It sets the Execution profile and the Configuration (desktop and mobile browser, mobile native app, web services) for every selected suite at once. Save stays disabled until something changes.
+- When the selection holds collections, the collections tab adds Run mode: Keep existing (the default), Parallel or Sequential. The value applies to every selected collection only when the user changes it. Save stays disabled with only a configuration ticked and Run mode on Keep existing.
+- A suite with a Playwright profile shows fewer Advanced Settings. Only Private/Local Testing and Time-out remain.
+
+## Retries in Additional KRE Arguments
+
+Pass retries in `additional_kre_arguments` as `-retry=<n>` with `-retryStrategy=immediately`, `failedExecutions` or `allExecutions`. Standalone mode passes both to the Katalon Runtime Engine. True Parallel mode ignores a user `-retryStrategy`. The count then comes from the user's `-retry`, otherwise from the suite, and the strategy is `immediately` when retries exist. A suite that already sets a retry plus a user `-retry` can duplicate the argument and hang the run. Read the suite's retry setting first. A test that passes only on a retry is a flaky result. Report it as flaky.

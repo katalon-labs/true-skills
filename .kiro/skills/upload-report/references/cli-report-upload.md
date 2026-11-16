@@ -10,6 +10,14 @@ Read this before you write a command to run tests, upload a report, or confirm a
 - Keep the report folder fixed so you can find the output after the run.
 - Confirm the import with the steps in `references/verify-upload.md`.
 
+### Retries
+
+- Katalon Test Execution - Local (formerly KRE) accepts `-retry=<n>` and `-retryStrategy=immediately|failedExecutions|allExecutions`.
+- In the web app, the Additional KRE Arguments field of an automated run passes these on (shipped late October 2026; issue-verified, not live-checked).
+- In True Parallel mode, a user `-retryStrategy` is ignored. The count comes from the user's `-retry`, otherwise from the suite file, and the strategy is `immediately` when retries exist.
+- Do not set a retry count in the suite and also pass `-retry` with `-retryStrategy`. The count can be duplicated and the run can hang. Set the retry in one place.
+- A test that passes only on retry is flaky. Report it as flaky.
+
 ## JUnit reports
 
 Use Report Uploader for existing JUnit XML, or for a folder that holds it.

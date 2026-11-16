@@ -73,6 +73,8 @@ Rules:
 
 - `list_schedule` finds saved schedules by name. `read_schedule_detail` reads one. Use them to learn whether the scope already runs on a timer.
 - `update_schedule_configuration` edits existing schedules. It is a write. Preview the change, get one confirmation, and call it once with every target schedule in one `updates` array and only the settings the user asked for. Never infer `timeZone`. Ask for the IANA zone. `startTime` must be in the future.
+- The web app has a schedule management page for automated schedules. It opens from the History page of Executions. It lists schedules with search, status, repository, and next-run filters. Use it when the user wants to browse or create schedules by hand. The Schedule tab is a separate calendar list.
+- Bulk Configure is a web UI action. On the Create Automated Test Run page, tick suites in the Selected Tests table. It sets the execution profile and configuration for the chosen suites. On a collection it also sets the run mode. `build_run_configuration` and `create_test_run` configure one run. No MCP tool bulk-edits a suite. Name it as a UI follow-up in the plan.
 - A new schedule is created with `create_test_run` in automated mode plus a schedule from `build_schedule`. That belongs to `execute-test` and needs execution consent.
 - `find_test_suite_collections` reads collections. Fetch the details with the chosen `collection_id` before a collection run, because `execute-test` passes the returned `testSuiteEntries` to `create_test_run`. No tool creates or edits one. If the plan needs a new collection, tell the user to create it in the True Platform UI.
 

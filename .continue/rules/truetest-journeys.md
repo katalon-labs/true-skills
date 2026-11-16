@@ -15,6 +15,7 @@ The `true-platform-testing` skill routes end-to-end requests here. Katalon True 
 ## Availability boundary
 
 - **Can:** list the linked TrueTest applications and their tracking environments. Search captured sessions and read one session. Search and read journey maps. Start a journey map build and poll it. Queue case generation from sessions or from one flow.
+- **Not in every tool list yet:** gap analysis between two journey maps (`create_truetest_journey_map_gap_analysis`, `get_truetest_journey_map_gap_analysis`). Use them only if your tool list shows them. Otherwise use the web gap analysis flow and say so. Read `references/journey-maps.md` before you call either.
 - **Cannot:** drive the live application or prove that a flow works today. Read sessions older than the 31-day search window. Edit, archive, approve, or retry a journey map. Cancel a queued job. Create requirements.
 - **A session shows what users did, not what is right.** Generated cases copy observed behavior, bugs included. Take expected results from a requirement or from the user. Mark the rest "observed, unconfirmed".
 
@@ -29,7 +30,7 @@ Read `references/capability-boundaries.md` when the user asks whether the platfo
 5. Call `list_truetest_tracking_environments` with `client_code`. Ask which environment to use when several exist. Production traffic and test traffic give different maps.
 6. Carry `project_id`, `client_code`, and `tracking_environment_id` into every later call. The MCP keeps no state.
 
-Page through `list_` and `search_` results with `page_token` when the first page is not the whole list.
+Page through `list_` and `search_` results with `page_token` when the first page is not the whole list. Stop when a page comes back empty. `has_more` can stay true after the last item, so it is not a stop signal on its own.
 
 ## Pick the starting point
 
@@ -43,7 +44,7 @@ Page through `list_` and `search_` results with `page_token` when the first page
 
 1. Call `search_truetest_journey_maps` with `client_code` and the tracking environment. Filter by `status` `active` and by the tracked-data window the user cares about.
 2. Pick the map whose window covers the question. If none fits, offer to build one (step 5).
-3. Call `get_truetest_journey_map` with `map_id`. Add `flow_id` to read one flow with its linked cases. Each of the four lists (pages, flows, steps, transitions) has its own page token. Page each one on its own.
+3. Call `get_truetest_journey_map` with `map_id`. Add `flow_id` to read one flow with its linked cases. Pages and transitions come back as the full sets. The limits bound the size of one response. Follow the page token and the transition token to the end, each on its own, and stop on an empty page. Flows and steps have their own tokens too.
 4. Compare. For each flow, read what the map reports about coverage and linked cases. Then check the project with `find_test_cases` and `search` (`types` `["test_case"]`) for cases that the map does not link. Sort the flows into covered, partly covered, and uncovered. Rank the uncovered ones by traffic.
 5. Build a map only when no suitable map exists. `create_truetest_journey_map` starts an async job. Preview the tracking environment, the time range, any `session_attributes` and `url_keywords`, and the two flags `carry_over_annotations` and `compare_with_previous_map` (both default to true). Get a yes. Call it once. Report the result as queued.
 6. Poll the exact `request_id` with `get_truetest_journey_map_request`. When it completes, copy the correlated `map_id` unchanged into `get_truetest_journey_map`. Never pick the map by list order.
@@ -84,7 +85,7 @@ Read `references/generation-and-review.md` for outcomes, read-back, and the draf
 
 ## Privacy
 
-Sessions come from real users. Never copy names, emails, account numbers, or free text into a case, a report, or chat. Use reserved values such as `@example.com` addresses. `include_raw_events` returns up to 100 events with field values unredacted. Set it only for an explicit troubleshooting request. Check the output before you reuse any value.
+Sessions come from real users. Never copy names, emails, account numbers, or free text into a case, a report, or chat. Use reserved values such as `@example.com` addresses. `include_raw_events` returns up to 100 events with field values unredacted. Set it only for an explicit troubleshooting request. Check the output before you reuse any value. A session response also carries a bounded console log. Treat console text as sensitive. It can hold tokens, addresses, and personal data. Do not paste it into a case, a report, or chat.
 
 ## Report
 
@@ -110,7 +111,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Notes were reviewed against release notes through 2026-11-16, live re-capture pending. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -129,6 +130,7 @@ Requirements and ALM
 
 Test cases, folders, suites
 - `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- Tags, feature areas, and custom test types are writable on create and update, and `find_test_cases` filters by tag and custom test type. Check your tool list for the exact parameters.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
@@ -174,7 +176,11 @@ Team memory (Kai)
 - Look up another user to set an assignee.
 - Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Author release gates, custom field definitions, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI. Writing agent rules is not available through the MCP. Tags and custom test types on a test case are writable (see Available).
+- Datasets and data binding for manual cases. The tools for them are not in production tool lists yet. If your tool list shows dataset tools, use them. Otherwise use the web UI.
+- Bulk Configure for suites and collections (execution profile and configuration for many selected tests). Build one run at a time with `build_run_configuration` and `create_test_run`.
+- The Manage Automated Schedule page. `list_schedule`, `read_schedule_detail`, and `update_schedule_configuration` cover schedule data. Use the UI for the page itself.
+- Report filters in the Test Results Analysis report (source, profile, and more filters). Use the UI.
 - Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
@@ -187,9 +193,18 @@ Team memory (Kai)
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
 - Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
 - `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. The web dialog has opened with Separate selected since 2026-10-29, but the MCP call still takes the user's answer.
+- The Run with AI environment comes from an organization allow-list, and it governs the web UI and the MCP start alike. With no allow-list set, hosted AI runs Linux Chrome only. An organization can allow the full picker or a named list of environments. Windows and macOS need a Test Execution - Cloud (formerly TestCloud) desktop licence. A beta browser build is replaced by the newest stable one. Do not promise an environment before the run dialog or the start result shows it.
 - `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
 - `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
+- `create_defect` files a real Jira or Azure DevOps ticket. Never test it on a customer integration. Jira integrations whose bug type has its own ID, and company-managed Jira projects with a required custom field, work since the November 2026 releases. Report Defect with attachments on a manual result can still fail the filing. The fix lands in the 2026-11-18 release. Before that date, expect a possible failure and tell the user.
+- A 403 or "access denied" does not prove a permission problem. It can mean the requested environment, browser version, or dataset value is not available. Check the requested values first.
+- A write that times out (HTTP 504 or BACKEND_TIMEOUT) can still land or not. Read back with the matching find tool before any retry. Never create a duplicate to replace a write that may have landed.
+- Protected MCP calls return an error envelope with a `code`, a `message`, and a `retry` hint. Handle the codes this way:
+  - CREDENTIAL_REJECTED: the stored credential was rejected. The user fixes it on the API key settings page. Do not retry.
+  - BACKEND_TIMEOUT: the backend was too slow. A write may have landed. Read back first.
+  - BACKEND_UNAVAILABLE (HTTP 502, 503, 504): retry a read once, later. Read back before you retry a write.
+  - BACKEND_SERVER_ERROR: report it. Read back before you retry a write.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
 - `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
@@ -286,7 +301,11 @@ The response holds four lists that each have a page limit and a page token:
 | Transitions | `transition_limit` (1 to 100, default 50) | `transition_page_token` |
 | Pages | `page_limit` (1 to 100, default 50) | `page_page_token` |
 
-Page each list on its own. A token from one list does not work for another. Pass `flow_id` to read one exact flow. Copy `flow_id` from an earlier response, never build it.
+Page each list on its own. A token from one list does not work for another.
+
+Since late October 2026 the pages and transitions in a map are the full canonical sets. The earlier cut of the top 100 pages and top 200 transitions is gone. `page_limit` and `transition_limit` only bound the size of one response. Each transition carries the full set of distinct action labels. Field names did not change. Follow both the page token and the transition token until each one runs out. Do not report coverage from the first response of a large map.
+
+Stop paging when a page comes back empty. The service can keep `has_more` true with a `next_page_token` after the last item. The same holds for `list_truetest_tracking_environments` and other paged TrueTest tools. A fix was planned for the next release. Until it lands, an empty page is the stop signal. Pass `flow_id` to read one exact flow. Copy `flow_id` from an earlier response, never build it.
 
 The response supports journey, traffic, coverage, and saved-assertion views. Read the field names it returns. Do not assume a field that the response lacks.
 
@@ -320,6 +339,16 @@ After a validation error, conflict, timeout, or upstream error, report what happ
 
 After a timeout with no `request_id`, call `search_truetest_journey_maps` with `status` `generating` and the same environment. That shows whether the job started. Then ask the user how to go on.
 
+## Gap analysis (not in every tool list yet)
+
+Two tools compare two journey maps: `create_truetest_journey_map_gap_analysis` and `get_truetest_journey_map_gap_analysis`. They were announced in November 2026 and no live run confirmed them. Use them only if your tool list shows them. Otherwise use the web gap analysis flow and say so.
+
+1. The create tool needs the same project and AUT, and an ordered pair of map IDs, a primary map and a secondary map. Copy both IDs unchanged from `search_truetest_journey_maps`.
+2. Create is a write with a cost. It starts compute work. It also sends the same completion and failure emails as the web flow. Preview the project, AUT, both maps, and the email side effect. Get a yes. Call it once.
+3. A `submitted` status does not tell a new job from running work that the service reused. Say so to the user.
+4. Never retry on your own, after an error, a timeout, or a `submitted` answer. A retry can start a duplicate job and send duplicate emails.
+5. Read the result with the get tool. It only reads. Report what it returns and name any field it lacks.
+
 ### references/session-selection.md
 
 # Session selection
@@ -351,11 +380,13 @@ Read this when you search TrueTest sessions for coverage work. The parameter lis
 
 ## Paging
 
-The search is async on the server. A result may carry `next_page_token`. Pass that value as `page_token` and repeat every other argument unchanged. A changed argument breaks the page chain. Start a new search instead.
+The search is async on the server. A result may carry `next_page_token`. Pass that value as `page_token` and repeat every other argument unchanged. A changed argument breaks the page chain. Start a new search instead. Stop when a page comes back empty, because a token can remain after the last item.
 
 ## Reading one session
 
 Call `get_truetest_session` with `project_id`, `client_code`, and one `session_reference`. The default response holds metadata and ordered replay steps. Leave `include_raw_events` false. Set it to true only for an explicit troubleshooting request. It returns at most 100 events and does not redact field values.
+
+The default response also carries a bounded console log for the session. It has the level, the time, the replay offset, a truncation state, and an explicit state for console data. Treat console text as sensitive. Do not quote it in a case, a report, or chat. A truncated log is not the whole log.
 
 ## Never build a reference
 
@@ -432,6 +463,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

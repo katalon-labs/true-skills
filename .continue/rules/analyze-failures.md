@@ -36,6 +36,7 @@ Limits to state up front:
 
 - AI root-cause summaries and automation error-pattern analytics are product features in the web app. They are not MCP calls. Do not claim to call them.
 - `create_defect` needs a failed test result ID, an ALM integration ID, and an ALM connection ID. It files a real Jira or Azure DevOps bug. Defect creation without a result ID does not exist.
+- The Test Results Analysis report in the web app (live since early November 2026) filters results by source and profile and has an Insights button. It helps with clustering. It is web UI only. Point the user to it. Do not claim the metrics tools take a source or profile filter.
 - Two ID spaces both use the word "execution". `read_execution` and `list_executions` use the numeric True Platform ID. `list_execution_outputs` uses the Test Execution - Cloud string ID. No tool converts one to the other. Never swap the two list tools.
 - `rerun_execution` reruns an automated Studio, KRE, or Test Execution - Cloud execution only. A manual TestPak (a run with `MANUAL` as its executionType, used for human testing and for Run with AI) restarts through `update_test_run` in `execute-test`.
 - `fetch_test_stability_metrics` has no minimum-run parameter. It takes a window (`from_date`, `to_date`) or an execution or iteration. Count the runs yourself with `find_test_results` before you trust a signal.
@@ -69,6 +70,15 @@ Limits to state up front:
 11. **Report** per cluster: classification, likely cause, affected cases, evidence, and action (file, repair, or rerun after a fix).
 
 Never invent a stack trace, a defect key, or an ALM project. If an input is missing, report blocked and name the input.
+
+## Defect filing notes
+
+State as of November 2026:
+
+- `create_defect` sends the Jira issue-type ID together with the name. Before the November 2026 fix, a Jira integration with an allowed defect type such as Bug returned HTTP 400 "Issue type is not configured for defects". Company-managed Jira projects with a required custom field are also fixed.
+- Report Defect on a manual-run result with attachments can fail with a storage 404 for Jira and Azure DevOps. The fix lands in the 2026-11-18 release. Until then, if filing fails on a result with attachments, file without them and tell the user.
+- Keep the `fetch_defects` pre-check. It still shows whether a sibling result already has an owner.
+- Never test `create_defect` on a customer integration. It files a real ticket. Use a controlled test project.
 
 ## Prompt recipes
 
@@ -226,6 +236,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.
