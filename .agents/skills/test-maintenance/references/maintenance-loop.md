@@ -75,6 +75,9 @@ Guardrails:   <assertion-count diff result, healing level used>
 
 - Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Deleting a case is permanent and needs a yes that names the case.
 - Put every intended edit for one case into a single `update_test_cases` call. Actions run in order, so separate calls for one case can race.
+- Tag and custom test type writes clear only the list you send. Read the current values with `read_test_cases` and `include_attributes` first, and send the full intended list.
+- Delete steps with `REMOVE_STEPS` when the schema lists it. `UPDATE_CONTENT` replaces all steps.
+- Read every updated case back. A reported success is not proof.
 - `UPDATE_CONTENT` replaces every step. Send the complete step list, keep Call Test Case actions, and omit `context` or include `expectedResult` (never `context: {}`).
 - `repository_id` is required. Resolve it with `list_repositories` and carry it into every call.
 - Preview bulk changes, and get one confirmation for the set. Name every retire or delete target in that confirmation.

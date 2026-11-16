@@ -52,6 +52,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

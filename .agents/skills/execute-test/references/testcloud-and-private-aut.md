@@ -23,7 +23,7 @@ Steps:
 
 | Tool | Use | Class |
 |---|---|---|
-| `list_test_cloud_tunnels` | Show active tunnels for the project. Needs `project_id`. | read |
+| `list_test_cloud_tunnels` | Show active tunnels for the project. Needs `project_id`. A call without it fails with a project access error. | read |
 | `prepare_test_cloud_tunnel_start` | Get the setup commands for a tunnel client. Set `test_type` to MANUAL or AUTOMATED. For manual, set `manual_execution_mode` to TESTPAK or RUN_WITH_AI. | read |
 | `stop_test_cloud_tunnel` | Stop a tunnel. | destructive |
 

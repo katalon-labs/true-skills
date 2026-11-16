@@ -22,6 +22,7 @@ Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__
   - No tool returns a series, an average, or a delta. You build every trend by looping periods.
   - No tool reads requirement coverage or stability as it stood on a past date. A coverage figure for Sprint 12 read in October includes links added after Sprint 12.
   - No dashboard, chart, or report entity. Dashboards live in the Katalon True Platform UI.
+  - Dashboards and reports are web UI only. Point the person to Release Health, Analytics and Trends, and Test Results Analysis in the Katalon True Platform web app. Analytics and Trends and Live Monitor take a multi-project filter (since late October 2026). Select All on a very large number of projects can leave widgets blank. Pick the projects instead.
   - No publishing tool. The MCP cannot post to Slack, Confluence, email, or a deck. Hand the brief back as text.
   - No Build entity, and no tool creates a release. Releases and sprints come from `find_iterations`. Bind periods to them or to date ranges.
   - No escaped-defect flag, and no reopened-defect count in the metrics. Ask which ALM field marks a defect that reached production. If none does, report "defects opened after the release run" and label it a proxy.

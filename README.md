@@ -5,16 +5,16 @@
   <img src="docs/images/art/hero-light.svg" alt="An agent guesses at requirement CEL-6, gets the skills folder, connects to the Katalon MCP, and returns linked cases" width="100%">
 </picture>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![22 skills](https://img.shields.io/badge/skills-22-0f8461?style=flat-square) [![Version 0.5.0](https://img.shields.io/badge/version-0.5.0-0f8461?style=flat-square)](CHANGELOG.md) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0f8461?style=flat-square)](LICENSE) ![22 skills](https://img.shields.io/badge/skills-22-0f8461?style=flat-square) [![Version 0.6.0](https://img.shields.io/badge/version-0.6.0-0f8461?style=flat-square)](CHANGELOG.md) ![Katalon MCP](https://img.shields.io/badge/runs%20on-Katalon%20MCP-0f8461?style=flat-square)
 
-[Quickstart](#quickstart) · [Roles](#start-where-you-are) · [Skills](#skills) · [Lifecycle](#lifecycle) · [Install](#install) · [MCP limits](#mcp-capabilities) · [Build](#build-and-adapters) · [0.5.0](#changes-in-050)
+[Quickstart](#quickstart) · [Roles](#start-where-you-are) · [Skills](#skills) · [Lifecycle](#lifecycle) · [Install](#install) · [MCP limits](#mcp-capabilities) · [Build](#build-and-adapters) · [0.6.0](#changes-in-060)
 
 </div>
 
 A coding agent cannot see your test project. It guesses requirement keys and makes up suite names. These 22 skills tell it which [Katalon MCP](https://docs.katalon.com/katalon-platform/testops-mcp-server) tools to call and in what order. After you connect the MCP, the agent can read and change the real project in [Katalon True Platform](https://katalon.com) (formerly TestOps).
 
 - **What it is:** 22 testing skills, one folder each under [`skills/`](skills/). They cover plan, design, manage, review, execute, analyze, and maintain.
-- **Where it runs:** in the agent you already use. Claude Code, Codex, Cursor, Copilot, Kiro, Cline, Continue, Gemini CLI, and any agent that reads [`AGENTS.md`](AGENTS.md).
+- **Where it runs:** in the agent you already use. Claude Code, Codex, Cursor, Copilot, Kiro, Cline, Continue, Gemini CLI, Antigravity CLI, and any agent that reads [`AGENTS.md`](AGENTS.md).
 - **How it connects:** one MCP endpoint, `https://platform.katalon.io/mcp`, with browser OAuth and a workspace picker. You paste no token.
 - **What it will not do:** promise work the MCP cannot do. Each skill states its limits, and every write gets a preview and one confirmation first.
 - **Install:** `npx skills add katalon-labs/true-skills`, then add the MCP server.
@@ -154,12 +154,20 @@ The plugin bundles the skills and an `.mcp.json` that points at `https://platfor
 | --- | --- | --- |
 | Codex | `codex plugin marketplace add katalon-labs/true-skills`. Then run `codex`, enter `/plugins`, select **Katalon True Platform**, and install it. Start a new session to load the skills. | bundled; [`.codex/config.toml`](docs/connect.md#codex) for a project |
 | Cursor, Copilot, Gemini CLI, OpenCode, Amp, Zed, Windsurf | copy `.agents/skills/` into your project | [connect.md](docs/connect.md) |
+| Antigravity CLI | run `agy plugin import gemini` to bring in the Gemini CLI extension, or copy `.agents/skills/` into your project. The import is not tested in this repo, so check the skills after it runs. | [connect.md](docs/connect.md#antigravity-cli) |
 | Kiro | copy `.kiro/` (`.kiro/skills/` and `.kiro/settings/mcp.json`) | [connect.md](docs/connect.md#kiro) |
 | Cline | copy `.cline/skills/` | [connect.md](docs/connect.md#cline) |
 | Continue | copy `.continue/` (rules and `.continue/mcpServers/katalon.yaml`) | [connect.md](docs/connect.md#continue) |
 | Kiro Crew | install the app in [`apps/katalon-testing-skills/`](apps/katalon-testing-skills/README.md), which registers all 22 skills and the MCP server | bundled |
 | Agent Plugins clients | load the repo root or `plugins/katalon-true-platform/` as an [Agent Plugins 1.0.0](https://agent-plugins.org/specification) plugin | bundled `mcp.json` |
 | Anything else | point the agent at [`AGENTS.md`](AGENTS.md) | root [`.mcp.json`](.mcp.json) |
+
+Agent notes:
+
+- **Claude Code, unattended runs.** Scheduled tasks and `/loop` ask before they run a skill that declares `allowed-tools` or hooks. No skill here declares either today. If you add one, put `Skill(skill-name)` in `permissions.allow`.
+- **Codex.** Codex 0.168 and later uses an MCP tool's read-only hint when it decides what to approve on its own. Only the server can set that hint. Write tools still ask.
+- **Kiro.** An administrator can set allow, deny, or ask rules per MCP tool name, for example allow `list_projects` and ask for `update_test_cases`. See [connect.md](docs/connect.md#kiro).
+- **Gemini CLI.** `gemini-extension.json` stays for enterprise and API-key users. Google moved consumer Gemini CLI users to Antigravity CLI on 2026-06-18.
 
 A client with no remote MCP support can use the wrapper as a fallback:
 
@@ -171,7 +179,7 @@ npx -y mcp-remote@0.14.3 https://platform.katalon.io/mcp --transport http-first
 
 ## MCP capabilities
 
-Each skill names its limits up front, so the agent does not promise work the platform cannot do.
+Each skill names its limits up front, so the agent does not promise work the platform cannot do. The 74-tool list was captured from the live server on 2026-10-20. Platform release notes were reviewed on 2026-11-16.
 
 **Through the MCP:** list projects and repositories, read requirements, search the Knowledge Base, create, update, and link test cases, manage suites and folders, create manual and automated runs, start, configure, and end a TestPak, start Run with AI, poll AI sessions, rerun an automated execution, read and edit schedules, record manual results, upload evidence, read results and quality metrics, use Test Execution - Cloud apps and tunnels, work with TrueTest sessions and journey maps, read the team's Kai memory, and file ALM-linked defects.
 
@@ -202,12 +210,12 @@ apps/katalon-testing-skills/         Kiro Crew app                           (ge
 AGENTS.md  docs/connect.md           agent index and per-client MCP page     (generated)
 ```
 
-## Changes in 0.5.0
+## Changes in 0.6.0
 
-- Skills use the live Katalon MCP tool names, checked against the server on 2026-10-20. `create_test_run` with a `mode` replaces the manual and scheduled run tools. `update_test_run` configures, starts, and ends a TestPak. The `fetch_*_metrics` tools replace the insights and stability tools. `read_test_cases` and `update_test_cases` take lists.
-- Run with AI no longer starts on its own. The agent shows the suite, environment, mode, and schedule, and waits for a yes.
-- The build stops writing six old rule folders. Each agent reads a native skills folder, which removes about 1.6 MB of duplicate text.
-- New [`docs/connect.md`](docs/connect.md) gives the MCP snippet for 13 clients, and [`docs/mcp-tools.json`](docs/mcp-tools.json) holds the 74-tool contract that the validator checks.
+- Run with AI follows the organization browser allow-list and the licence rules for Windows and macOS. Skills explain parallel and Separate runs, and data-bound runs with one AI session per data row.
+- New dataset guidance in `test-data`, a dataset check in `test-review`, and Agent Rules and Sources guidance in `project-memory`.
+- Tags, feature areas, and custom test types are writable. Skills document the write gotchas: timed-out writes that land, `REMOVE_STEPS`, and the rule that `UPDATE_CONTENT` wipes steps on an incomplete list.
+- Sign-in covers the error envelope codes and MCP 2026-07-28 clients. Antigravity CLI is added to the install table.
 
 The full list is in [CHANGELOG.md](CHANGELOG.md).
 

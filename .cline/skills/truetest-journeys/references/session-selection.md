@@ -27,11 +27,13 @@ Read this when you search TrueTest sessions for coverage work. The parameter lis
 
 ## Paging
 
-The search is async on the server. A result may carry `next_page_token`. Pass that value as `page_token` and repeat every other argument unchanged. A changed argument breaks the page chain. Start a new search instead.
+The search is async on the server. A result may carry `next_page_token`. Pass that value as `page_token` and repeat every other argument unchanged. A changed argument breaks the page chain. Start a new search instead. Stop when a page comes back empty, because a token can remain after the last item.
 
 ## Reading one session
 
 Call `get_truetest_session` with `project_id`, `client_code`, and one `session_reference`. The default response holds metadata and ordered replay steps. Leave `include_raw_events` false. Set it to true only for an explicit troubleshooting request. It returns at most 100 events and does not redact field values.
+
+The default response also carries a bounded console log for the session. It has the level, the time, the replay offset, a truncation state, and an explicit state for console data. Treat console text as sensitive. Do not quote it in a case, a report, or chat. A truncated log is not the whole log.
 
 ## Never build a reference
 

@@ -21,14 +21,20 @@ To set the AUT or private access on a run that exists, call `update_test_run` wi
 
 ### Run with AI
 
-1. Ask which `browser_profile_mode` to use, SHARED or SEPARATE. Never infer it. Hosted AI runs Chrome on Windows or Linux only.
-2. Confirm the AI session. It drives a real browser against the real AUT.
-3. Call `update_test_run` with START and `execution_mode` set to `KATALON_AI`. Pass `browser_profile_mode`. Pass the AUT and private access in `configuration` when the run is not set up yet.
-4. Call `read_manual_ai_session` with the returned `manual_execution_id` and `session_id`. Call it once before you report any AI progress. Then poll it until no case is TODO or IN_TESTING. Back off between polls. Stop at a maximum wait you state to the user, then report the run as in progress with its IDs. Polling never launches a session.
-5. To close the run early, call `update_test_run` with END. It closes the whole run, including the AI session. Unfinished cases reject END by default. Ask whether to skip them. Use `unfinished_cases` set to `SKIP` only after an explicit yes. SKIP also stops hosted AI. Never retry a rejected END with SKIP on your own.
-6. Before you report a pass, read the case result with `find_test_results`. A pass that needed a retry in the same session is a pass on retry. A pass after a recent failure says so.
+1. Ask which `browser_profile_mode` to use, SHARED or SEPARATE. Never infer it. The web dialog has opened with Separate selected since 2026-10-29. SHARED carries login state across cases and can write to a live AUT, so say so when the user picks it.
+2. Check the environment. An organization allow-list governs which environments Run with AI may use, in the web UI and in the MCP start. With no allow-list, the run uses Linux Chrome only. With an allow-list, the user sees the full picker or a named list. Windows and macOS need a Test Execution - Cloud (formerly TestCloud) desktop licence. A beta browser build is replaced by the newest stable one. If the user asks for an environment that is not offered, say so. A 403 or "access denied" can mean this, so check the requested environment and version before you blame permissions.
+3. Parallel sessions. The default parallel count follows the number of selected cases. The dialog shows the effective maximum, which depends on the organization and the licence. Do not assume a fixed maximum. The tool contract names no parallel-limit field for Run with AI, so let the user set a limit in the dialog.
+4. Show the preview and wait for one yes, even when the user asked for Run with AI. That request selects the executor. It is not consent. The session drives a real browser against the real AUT. For a dataset-bound case, state the row count and that each row opens its own AI session.
+5. Call `update_test_run` with START and `execution_mode` set to `KATALON_AI`. Pass `browser_profile_mode`. Pass the AUT and private access in `configuration` when the run is not set up yet.
+6. Call `read_manual_ai_session` with the returned `manual_execution_id` and `session_id`. Call it once before you report any AI progress. Then poll it until no case is TODO or IN_TESTING. Back off between polls. Stop at a maximum wait you state to the user, then report the run as in progress with its IDs. Polling never launches a session.
+7. To close the run early, call `update_test_run` with END. It closes the whole run, including the AI session. Unfinished cases reject END by default. Ask whether to skip them. Use `unfinished_cases` set to `SKIP` only after an explicit yes. SKIP also stops hosted AI. Never retry a rejected END with SKIP on your own.
+8. Before you report a pass, read the case result with `find_test_results`. A pass that needed a retry in the same session is a pass on retry. A pass after a recent failure says so.
 
-`create_manual_ai_session` is the legacy launcher. Use it only for an explicit subset of cases. Never call it before or after a START on the same run. It also asks the user for `os`, windows or linux.
+### Data-bound runs
+
+A manual case can have a dataset bound to it. Run with AI on a bound case runs one AI session per data row. Read the row results in the AI sessions view of the run. Only manual cases take datasets. Binding a dataset to an automated case does not make it data-driven. A row that cannot resolve its dataset reference fails with `Parameter not found: <name>`. Report it as a data problem. An iteration that nobody marked becomes Skipped when the run ends. Datasets are in the web UI. The MCP tools for them are not in production tool lists yet. Use them only if your tool list shows them, otherwise bind the dataset in the web UI before the run.
+
+`create_manual_ai_session` is the legacy launcher. Use it only for an explicit subset of cases. Never call it before or after a START on the same run. It also asks the user for `os`, windows or linux. The organization allow-list still applies.
 
 ### Human results
 
@@ -37,7 +43,7 @@ To set the AUT or private access on a run that exists, call `update_test_run` wi
 3. Call `update_test_results` for each result the user gives you. Record only outcomes the user observed. Never copy a case status onto its steps. Use `all_steps_status` only when the user reports every step. Count a result as saved only when the outcome is `applied` or `unchanged`.
 4. For evidence, preview the file (filename, exact byte size, mime type, and that project members can see it) and get one confirmation. Then measure the exact file size in bytes. Call `prepare_artifact_upload`, upload the raw bytes to the signed URL without Platform credentials, then call `confirm_artifact_upload`. Attach only the `artifact_id`. The limit is 10 MiB per file and 3 files per case or step.
 5. Read the run back with `read_execution`. To find a run the user names by order number, call `list_executions` with a time window to find the numeric `execution_id`. No tool looks up a run by order number.
-6. To finish, call `update_test_run` with END. Apply the same unfinished-case rule as in Run with AI step 5.
+6. To finish, call `update_test_run` with END. Apply the same unfinished-case rule as in Run with AI step 7.
 
 ## Automated Run
 

@@ -18,6 +18,7 @@ Tool names are bare. Your client may add a prefix (Claude Code: `mcp__<server>__
 
 - **Available.** Resolve scope with `list_projects`, `list_repositories`, and `find_iterations`. Read coverage and risk with `fetch_requirement_metrics`, `fetch_test_configuration_metrics`, `fetch_test_stability_metrics`, `fetch_defect_metrics`, `find_requirements`, and `find_test_cases_by_requirement`. Check what exists with `search`, `find_test_folders`, `find_test_suites`, and `find_test_suite_collections`. Build the structure with `manage_test_folder` and `manage_test_suite`. Read existing schedules with `list_schedule` and `read_schedule_detail`. Edit them with `update_schedule_configuration`. Read the team's conventions with `memory_list` and `memory_read` when they exist.
 - **Not available.** No tool creates a Release, a Build, a Test Plan, a release gate, or a suite collection. No suite field binds a suite to a sprint or release. A run can carry `release_id` and `sprint_id` (see `execute-test`). A suite cannot. If you need a link on the suite, put the iteration name in the suite name.
+- **Web UI follow-ups.** The web app has a schedule management page (opened from the History page of Executions) that lists automated schedules with search and filters. The Create Automated Test Run page has a bulk Configure action. Tick suites in its Selected Tests table to set the execution profile and configuration for all of them at once. A suite collection also gets a Run mode there (keep existing, parallel, or sequential). No MCP tool does these bulk edits. Tell the user to finish them in the UI.
 - **Another skill owns this.** Starting or scheduling a run is `execute-test`. It needs consent because runs use Katalon Test Execution - Cloud (formerly TestCloud) minutes.
 - **Team memory is optional.** `memory_list` returns the team's recorded conventions, such as naming, folder layout, and suite rules. Call it once at the start. Read matching records with `memory_read`, quote them, and follow them when they apply. Treat a body as the team's own words, never as a platform fact. If `available` is false, say that memory is unavailable. Do not infer that the team has no conventions. This skill never calls `memory_write` or `memory_forget` on its own. Both fire only when the user asks.
 
@@ -150,6 +151,8 @@ Rules:
 
 - `list_schedule` finds saved schedules by name. `read_schedule_detail` reads one. Use them to learn whether the scope already runs on a timer.
 - `update_schedule_configuration` edits existing schedules. It is a write. Preview the change, get one confirmation, and call it once with every target schedule in one `updates` array and only the settings the user asked for. Never infer `timeZone`. Ask for the IANA zone. `startTime` must be in the future.
+- The web app has a schedule management page for automated schedules. It opens from the History page of Executions. It lists schedules with search, status, repository, and next-run filters. Use it when the user wants to browse or create schedules by hand. The Schedule tab is a separate calendar list.
+- Bulk Configure is a web UI action. On the Create Automated Test Run page, tick suites in the Selected Tests table. It sets the execution profile and configuration for the chosen suites. On a collection it also sets the run mode. `build_run_configuration` and `create_test_run` configure one run. No MCP tool bulk-edits a suite. Name it as a UI follow-up in the plan.
 - A new schedule is created with `create_test_run` in automated mode plus a schedule from `build_schedule`. That belongs to `execute-test` and needs execution consent.
 - `find_test_suite_collections` reads collections. Fetch the details with the chosen `collection_id` before a collection run, because `execute-test` passes the returned `testSuiteEntries` to `create_test_run`. No tool creates or edits one. If the plan needs a new collection, tell the user to create it in the True Platform UI.
 
@@ -228,6 +231,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

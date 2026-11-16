@@ -1,6 +1,6 @@
 # MCP tool index
 
-Every tool on the live Katalon True Platform MCP server, grouped by area. The server exposes 74 tools, captured 2026-10-20. Parameters are in each tool's own schema. This page lists the job of each tool and the rule that most often goes wrong.
+Every tool on the live Katalon True Platform MCP server, grouped by area. The server exposed 74 tools when last captured live, on 2026-10-20. This page was reviewed against release notes on 2026-11-16 and a live re-capture is pending. Parameters are in each tool's own schema. This page lists the job of each tool and the rule that most often goes wrong.
 
 Class: R reads or builds a payload. W writes. C needs confirmation because it uses Test Execution - Cloud minutes, launches a hosted browser, queues generation, or reaches Jira or Azure DevOps. D is destructive and needs an explicit yes that names the target. Stage: 1 plan, 2 design, 3 manage, 4 review, 5 execute, 6 analyze, 7 maintain.
 
@@ -30,10 +30,10 @@ Class: R reads or builds a payload. W writes. C needs confirmation because it us
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `find_test_cases` | R | Filtered list of cases. Pages start at 0. | 2, 3 |
+| `find_test_cases` | R | Filtered list of cases. Pages start at 0. Since November 2026 it also filters on tags and custom test types (name lists). A name filter takes an array, and a comma-joined string matches nothing. | 2, 3 |
 | `read_test_cases` | R | Many cases by ID. `content_type` FLOW returns steps. | 2, 4 |
-| `create_test_case` | W | Create a manual case. AUTOMATED creates nothing. | 2 |
-| `update_test_cases` | W | Batched edits, one `action` per field. Batch every change to one case in one call. | 2, 7 |
+| `create_test_case` | W | Create a manual case. AUTOMATED creates nothing. Since November 2026 it accepts tags, feature areas, custom test types, and linked requirement IDs. It does not take linked case IDs or a folder. | 2 |
+| `update_test_cases` | W | Batched edits, one `action` per field. Batch every change to one case in one call. Check your tool schema for the tag, feature area, and custom test type actions before you rely on them. | 2, 7 |
 | `move_test_case` | W | Move a case to a folder. | 3, 7 |
 | `duplicate_test_case` | W | Copy a case in place. | 7 |
 | `delete_test_case` | D | Delete a case. | 3 |
@@ -109,13 +109,30 @@ Owner skill: `truetest-journeys`.
 | `list_truetest_auts` | R | Linked AUTs. | 2 |
 | `list_truetest_tracking_environments` | R | Tracking environments. | 2 |
 | `search_truetest_sessions` | R | Captured sessions. Window up to 31 days. | 2 |
-| `get_truetest_session` | R | One session with replay steps. | 2 |
+| `get_truetest_session` | R | One session with replay steps and a bounded console log. Treat console text as sensitive. | 2 |
 | `search_truetest_journey_maps` | R | Journey maps. | 2 |
-| `get_truetest_journey_map` | R | One journey map, in pages. Also shows the cases linked to a flow. | 2 |
+| `get_truetest_journey_map` | R | One journey map, in pages. Pages and transitions are the full sets, so follow both page tokens to the end. Also shows the cases linked to a flow. | 2 |
 | `create_truetest_journey_map` | W | Start a journey map job. | 2 |
 | `get_truetest_journey_map_request` | R | Poll a journey map job. Do not resubmit on error. | 2 |
 | `create_truetest_test_case_from_session` | W, C | Queue case generation from 1 to 25 sessions. Needs user approval. | 2 |
 | `create_truetest_test_case_from_flow` | W, C | Queue case generation for one journey-map flow. Confirm before you run it on a flow that has cases. | 2 |
+
+## Announced, not in production tool lists yet
+
+These names are not in every tool list yet. Use one only if your tool list shows it. Otherwise use the web UI and say so. Never call a name from memory.
+
+| Tool | Class | What it does | Stage |
+|---|---|---|---|
+| `find_datasets` | R | List datasets for manual cases, or read one with its rows. Owner skill: `test-data`. Not in every tool list yet. | 2, 5 |
+| `manage_dataset` | W, D | Create, edit, or delete a dataset. Delete needs a yes that names the dataset. Not in every tool list yet. | 2 |
+| `read_test_case_data` | R | A case's variables, dataset binding, iteration count, and pre-run check. Not in every tool list yet. | 2, 5 |
+| `manage_test_case_data` | W | Link or unlink a dataset for one or many cases. Manual cases only. Not in every tool list yet. | 2 |
+| `find_vault_params` | R | List vault parameters. It never returns a secret value. Not in every tool list yet. | 2 |
+| `manage_vault_params` | W, D | Create, update, or delete a vault parameter. Not in every tool list yet. | 2 |
+| `find_run_iterations` | R | List the data-row iterations of a run, or read one. Not in every tool list yet. | 5, 6 |
+| `update_run_iteration` | W | Set a verdict, mark, or defect on one or many iterations. Not in every tool list yet. | 5, 6 |
+| `create_truetest_journey_map_gap_analysis` | W, C | Start a gap analysis between two journey maps. Needs approval. It uses compute and sends emails. Owner skill: `truetest-journeys`. Not in every tool list yet. | 2 |
+| `get_truetest_journey_map_gap_analysis` | R | Read a gap analysis. Not in every tool list yet. | 2 |
 
 ## Team memory (Kai)
 
@@ -123,7 +140,7 @@ Owner skill: `project-memory`. Every session calls `memory_list` once at the sta
 
 | Tool | Class | What it does | Stage |
 |---|---|---|---|
-| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. | all |
+| `memory_list` | R | Headlines of the team and user memory, plus the project policy page. Call once at the start of the session. Read memory before run setup, rules first. | all |
 | `memory_read` | R | Full bodies for up to 20 record IDs. Quote them. Do not restate them as platform facts. | all |
 | `memory_read_page` | R | One distilled guidance page by slug. | all |
 | `memory_write` | W | Store one note in the user's own words. Only when the user asks. | none |

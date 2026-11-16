@@ -1,5 +1,5 @@
 {
-  "$comment": "Contract for the Katalon True Platform MCP server. Source: the live tools/list of the connected server, platform.katalon.io, captured 2026-10-20 (74 tools, schemas read from the connector, no tool called). Evidence: 04-projects/true-skills-modernize/evidence/P3/live-schemas.md and live-diff.txt in the vault. The earlier docs-page contract (71 tools, docs.katalon.com/katalon-platform/testops-mcp-server, October 2026) is superseded. A human re-diffs a live dump with: node scripts/check-mcp-live.mjs <tools-list.json>. Edit this file only through a reviewed change; scripts/validate-skills.mjs reads it.",
+  "$comment": "Contract for the Katalon True Platform MCP server. Source: the live tools/list of the connected server, platform.katalon.io, captured 2026-10-20 (74 tools, schemas read from the connector, no tool called). Evidence: maintainer capture, not published. The earlier docs-page contract (71 tools, docs.katalon.com/katalon-platform/testops-mcp-server, October 2026) is superseded. A human re-diffs a live dump with: node scripts/check-mcp-live.mjs <tools-list.json>. Edit this file only through a reviewed change; scripts/validate-skills.mjs reads it. Reviewed against release notes through 2026-11-16, live re-capture pending: tool notes marked 'release notes, not live-verified' come from that review, not from a tools/list.",
   "source": "Katalon True Platform MCP live tools/list, platform.katalon.io, captured 2026-10-20",
   "contract": "katalon-docs-2026-10",
   "docsUrl": "https://docs.katalon.com/katalon-platform/testops-mcp-server",
@@ -7,6 +7,15 @@
   "namedToolCount": 74,
   "countNote": "All 74 live tool names are listed. The earlier docs-page contract had 71 names; 15 of them are not live and sit in retired, and 18 live tools were added (search, memory_*, fetch_*_metrics, update_test_run and others). Re-diffed 2026-10-20: check-mcp-live reports no missing and no new tools.",
   "prefixNote": "Skills name tools by bare name. MCP clients add a prefix: Claude Code uses mcp__<server>__<tool>, and mcp__plugin_<plugin>_<server>__<tool> for plugin servers.",
+  "errorEnvelope": {
+    "note": "Protected MCP calls return an error envelope {code, message, retry}. Some errors arrive in a wrapper message named BACKEND_API_ERROR with an http_status. It is not one of the codes. Backend text is logged, not returned. Reads retry once. A failed write is not retried by the server, so read back before you retry. Reviewed against release notes through 2026-11-16, live re-capture pending.",
+    "codes": {
+      "CREDENTIAL_REJECTED": "The stored credential (for example a Git personal access token) was rejected. The user must fix it on the API key settings page. Do not retry.",
+      "BACKEND_TIMEOUT": "The backend did not answer in time. A write may still have landed. Read back before any retry.",
+      "BACKEND_UNAVAILABLE": "HTTP 502, 503 or 504 from the backend. Retry a read once, later. Read back before you retry a write.",
+      "BACKEND_SERVER_ERROR": "The backend failed. Report it. Read back before you retry a write."
+    }
+  },
   "classes": {
     "read": "No side effect. Never needs confirmation. Pure payload builders (build_*) and polling tools are read.",
     "write": "Changes workspace state. Preview, confirm once for the mutation set, execute, read back. Entries with destructiveWhen need an explicit yes naming the target for those actions. Entries with consent need confirmation because they consume TestCloud minutes, launch a hosted browser against a real AUT, queue generation, or can change AUT data. Entries with external reach a third party system (Jira, ADO) or consume TestCloud minutes.",
@@ -48,7 +57,7 @@
       "confidence": "live-schema",
       "external": true,
       "consent": true,
-      "notes": "Files a real Jira or ADO bug linked to one test result (project_id, alm_integration_id, alm_connection_id, test_result_id, payload.summary, payload.description). External side effect: preview and confirm first. Ask the user for the summary when missing; suggest the failed case name or \"Defect for {test case name}\". Description falls back to the result error message."
+      "notes": "Files a real Jira or ADO bug linked to one test result (project_id, alm_integration_id, alm_connection_id, test_result_id, payload.summary, payload.description). External side effect: preview and confirm first. Ask the user for the summary when missing; suggest the failed case name or \"Defect for {test case name}\". Description falls back to the result error message. Reviewed against release notes through 2026-11-16, live re-capture pending. The Jira path sends the issue-type ID with the name (release of 2026-11-12), so integrations that returned HTTP 400 for the issue type now work. Company-managed Jira projects with a required custom field work since the release of 2026-11-11. Report Defect with attachments on a manual result can fail the filing; the fix lands in the 2026-11-18 release, and before that date expect a possible failure. Never test it on a customer integration."
     },
     {
       "name": "create_manual_ai_session",
@@ -64,7 +73,7 @@
       "group": "test-assets",
       "class": "write",
       "confidence": "live-schema",
-      "notes": "Creates a MANUAL case. With test_case_type AUTOMATED it creates nothing and returns script guidance. Name starts with a letter or digit and allows spaces and ( ) . , _ -. path starts with Test Cases. Encode a shared-flow call as a step action {type call, test_case_id}, never as a plain step named Call test case."
+      "notes": "Creates a MANUAL case. With test_case_type AUTOMATED it creates nothing and returns script guidance. Name starts with a letter or digit and allows spaces and ( ) . , _ -. path starts with Test Cases. Encode a shared-flow call as a step action {type call, test_case_id}, never as a plain step named Call test case. Since 2026-11 (release notes, not live-verified): accepts tags, feature areas, custom test types and linked requirement IDs; new tag names are created. Does not take linkedTestCaseIds, linkedRequirementKeys or testFolderId. A name with % or $ is rejected. A write that times out (HTTP 504) can still land or not: read back with find_test_cases before any retry. Confirm the user wants a new case before calling."
     },
     {
       "name": "create_test_cloud_app",
@@ -196,7 +205,7 @@
       "group": "test-assets",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "Filtered list with light metadata. filter_type COMMON (folder with include_subfolders, query.where, featureAreas), RELATIVE (needs at least one criterion), ITERATION. Resolve folder_id with find_test_folders by full rawPath; folder scope is bounded to 200 folders and fails rather than truncating. automationStatus is not testType and not lifecycle status. Page with next_page_token. Relative filters returned HTTP 500 on one project (2026-08-03)."
+      "notes": "Filtered list with light metadata. filter_type COMMON (folder with include_subfolders, query.where, featureAreas), RELATIVE (needs at least one criterion), ITERATION. Resolve folder_id with find_test_folders by full rawPath; folder scope is bounded to 200 folders and fails rather than truncating. automationStatus is not testType and not lifecycle status. Page with next_page_token. Relative filters returned HTTP 500 on one project (2026-08-03). Since 2026-11 (release notes, not live-verified): COMMON also takes tags and customTestTypes (name lists, AND). An unknown name returns the valid values and runs no search. The name filter takes an array, name =in= [\"a\",\"b\"]; a comma-joined string matches nothing. status values are DRAFT, READY_TO_REVIEW, IN_REVIEW, PUBLISHED, INACTIVE. Stop paging on an empty page, not on a next_page_token alone."
     },
     {
       "name": "find_test_cases_by_requirement",
@@ -238,7 +247,7 @@
       "group": "truetest",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "One map with independent paged cursors for pages, flows, steps and transitions. Never mutates. Copy flow_id values unchanged."
+      "notes": "One map with independent paged cursors for pages, flows, steps and transitions. Never mutates. Copy flow_id values unchanged. Since 2026-10 (release notes, not live-verified): pages and transitions are the full canonical sets, and each transition carries every distinct action label. page_limit and transition_limit only bound one response. Follow the page and transition tokens until each is exhausted. has_more can stay true after the last item (a fix is planned for the 2026-11-18 release); stop on an empty page."
     },
     {
       "name": "get_truetest_journey_map_request",
@@ -252,7 +261,7 @@
       "group": "truetest",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "Session metadata and replay steps from an unchanged session_reference. include_raw_events (default false) returns at most 100 events with field values NOT redacted: use only for explicit troubleshooting."
+      "notes": "Session metadata and replay steps from an unchanged session_reference. include_raw_events (default false) returns at most 100 events with field values NOT redacted: use only for explicit troubleshooting. Since 2026-10 (release notes, not live-verified): the response includes a bounded console log collection (level, timestamp, replay offset, truncation state, explicit console-data state). Treat console logs as sensitive."
     },
     {
       "name": "get_upload_test_cloud_app_url",
@@ -324,14 +333,14 @@
       "group": "testcloud",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "Browser and device catalog. RSQL filter over platform, platformVersion, browser, browserVersion, device.deviceName and more. Include every user criterion. Page with page_token and next_offset until page_token is null."
+      "notes": "Browser and device catalog. RSQL filter over platform, platformVersion, browser, browserVersion, device.deviceName and more. Include every user criterion. Page with page_token and next_offset until page_token is null. Since 2026-10-29 (release notes, not live-verified): pages at 50 per page, follow page_token. Linux Chrome and Firefox versions were refreshed. Filter example: platform==linux and browser==chrome."
     },
     {
       "name": "list_test_cloud_tunnels",
       "group": "testcloud",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "Active tunnels in a project."
+      "notes": "Active tunnels in a project. Pass project_id. A call without it can return a project-level access denied error (release notes, not live-verified, 2026-11)."
     },
     {
       "name": "list_truetest_auts",
@@ -375,7 +384,7 @@
       "destructiveWhen": [
         "DELETE"
       ],
-      "notes": "Folder lifecycle through payload.action: CREATE (path, testFolderType TEST_CASE | TEST_SUITE), RENAME, MOVE, DUPLICATE, DELETE. DELETE id must be the exact folder resolved by full rawPath, not an ancestor from treePath."
+      "notes": "Folder lifecycle through payload.action: CREATE (path, testFolderType TEST_CASE | TEST_SUITE), RENAME, MOVE, DUPLICATE, DELETE. DELETE id must be the exact folder resolved by full rawPath, not an ancestor from treePath. A write that returns HTTP 504 under load can still land or not: read back with find_test_folders before any retry (release notes, not live-verified, 2026-11)."
     },
     {
       "name": "manage_test_suite",
@@ -385,7 +394,7 @@
       "destructiveWhen": [
         "DELETE"
       ],
-      "notes": "Suite lifecycle through payload.action: CREATE, ADD_TEST_CASES, RENAME, MOVE, DUPLICATE, DELETE. Manages suite definitions only; a suite does not create a TestPak. Never mix MANUAL and AUTOMATED cases in one suite."
+      "notes": "Suite lifecycle through payload.action: CREATE, ADD_TEST_CASES, RENAME, MOVE, DUPLICATE, DELETE. Manages suite definitions only; a suite does not create a TestPak. Never mix MANUAL and AUTOMATED cases in one suite. Since 2026-11 (release notes, not live-verified): a missing or invalid repository credential returns CREDENTIAL_REJECTED with a pointer to the API key settings page, not HTTP 500. Tell the user to fix the credential; do not retry."
     },
     {
       "name": "memory_forget",
@@ -485,7 +494,7 @@
       "group": "test-assets",
       "class": "read",
       "confidence": "live-schema",
-      "notes": "Batch read by test_case_ids. content_type NONE (default), FLOW (steps), SCRIPT, BOTH. Replaces read_test_case."
+      "notes": "Batch read by test_case_ids. content_type NONE (default), FLOW (steps), SCRIPT, BOTH. Replaces read_test_case. Since 2026-11 (release notes, not live-verified): include_attributes returns tags, assignee UUID, author, feature areas and custom test types. Cases with null step metadata are returned, not hidden."
     },
     {
       "name": "read_test_suite",
@@ -544,7 +553,7 @@
       "group": "test-assets",
       "class": "write",
       "confidence": "live-schema",
-      "notes": "Batched editor: updates[] of {action, test_case_data}. Actions RENAME, UPDATE_STATUS, UPDATE_DESCRIPTION, UPDATE_PRECONDITION, UPDATE_PRIORITY, UPDATE_AUTOMATION_STATUS, UPDATE_CUSTOM_FIELD, UPDATE_ASSIGNEE, UPDATE_LINKED_TEST_CASES, REMOVE_LINKED_TEST_CASE, UPDATE_CONTENT. UPDATE_CONTENT replaces ALL steps, so send the full list and keep Call Test Case actions. Batch every change to one case in one call. Replaces update_test_case."
+      "notes": "Batched editor: updates[] of {action, test_case_data}. Actions RENAME, UPDATE_STATUS, UPDATE_DESCRIPTION, UPDATE_PRECONDITION, UPDATE_PRIORITY, UPDATE_AUTOMATION_STATUS, UPDATE_CUSTOM_FIELD, UPDATE_ASSIGNEE, UPDATE_LINKED_TEST_CASES, REMOVE_LINKED_TEST_CASE, UPDATE_CONTENT. UPDATE_CONTENT replaces ALL steps, so send the full list and keep Call Test Case actions. Batch every change to one case in one call. Replaces update_test_case. Since 2026-11 (release notes, not live-verified): tags, feature areas and custom test types can be set or cleared per list; clearing one list leaves the others, so never send an empty list unless clearing is the intent. origin is read-only. REMOVE_STEPS with stepNumbers removes steps, including Call Test Case steps, after one approval and is the safe way to delete steps. The action enum above is the 2026-10-20 capture; re-read it from your tool list. Read the case back after every update."
     },
     {
       "name": "update_test_results",
@@ -563,7 +572,7 @@
       "destructiveWhen": [
         "END with unfinished_cases SKIP"
       ],
-      "notes": "TestPak lifecycle: CONFIGURE (AUT and private access), START (MANUAL or KATALON_AI), END. Before START ask: Run With AI (recommended) or manual TestPak. No AI request does not mean MANUAL. KATALON_AI needs browser_profile_mode asked from the user. After a hosted START call read_manual_ai_session once. END with unfinished cases is rejected unless the user explicitly authorises SKIP."
+      "notes": "TestPak lifecycle: CONFIGURE (AUT and private access), START (MANUAL or KATALON_AI), END. Before START ask: Run With AI (recommended) or manual TestPak. No AI request does not mean MANUAL. KATALON_AI needs browser_profile_mode asked from the user. After a hosted START call read_manual_ai_session once. END with unfinished cases is rejected unless the user explicitly authorises SKIP. Since 2026-10 (release notes, not live-verified): this is also the TestPak start path for MCP clients. START KATALON_AI follows the organization's Run with AI environment allow-list, as the web UI does. The web UI opens with a Separate browser profile by default since 2026-10-29; keep asking the user for browser_profile_mode."
     }
   ],
   "retired": {
@@ -593,8 +602,19 @@
     "search_external_tool_ops": "none: absent from the live tools/list on 2026-10-20. Use the Jira, ADO, GitHub, Drive, Figma or Confluence connector directly",
     "run_external_skill": "none: absent from the live tools/list on 2026-10-20. Do the tracker step through the tracker connector"
   },
-  "unconfirmedNote": "Names seen in an earlier capture or the server code but not in the live tools/list. Empty on 2026-10-20: every earlier unconfirmed name is now either live or in retired.",
-  "unconfirmed": {},
+  "unconfirmedNote": "Announced after 2026-10-20 but not seen in a live tools/list: eight data binding tools (off in production tool lists) and two journey map gap analysis tools. Reviewed against release notes through 2026-11-16, live re-capture pending. Use a name here only if your tool list shows it; otherwise use the web UI. Move a name to tools only after check-mcp-live shows it.",
+  "unconfirmed": {
+    "find_datasets": "not in every tool list yet; hidden when the feature is off. Lists datasets for manual test cases, or reads one with its rows. Datasets are in the web UI since 2026-11-05.",
+    "manage_dataset": "not in every tool list yet; hidden when the feature is off. Creates, edits or deletes a dataset.",
+    "read_test_case_data": "not in every tool list yet; hidden when the feature is off. Reads a case's variables, dataset binding, iteration count and pre-run check.",
+    "manage_test_case_data": "not in every tool list yet; hidden when the feature is off. Links or unlinks a dataset for one or many cases. Datasets bind to manual cases only.",
+    "find_vault_params": "not in every tool list yet; hidden when the feature is off. Lists vault parameters. Never returns a secret value.",
+    "manage_vault_params": "not in every tool list yet; hidden when the feature is off. Creates, updates or deletes a vault parameter.",
+    "find_run_iterations": "not in every tool list yet; hidden when the feature is off. Lists the iterations (data rows) of a run, or reads one.",
+    "update_run_iteration": "not in every tool list yet; hidden when the feature is off. Sets a verdict, mark or defect for one or many iterations.",
+    "create_truetest_journey_map_gap_analysis": "announced in the 2026-11-05 build, not run on a live tenant. Needs user approval: it starts worker compute and sends the web flow's completion and failure emails. A submitted status does not tell a new job from reused running work, so never retry on your own.",
+    "get_truetest_journey_map_gap_analysis": "announced with the create tool. Read-only."
+  },
   "chatgptOnlyNote": "Tools served by the ChatGPT app, not by the Katalon MCP server. They are absent from the live tools/list on purpose, so check-mcp-live.mjs excludes them from the missing, new and retired diff. Only files under chatgpt/ may name them.",
   "chatgptOnly": [
     {

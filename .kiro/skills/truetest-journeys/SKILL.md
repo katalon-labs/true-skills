@@ -4,7 +4,7 @@ description: Turns real user traffic captured by TrueTest into test coverage in 
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -17,6 +17,7 @@ The `true-platform-testing` skill routes end-to-end requests here. Katalon True 
 ## Availability boundary
 
 - **Can:** list the linked TrueTest applications and their tracking environments. Search captured sessions and read one session. Search and read journey maps. Start a journey map build and poll it. Queue case generation from sessions or from one flow.
+- **Not in every tool list yet:** gap analysis between two journey maps (`create_truetest_journey_map_gap_analysis`, `get_truetest_journey_map_gap_analysis`). Use them only if your tool list shows them. Otherwise use the web gap analysis flow and say so. Read `references/journey-maps.md` before you call either.
 - **Cannot:** drive the live application or prove that a flow works today. Read sessions older than the 31-day search window. Edit, archive, approve, or retry a journey map. Cancel a queued job. Create requirements.
 - **A session shows what users did, not what is right.** Generated cases copy observed behavior, bugs included. Take expected results from a requirement or from the user. Mark the rest "observed, unconfirmed".
 
@@ -31,7 +32,7 @@ Read `references/capability-boundaries.md` when the user asks whether the platfo
 5. Call `list_truetest_tracking_environments` with `client_code`. Ask which environment to use when several exist. Production traffic and test traffic give different maps.
 6. Carry `project_id`, `client_code`, and `tracking_environment_id` into every later call. The MCP keeps no state.
 
-Page through `list_` and `search_` results with `page_token` when the first page is not the whole list.
+Page through `list_` and `search_` results with `page_token` when the first page is not the whole list. Stop when a page comes back empty. `has_more` can stay true after the last item, so it is not a stop signal on its own.
 
 ## Pick the starting point
 
@@ -45,7 +46,7 @@ Page through `list_` and `search_` results with `page_token` when the first page
 
 1. Call `search_truetest_journey_maps` with `client_code` and the tracking environment. Filter by `status` `active` and by the tracked-data window the user cares about.
 2. Pick the map whose window covers the question. If none fits, offer to build one (step 5).
-3. Call `get_truetest_journey_map` with `map_id`. Add `flow_id` to read one flow with its linked cases. Each of the four lists (pages, flows, steps, transitions) has its own page token. Page each one on its own.
+3. Call `get_truetest_journey_map` with `map_id`. Add `flow_id` to read one flow with its linked cases. Pages and transitions come back as the full sets. The limits bound the size of one response. Follow the page token and the transition token to the end, each on its own, and stop on an empty page. Flows and steps have their own tokens too.
 4. Compare. For each flow, read what the map reports about coverage and linked cases. Then check the project with `find_test_cases` and `search` (`types` `["test_case"]`) for cases that the map does not link. Sort the flows into covered, partly covered, and uncovered. Rank the uncovered ones by traffic.
 5. Build a map only when no suitable map exists. `create_truetest_journey_map` starts an async job. Preview the tracking environment, the time range, any `session_attributes` and `url_keywords`, and the two flags `carry_over_annotations` and `compare_with_previous_map` (both default to true). Get a yes. Call it once. Report the result as queued.
 6. Poll the exact `request_id` with `get_truetest_journey_map_request`. When it completes, copy the correlated `map_id` unchanged into `get_truetest_journey_map`. Never pick the map by list order.
@@ -86,7 +87,7 @@ Read `references/generation-and-review.md` for outcomes, read-back, and the draf
 
 ## Privacy
 
-Sessions come from real users. Never copy names, emails, account numbers, or free text into a case, a report, or chat. Use reserved values such as `@example.com` addresses. `include_raw_events` returns up to 100 events with field values unredacted. Set it only for an explicit troubleshooting request. Check the output before you reuse any value.
+Sessions come from real users. Never copy names, emails, account numbers, or free text into a case, a report, or chat. Use reserved values such as `@example.com` addresses. `include_raw_events` returns up to 100 events with field values unredacted. Set it only for an explicit troubleshooting request. Check the output before you reuse any value. A session response also carries a bounded console log. Treat console text as sensitive. It can hold tokens, addresses, and personal data. Do not paste it into a case, a report, or chat.
 
 ## Report
 

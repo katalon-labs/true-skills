@@ -21,7 +21,7 @@ Use this skill to install, connect, and check the Katalon MCP server. The server
 1. Use `https://platform.katalon.io/mcp`. It serves every workspace and shows a workspace picker after sign-in. Do not ask for a subdomain.
 2. If a config still holds the `<your.sub.domain>` placeholder, replace it with that endpoint.
 3. Ask for a domain only when the user names a dedicated Katalon domain, when the picker does not list their workspace, or when the local config names more than one domain. The dedicated form is `https://<your.sub.domain>.katalon.io/mcp`. Resolve the real value with the user. Never commit it to a shared file.
-4. The docs MCP server at mcp.katalon.com serves documentation only. It holds no platform data.
+4. The docs MCP server at mcp.katalon.com serves documentation only. It holds no platform data. Its answers can name an older Studio version than the documentation site lists. When the version matters, read the docs page itself.
 
 ## 2. Add the Server
 
@@ -43,11 +43,13 @@ The client opens a browser. The user signs in there and picks a workspace. Ask o
 
 Restart or reload the agent only when sign-in succeeded and the tools are still missing.
 
+Do not assume a protocol session or an initialize handshake. The MCP revision 2026-07-28 removes protocol sessions, and clients differ in how they connect. Carry IDs yourself, as the router skill says.
+
 ## 4. Verify
 
 Run these in order. Stop at the first failure.
 
-1. Find the Katalon tools with the agent's tool discovery. The live server exposes 74 tools. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`.
+1. Find the Katalon tools with the agent's tool discovery. The last live capture, on 2026-10-20, held 74 tools. The count can change, and a few announced tools are not in every list yet. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`. Trust the tools your agent discovered.
 2. Call `list_projects`. It is the sign-in check, because no tool returns the signed-in user. If it succeeds, say "connected" and give the project count. Do not repeat the email address. If several projects return, list them and ask which one to use.
 3. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
 4. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
@@ -59,7 +61,11 @@ Report one of these states:
 - Tools missing from the session.
 - Project found, repository not resolved.
 
-For empty project or repository lists, check account membership, organization, project role, and repository access. For a requirement that cannot be found, check that Jira or Azure DevOps sync is on and that the key belongs to the connected project.
+For empty project or repository lists, check account membership, organization, project role, and repository access.
+
+If Katalon Studio's StudioAssist reaches the platform, check which account it uses. StudioAssist can sign in with a different global account than the project connection in Studio's project settings. The MCP then answers with a permission denial on the project. Compare the two accounts before you suspect the role.
+
+If Katalon AI refuses a request, check that AI is on in the account's AI Services settings. An organization admin controls it. With AI switched off, Katalon AI refuses and names AI Services. If the person sees Access Denied on a system page, check their role first. For a requirement that cannot be found, check that Jira or Azure DevOps sync is on and that the key belongs to the connected project.
 
 ## 5. Private Apps and Tunnels
 
@@ -90,7 +96,7 @@ _The reference material the skill points to is inlined below so this file is sel
 <!-- GENERATED from shared/references/capability-boundaries.md - edit the source -->
 # Katalon MCP Capability Boundaries
 
-Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
+Contract source: the live Katalon True Platform MCP server, 74 tools, captured 2026-10-20. Notes were reviewed against release notes through 2026-11-16, live re-capture pending. Older docs pages list other names. If a tool named here is missing in your session, say so and use the closest tool your client discovered. Never call a tool name from memory. At session start, compare this list with the tools your client discovered. If they differ, trust the discovered set and say which names changed.
 
 Name tools by bare name, as written here. Clients add a prefix. Claude Code uses `mcp__<server>__<tool>`.
 
@@ -109,6 +115,7 @@ Requirements and ALM
 
 Test cases, folders, suites
 - `find_test_cases`, `read_test_cases` (many IDs per call), `create_test_case`, `update_test_cases` (batched actions), `move_test_case`, `duplicate_test_case`, `delete_test_case`.
+- Tags, feature areas, and custom test types are writable on create and update, and `find_test_cases` filters by tag and custom test type. Check your tool list for the exact parameters.
 - `find_test_folders`, `manage_test_folder`.
 - `find_test_suites`, `read_test_suite`, `manage_test_suite`.
 - `find_test_suite_collections` reads collections. No tool creates or edits a collection.
@@ -154,7 +161,11 @@ Team memory (Kai)
 - Look up another user to set an assignee.
 - Look up a manual run by its order number. Find the numeric `execution_id` with `list_executions`, then call `read_execution`.
 - Create or edit suite collections.
-- Author release gates, custom fields, tags, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI.
+- Author release gates, custom field definitions, Git repository settings, project governance, or project-wide agent rules. Use the True Platform UI. Writing agent rules is not available through the MCP. Tags and custom test types on a test case are writable (see Available).
+- Datasets and data binding for manual cases. The tools for them are not in production tool lists yet. If your tool list shows dataset tools, use them. Otherwise use the web UI.
+- Bulk Configure for suites and collections (execution profile and configuration for many selected tests). Build one run at a time with `build_run_configuration` and `create_test_run`.
+- The Manage Automated Schedule page. `list_schedule`, `read_schedule_detail`, and `update_schedule_configuration` cover schedule data. Use the UI for the page itself.
+- Report filters in the Test Results Analysis report (source, profile, and more filters). Use the UI.
 - Self-healing and Time Capsule. These are product features outside the MCP.
 - Create a defect without a failed test result ID and ALM integration details.
 
@@ -167,9 +178,18 @@ Team memory (Kai)
 - `manage_test_suite` rejects a suite that mixes MANUAL and AUTOMATED cases.
 - Two ID spaces both say "execution". TestOps uses a number. TestCloud uses a string. No tool converts one to the other. Never swap `list_executions` and `list_execution_outputs`. `update_test_run` takes the platform `execution_id`. It never takes `manualExecutionId` or the order number shown in the UI.
 - `update_test_results` counts as success only when the outcome is `applied` or `unchanged`. A manual result needs an active run that the caller created. An automated review needs a completed run.
-- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. Hosted AI runs Chrome on Windows or Linux only.
+- Run with AI asks for `browser_profile_mode` (SHARED or SEPARATE). The legacy launcher also asks for `os` (windows or linux). Ask the user. Never infer either. The web dialog has opened with Separate selected since 2026-10-29, but the MCP call still takes the user's answer.
+- The Run with AI environment comes from an organization allow-list, and it governs the web UI and the MCP start alike. With no allow-list set, hosted AI runs Linux Chrome only. An organization can allow the full picker or a named list of environments. Windows and macOS need a Test Execution - Cloud (formerly TestCloud) desktop licence. A beta browser build is replaced by the newest stable one. Do not promise an environment before the run dialog or the start result shows it.
 - `update_test_run` with START needs a choice between Run with AI and manual testing in TestPak. If the user did not choose, ask. A missing AI request does not select MANUAL.
 - `create_defect` needs `alm_integration_id` and `alm_connection_id` from `list_alm_integrations`. It also needs a `summary`. Ask the user for it. Check `fetch_defects` first to avoid a duplicate.
+- `create_defect` files a real Jira or Azure DevOps ticket. Never test it on a customer integration. Jira integrations whose bug type has its own ID, and company-managed Jira projects with a required custom field, work since the November 2026 releases. Report Defect with attachments on a manual result can still fail the filing. The fix lands in the 2026-11-18 release. Before that date, expect a possible failure and tell the user.
+- A 403 or "access denied" does not prove a permission problem. It can mean the requested environment, browser version, or dataset value is not available. Check the requested values first.
+- A write that times out (HTTP 504 or BACKEND_TIMEOUT) can still land or not. Read back with the matching find tool before any retry. Never create a duplicate to replace a write that may have landed.
+- Protected MCP calls return an error envelope with a `code`, a `message`, and a `retry` hint. Handle the codes this way:
+  - CREDENTIAL_REJECTED: the stored credential was rejected. The user fixes it on the API key settings page. Do not retry.
+  - BACKEND_TIMEOUT: the backend was too slow. A write may have landed. Read back first.
+  - BACKEND_UNAVAILABLE (HTTP 502, 503, 504): retry a read once, later. Read back before you retry a write.
+  - BACKEND_SERVER_ERROR: report it. Read back before you retry a write.
 - `search_truetest_sessions` covers at most 31 days. A `session_reference` is opaque. Never build one by hand.
 - `search` tier (exact, strong, weak) decides whether something exists. A response with `incomplete=true`, `retrieval_mode="keyword_fallback"`, or a warning never proves absence. Assets created in the last few minutes may be missing.
 - Resource links in tool results may point to a host that does not resolve for your tenant. Give the ID as well as the link.
@@ -196,8 +216,15 @@ The endpoint `https://platform.katalon.io/mcp` answers a call without a token wi
 | 401 or 403 after sign-in | Wrong account, organization, or role | Ask which account and organization the user chose. Check project role. |
 | Empty project list | The user is not a member, or the picker chose another workspace | Check membership. Sign in again and pick the workspace. |
 | Wrong workspace after sign-in | The picker chose a different tenant | Ask for the dedicated domain. Use `https://<your.sub.domain>.katalon.io/mcp`. |
-| Client reports a registration error | The server offers dynamic client registration. It does not advertise client ID metadata documents. | Choose the client's dynamic registration option. For Codex: `codex mcp login katalon-prod-mcp --oauth-client-registration dcr`. Not tested against this server. |
+| Client reports a registration error | The server offers dynamic client registration. It does not advertise client ID metadata documents. The MCP revision 2026-07-28 deprecates dynamic client registration in favor of client ID metadata documents, so a client that supports only the new flow can fail here. Which revision this server speaks is not confirmed. | Choose the client's dynamic registration option. For Codex: `codex mcp login katalon-prod-mcp --oauth-client-registration dcr`. Not tested against this server. |
 | Codex shows the server auth as unsupported | Reported on some setups | Use the `mcp-remote` fallback below. |
+| A call returns `CREDENTIAL_REJECTED` | The repository credential saved for the user, such as a Git token, was rejected. The error points to the api-key page, `/user-settings/api-key`. | Tell the user to fix the credential on that page. Do not retry the call. |
+| A call returns `BACKEND_TIMEOUT`, `BACKEND_UNAVAILABLE`, or `BACKEND_SERVER_ERROR` | A backend problem. The error carries `retry`. Some errors arrive in a wrapper message named `BACKEND_API_ERROR` with an `http_status`. Treat it as a wrapper, not a code. `BACKEND_UNAVAILABLE` covers 502, 503, and 504. | The service retries a read once and does not retry a failed write. Read back before you retry a write. A write can time out and still land. |
+| An API key stopped working | The key was revoked. A revoked key stops working at once, for every username. | Create a new key. Do not keep retrying with the old one. |
+| 403 or "access denied" from one call, while other calls work | It may not be a permission problem. It can mean the requested environment, browser version, or data value is unavailable. | Check the values you asked for first. Then check the role. |
+| StudioAssist gets a permission denial on a project | StudioAssist may sign in with a different global account than the project connection in Studio. | Compare the two accounts. Sign in with the account that has project access. |
+| Katalon AI refuses and names AI Services | AI is switched off in the account's AI Services settings. | Ask an organization admin to check the setting. |
+| Access Denied on a system page | Usually a role problem, not an AI setting. | Check the user's role. |
 | Tools missing in Windsurf | Windsurf caps tools at 100 across all servers | Disable tools or servers you do not use. |
 | Native config does nothing | Wrong `type` value or file for that client | Check the connect page for the client. Cline needs `streamableHttp`. Continue needs `streamable-http`. Claude Code and VS Code use `http`. |
 

@@ -734,6 +734,14 @@ export function validateRepo({ root = DEFAULT_ROOT, config = CONFIG, tools } = {
   ];
 
   const retiredRe = [...retired.keys()].map((n) => [n, new RegExp(`(?<![A-Za-z0-9_])${n}(?![A-Za-z0-9_])`)]);
+  // The caveat must sit in the same paragraph (or table block) as the tool name.
+  const UNCONFIRMED_CAVEAT = /not in (every|all|production|the|your) tool lists?\b|\btool lists?\b/i;
+  const paragraphAt = (text, idx) => {
+    const start = text.lastIndexOf("\n\n", idx);
+    const end = text.indexOf("\n\n", idx);
+    return text.slice(start < 0 ? 0 : start, end < 0 ? text.length : end);
+  };
+  const unconfirmedUse = new Set();
   const tokenIssues = new Map(); // key -> { message, files:Set }
   const addTokenIssue = (key, message, file) => {
     if (!tokenIssues.has(key)) tokenIssues.set(key, { message, files: new Set() });
@@ -774,7 +782,9 @@ export function validateRepo({ root = DEFAULT_ROOT, config = CONFIG, tools } = {
             continue;
           }
           if (unconfirmed.has(t)) {
-            addTokenIssue(`unknown:${t}`, `tool '${t}' is not in the October 2026 docs contract (${unconfirmed.get(t)})`, r);
+            // An unconfirmed name may be named when the file says it is not in every tool list.
+            if (UNCONFIRMED_CAVEAT.test(paragraphAt(scan, m.index))) unconfirmedUse.add(t);
+            else addTokenIssue(`unknown:${t}`, `tool '${t}' is announced but not in the docs contract (${unconfirmed.get(t)}); the same paragraph must say it is not in every tool list yet`, r);
           } else {
             addTokenIssue(`unknown:${t}`, `tool-shaped name '${t}' is not in docs/mcp-tools.json; fix the name, or if it is not a tool, ask for it to be added to nonTools`, r);
           }
@@ -824,6 +834,8 @@ export function validateRepo({ root = DEFAULT_ROOT, config = CONFIG, tools } = {
       }
     }
   }
+
+  if (unconfirmedUse.size) warn(`skills name ${unconfirmedUse.size} announced tools that are not in the docs contract yet: ${[...unconfirmedUse].sort().join(", ")}`);
 
   for (const { message, files } of tokenIssues.values()) {
     const list = [...files].sort();

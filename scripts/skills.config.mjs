@@ -22,7 +22,7 @@ export const ROLES = ["manual tester", "automation tester", "test lead", "test m
 
 // Version stamped in every SKILL.md `metadata.version` and expected to equal the root
 // plugin.json version. Bump both together at release time.
-export const SKILL_VERSION = "0.5.0";
+export const SKILL_VERSION = "0.6.0";
 
 // Id of the MCP tool contract in docs/mcp-tools.json. Every SKILL.md carries it in
 // `metadata.mcp-contract`, so a reader can tell which docs capture the text was checked against.

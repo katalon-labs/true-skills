@@ -35,7 +35,10 @@ Limits to state up front:
 - MCP repairs are case-level content edits (title, steps, expected results, data, links, location, status). They are not object or script healing.
 - Self-healing tests, Time Capsule, Studio Tracer, object refactoring, and StudioAssist Agent-mode edits are Katalon Studio desktop features. Code healing for Playwright happens in the user's repository, not through MCP.
 - `update_test_cases` takes `repository_id` and an ordered `updates` list. Each item holds one action (`RENAME`, `UPDATE_STATUS`, `UPDATE_DESCRIPTION`, `UPDATE_PRECONDITION`, `UPDATE_PRIORITY`, `UPDATE_AUTOMATION_STATUS`, `UPDATE_CUSTOM_FIELD`, `UPDATE_ASSIGNEE`, `UPDATE_LINKED_TEST_CASES`, `REMOVE_LINKED_TEST_CASE`, or `UPDATE_CONTENT`) and a `test_case_data` object with the case `id`. Actions run in order. Put every change to one case in one call.
-- `UPDATE_CONTENT` replaces all steps. Send the complete step list. Keep every Call Test Case step. A replacement that would silently drop a call is rejected.
+- `UPDATE_CONTENT` replaces all steps. Send the complete step list. Keep every Call Test Case step. A replacement that would silently drop a call is rejected. An incomplete list wipes steps.
+- To delete steps, use `REMOVE_STEPS` with `stepNumbers` if your tool schema lists it. Removing a Call Test Case step takes one approval. `REMOVE_STEPS` is the safer path than a rewrite of the whole list.
+- Since 2026-11-05, `update_test_cases` sets or clears tags, feature areas, and custom test types. A write changes only the list you send. Clearing one list leaves the others, so never send an empty list unless clearing is the intent. `origin` is read-only. The confirmed contract lists 11 actions and none of these, so read the tool schema and use only the actions it lists.
+- An agent can report an update that did not land, or the reverse. After every update, read the case back with `read_test_cases` (add `include_attributes` for tags and custom test types) and compare it with the plan.
 - A case name starts with a letter or a digit and accepts letters, digits, spaces, and `( ) . , _ -`. Other characters fail.
 - `delete_test_case` is destructive and permanent. Prefer `UPDATE_STATUS` with `INACTIVE`, or `move_test_case`. Delete only with a yes that names the case.
 - `fetch_test_stability_metrics` has no minimum-run parameter. Count the runs per case with `find_test_results` before you trust a flaky signal.
@@ -187,6 +190,9 @@ Guardrails:   <assertion-count diff result, healing level used>
 
 - Prefer `update_test_cases` and `move_test_case` over `delete_test_case`. Deleting a case is permanent and needs a yes that names the case.
 - Put every intended edit for one case into a single `update_test_cases` call. Actions run in order, so separate calls for one case can race.
+- Tag and custom test type writes clear only the list you send. Read the current values with `read_test_cases` and `include_attributes` first, and send the full intended list.
+- Delete steps with `REMOVE_STEPS` when the schema lists it. `UPDATE_CONTENT` replaces all steps.
+- Read every updated case back. A reported success is not proof.
 - `UPDATE_CONTENT` replaces every step. Send the complete step list, keep Call Test Case actions, and omit `context` or include `expectedResult` (never `context: {}`).
 - `repository_id` is required. Resolve it with `list_repositories` and carry it into every call.
 - Preview bulk changes, and get one confirmation for the set. Name every retire or delete target in that confirmation.
@@ -248,6 +254,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

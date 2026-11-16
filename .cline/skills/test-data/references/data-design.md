@@ -47,7 +47,7 @@ A step that reads `Enter the loyalty email` survives a data change. A step that 
 
 Credentials are not test data and never live with it.
 
-- Platform secrets live in Settings -> Configurations -> Secrets & Variables and are referenced as `{KEY}`. The page is UI-only; the MCP has no tool for it, and secrets apply to cloud-hosted execution only.
+- Platform secrets live in Settings -> Configurations -> Secrets & Variables and are referenced as `<<KEY>>`. The page is UI-only; the MCP has no tool for it, and secrets apply to cloud-hosted execution only.
 - Code reads credentials from environment variables. Commit the variable name, never the value.
 - Never paste a password, token, cookie, JWT, or MFA code into chat, a case, or a file, and never ask a user to.
 

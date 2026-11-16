@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.6.0 (2026-11-16)
+
+### Run with AI and environments
+
+- The Run with AI environment rules follow the product. An organization allow-list of browsers governs both the UI and the MCP start. Linux Chrome is the default only when no list is set. Windows and macOS need a desktop licence, and an unavailable beta falls back to the newest stable version. The old "Windows or Linux only" line is gone from `execute-test`, `test-environments`, and the shared execution workflow.
+- Parallel runs: the default follows the case count, the effective maximum is an organization and licence setting shown in the dialog, and no tool field sets it. Separate runs execute in parallel, Shared runs execute in order, and Shared with parallel can fail. Separate is the default in the product, and the agent still asks before it starts a run.
+- `execute-test` gains `references/testpak-and-run-with-ai.md` with the execution-mode table, the four ID spaces, the lifecycle outcome table, and rules for real evidence. A request to create a run only creates it and returns the link. An explicit request to run with AI selects the executor. The agent still shows one preview and waits for a yes before it creates or starts the run.
+- Data-bound runs: one AI session per data row, manual cases only, unresolved placeholders block the row, and unfinished rows end as Skipped. Skills point to the Datasets page and the run views until the per-row tools reach every tool list.
+- The Manage Automated Schedule page, bulk Configure, and the collection Run mode appear as UI follow-ups in `execute-test` and `test-plan`. `list_test_cloud_tunnels` needs `project_id`. The Desktop Browser live testing form and its billed Start Test button are covered in `test-environments` and `exploratory-charter`.
+
+### Datasets and test data
+
+- `test-data` separates four things called test data, adds `references/datasets.md` (dataset list, CSV import limits of 1000 rows and 50 columns with no partial import, the `<<name>>` placeholder, link rules, values rendered as text), and keeps credentials out of datasets.
+- Eight dataset, vault parameter, and run iteration tools are announced but not in every tool list yet. Skills name them only with that caveat and tell the agent to use them only when its tool list shows them.
+- `test-review` has a check list for dataset-bound cases.
+
+### Test design, management, and maintenance
+
+- Tags, feature areas, and custom test types are writable through `create_test_case` and `update_test_cases`. `find_test_cases` filters by tags, custom test types, and status, and stops on an empty page. `read_test_cases` takes `include_attributes`.
+- `create_test_case` rejects `%` and `$` in names. A write that times out can still land, so the agent reads back before it retries. Tag writes clear only the list that was sent, `REMOVE_STEPS` is documented, `UPDATE_CONTENT` wipes steps when the list is incomplete, and `origin` is read-only.
+- `create-test-cases` adds `references/agent-rule-calls.md` for calling a test case from an Agent Rule and the three open gaps. `test-management` adds `references/rest-bulk-import.md` with the bulk import limits (page cap of 100, no folder filter, stale rows after a delete) and notes that Git repository folders are read-only.
+
+### Router, memory, and journeys
+
+- `true-platform-testing` reads project memory before it sets up a run, adds intent rows for datasets, Agent Rules, the review list, Sources, and Custom Instructions, and lists announced tools in their own section of the tool index.
+- `project-memory` adds `references/agent-rules-and-sources.md`: the auto tag on Agent Rules, the Needs your review list with Accept all and Dismiss all, the Custom Instructions end date and migration to proposed rules, and the Sources popover.
+- `truetest-journeys` reads full page and transition sets by following both tokens, treats console logs as bounded and sensitive, and describes the gap analysis tools as announced, approval-gated, and never retried automatically.
+
+### Setup and sign-in
+
+- `platform-setup` covers the error envelope codes. A rejected credential goes to the API key page and is not retried. A revoked key stops at once. A 403 can mean an unavailable environment, version, or dataset value.
+- MCP 2026-07-28 clients: no session or initialize assumption, client ID metadata in place of dynamic client registration, and an input-required result from a write tool is answered in chat.
+- `get-started` states the Run with AI environment outcome.
+
+### Analysis and automation
+
+- `analyze-failures` records the `create_defect` fixes for Jira issue types and required custom fields, the attachment limit, and the rule never to test on a customer integration. `release-analyze` and `test-reporting` point to Release Health, Analytics and Trends, and Test Results Analysis.
+- `upload-report` warns that a repeated upload of the same test-reports batch can return 200 and store nothing, and adds a Retries section for `-retry` and `-retryStrategy`.
+- `test-case-to-katalon-studio` keeps the Studio 11.6 author and last-modified metadata on edit. `test-case-to-playwright` and `playwright-execute` note that Git-backed Playwright folders are read-only for create, move, and rename.
+
+### MCP contract and validation
+
+- `docs/mcp-tools.json` is reviewed against release notes through 2026-11-16 and keeps the 74-tool count. New notes cover the `update_test_run` allow-list, `create_defect`, `manage_test_suite`, and the TrueTest tools. The new `errorEnvelope` key lists the four error codes. The ten announced tools sit in `unconfirmed`.
+- The validator accepts a backticked announced tool only when the same paragraph mentions the tool list (for example "not in every tool list yet"), and reports those names as one warning.
+
+### Packaging
+
+- Antigravity CLI is added to the README, `docs/connect.md`, and `llms.txt`. Agent notes cover Claude Code `Skill(name)` permissions for unattended runs, Codex read-only hints, Kiro per-tool rules, and the Gemini CLI enterprise note. `scripts/build-adapters.mjs` now generates these `docs/connect.md` sections.
+- The pack version is 0.6.0 in the plugin manifests, the marketplaces, the Kiro Crew app, and each skill.
+
 ## 0.5.0 (2026-10-20)
 
 ### Breaking changes

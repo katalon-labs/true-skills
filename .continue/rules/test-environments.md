@@ -19,7 +19,7 @@ Available:
 - Read AUTs and their environments with `read_auts`, and execution profiles with `find_execution_profiles`.
 - Read the browser and device catalog with `list_test_cloud_environments`, and agents with `list_test_cloud_agents`.
 - List apps with `list_test_cloud_apps`. Upload one with `get_upload_test_cloud_app_url` and `create_test_cloud_app`. Manage aliases with `manage_test_cloud_dynamic_app`. Remove apps with `delete_test_cloud_app`.
-- List tunnels with `list_test_cloud_tunnels`, get setup steps with `prepare_test_cloud_tunnel_start`, and stop one with `stop_test_cloud_tunnel`.
+- List tunnels with `list_test_cloud_tunnels` (it needs `project_id`), get setup steps with `prepare_test_cloud_tunnel_start`, and stop one with `stop_test_cloud_tunnel`.
 - Build the payloads for a run with `build_run_configuration` and `build_private_local_testing_config`. Both builders only return a payload and change nothing.
 
 Not available:
@@ -27,7 +27,9 @@ Not available:
 - Create or edit an AUT or its environments. Use the platform UI.
 - Start a tunnel. The user runs the tunnel client. This skill gives the commands.
 - Show which runs or aliases use an app, or the UDID of a private device.
+- Change which environments Run with AI may use. An organization admin sets that list.
 - Run a test. Hand off to `execute-test`.
+- Open a live test session. Live testing is a web UI page, and starting one is billed.
 
 Read `references/write-policy.md` before any write.
 
@@ -48,6 +50,8 @@ Read `references/write-policy.md` before any write.
 | To check why a tunnel or an AUT is not reachable | Diagnose with the tunnel list | `references/private-aut-and-tunnels.md` |
 | To remove an app or stop a tunnel | Destructive path below | the same two files |
 | A profile or an agent for an automated run | `find_execution_profiles`, `list_test_cloud_agents` | `references/browsers-and-devices.md` |
+| To try a site by hand in a hosted desktop browser | Send the user to Live Testing, Desktop Browser | `references/browsers-and-devices.md` |
+| To know which environments Run with AI offers | Read the Run with AI environment rules | `references/browsers-and-devices.md` |
 
 ## AUT and environment
 
@@ -84,7 +88,8 @@ Preparing an environment is not consent to run. `execute-test` shows the run pre
 
 - Choose `config_type` from the environment the user wants, not from the suite name. A suite named API can still run in a browser.
 - A mobile device with no uploaded app means a browser configuration. Use MOBILE_NATIVE only for an app run with a known app.
-- Run with AI uses one hosted Chrome on Windows or Linux. The catalog does not apply to it. It still needs the AUT and any private access.
+- Run with AI does not use the catalog. The organization sets its environments. With no list set, it is Linux Chrome on the newest stable version. A list can add Windows or other pairs, and Windows and macOS need a Test Execution - Cloud desktop license. The first pair in the list is the default. Without a license, native mobile is refused with `TESTCLOUD_LICENSE_REQUIRED`. A beta browser build is replaced by the newest stable build of that browser. Run with AI still needs the AUT and any private access. See `references/browsers-and-devices.md`.
+- `list_test_cloud_environments` returns up to 50 rows a page. Follow `page_token` until it is null. Linux Chrome and Firefox versions were refreshed in October 2026, so a cached list is stale.
 - Never guess `browser_version` or `os_version` for a manual run, and never pass `latest` there. Read real values from the catalog.
 - Device availability (BUSY) changes by the minute. A BUSY device is not an invalid choice for a later run.
 - Setup text from `prepare_test_cloud_tunnel_start` can contain API keys. Show it only to the user. Never save it to a file, a note or a commit.
@@ -118,7 +123,7 @@ Read this when a run needs a browser, an OS, a device, a Katalon Test Execution 
 
 Common fields: `type` (`desktop_browser`, `mobile_device`), `platform`, `platformVersion`, `browser`, `browserVersion`, `browserVersionType` (`dev`, `beta`, `stable`), `device.deviceName`, `device.manufacturer`, `capabilities.automation.supported`, `capabilities.automation.devicePoolType`.
 
-Paging:
+Paging (a page holds up to 50 rows):
 
 1. Leave `page_token` and `offset` out on the first call.
 2. Copy `page_token` and `next_offset` from the response into the next call.
@@ -158,7 +163,35 @@ If `create_test_run` later returns INVALID_ENVIRONMENT, read `compatibleConfigur
 
 A TestPak (manual run) takes `browser`, `browser_version`, `os` and `os_version` as plain fields. Read real values from the catalog. Never guess a version and never pass `latest` there. Omit `os_version` and `browser_version` when the user gave none.
 
-Run with AI starts one hosted Chrome on Windows or Linux. Browser catalog work does not apply. Settle the AUT and private access, then hand off.
+Run with AI does not use the catalog. See "Run with AI environments" below. Settle the AUT and private access, then hand off.
+
+## Run with AI environments
+
+An organization admin sets which environments Run with AI may use. The rule covers the web UI and the MCP `START` call.
+
+| Organization setting | What the user gets |
+|---|---|
+| No list set | Linux Chrome only, on the newest stable version. No OS or browser picker. |
+| List allows everything | The full picker. |
+| List names pairs | Only those pairs. The first is the default. `latest` is rejected and the run pins a concrete stable version. |
+
+- Windows and macOS rows need a Test Execution - Cloud desktop license. Native mobile without it is refused with `TESTCLOUD_LICENSE_REQUIRED`.
+- A beta build is replaced by the newest stable build of the same browser. For example, a request for a Windows Chrome beta runs on the newest stable Windows Chrome. Say this in the readiness summary.
+- Do not offer a pair the organization does not list. A missing picker can mean "Linux Chrome only", not a bug.
+- A 403 or "access denied" for one version can mean that version is unavailable. Check the requested values before you suspect permissions.
+- The picker shows Linux Chrome and Chrome (headless) with versions from 151 down on one reviewed tenant. Versions change often. Read the picker, not this file.
+- A Windows case that needs a client certificate carries `[cert: <profile>]` in its precondition. See `execute-test`.
+
+## Desktop Browser live testing
+
+Live Testing has three tabs: Desktop Browser, Mobile Native App and Mobile Browser. Since November 2026 the Desktop Browser tab is a native form. It is a web UI page with no MCP tool.
+
+1. Enter the URL to open.
+2. Select Configuration. It is a drill: OS (Windows or macOS), OS version, browser, browser version, then screen resolution. Windows lists Chrome, Firefox, Microsoft Edge, Brave, DuckDuckGo and Opera. macOS lists Safari as well. A pre-release version carries a BETA label. The lists come from the environment service and can differ from older pages.
+3. Start Test. Starting is billed. Ask the user before you open a session for them.
+4. A Private/Local Testing toggle is on the form. A link at the top right switches back to the old experience. Switching changes a saved user preference. Do not click it unasked.
+
+For an automated or Run with AI run, use the catalog and the rules above. Live testing does not feed a run.
 
 ## Agents
 
@@ -374,6 +407,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

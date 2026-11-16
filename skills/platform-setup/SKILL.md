@@ -4,7 +4,7 @@ description: Connects an AI agent to the Katalon True Platform (formerly TestOps
 license: MIT
 compatibility: Requires the Katalon True Platform MCP server and network access. The mcp-remote fallback also needs Node.js and npx.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   mcp-contract: "katalon-docs-2026-10"
 ---
 
@@ -23,7 +23,7 @@ Use this skill to install, connect, and check the Katalon MCP server. The server
 1. Use `https://platform.katalon.io/mcp`. It serves every workspace and shows a workspace picker after sign-in. Do not ask for a subdomain.
 2. If a config still holds the `<your.sub.domain>` placeholder, replace it with that endpoint.
 3. Ask for a domain only when the user names a dedicated Katalon domain, when the picker does not list their workspace, or when the local config names more than one domain. The dedicated form is `https://<your.sub.domain>.katalon.io/mcp`. Resolve the real value with the user. Never commit it to a shared file.
-4. The docs MCP server at mcp.katalon.com serves documentation only. It holds no platform data.
+4. The docs MCP server at mcp.katalon.com serves documentation only. It holds no platform data. Its answers can name an older Studio version than the documentation site lists. When the version matters, read the docs page itself.
 
 ## 2. Add the Server
 
@@ -45,11 +45,13 @@ The client opens a browser. The user signs in there and picks a workspace. Ask o
 
 Restart or reload the agent only when sign-in succeeded and the tools are still missing.
 
+Do not assume a protocol session or an initialize handshake. The MCP revision 2026-07-28 removes protocol sessions, and clients differ in how they connect. Carry IDs yourself, as the router skill says.
+
 ## 4. Verify
 
 Run these in order. Stop at the first failure.
 
-1. Find the Katalon tools with the agent's tool discovery. The live server exposes 74 tools. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`.
+1. Find the Katalon tools with the agent's tool discovery. The last live capture, on 2026-10-20, held 74 tools. The count can change, and a few announced tools are not in every list yet. If the agent lists far fewer, say so and name the groups that are missing. Compare the list with `references/capability-boundaries.md`. Trust the tools your agent discovered.
 2. Call `list_projects`. It is the sign-in check, because no tool returns the signed-in user. If it succeeds, say "connected" and give the project count. Do not repeat the email address. If several projects return, list them and ask which one to use.
 3. Call `list_repositories` with `project_id`. The field is `project_id`, not `projectId`. If several repositories return and the request names none, ask.
 4. If the user gave a requirement key or repository name, read it with `find_requirements` or `read_requirement` to prove access.
@@ -61,7 +63,11 @@ Report one of these states:
 - Tools missing from the session.
 - Project found, repository not resolved.
 
-For empty project or repository lists, check account membership, organization, project role, and repository access. For a requirement that cannot be found, check that Jira or Azure DevOps sync is on and that the key belongs to the connected project.
+For empty project or repository lists, check account membership, organization, project role, and repository access.
+
+If Katalon Studio's StudioAssist reaches the platform, check which account it uses. StudioAssist can sign in with a different global account than the project connection in Studio's project settings. The MCP then answers with a permission denial on the project. Compare the two accounts before you suspect the role.
+
+If Katalon AI refuses a request, check that AI is on in the account's AI Services settings. An organization admin controls it. With AI switched off, Katalon AI refuses and names AI Services. If the person sees Access Denied on a system page, check their role first. For a requirement that cannot be found, check that Jira or Azure DevOps sync is on and that the key belongs to the connected project.
 
 ## 5. Private Apps and Tunnels
 

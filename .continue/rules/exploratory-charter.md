@@ -19,6 +19,7 @@ There is no exploratory session object in the platform. Say so before you promis
 - **Can read:** scope (`list_projects`, `list_repositories`), oracles you already have (`find_requirements`, `read_requirement`, `fetch_requirement_metrics`), existing coverage (`find_test_cases`, `find_test_cases_by_requirement`, `search`), defect patterns for the area (`fetch_defect_metrics`, `fetch_defects`), and the target environment (`read_auts`).
 - **Can write:** the outcome (`manage_test_folder`, `create_test_case`, `manage_requirement_test_case_linkages`, `manage_test_suite`, then `read_test_suite` to confirm), manual results for promoted cases (`update_test_run`, `update_test_results`), and evidence files (`prepare_artifact_upload`, then `confirm_artifact_upload`).
 - **Cannot do:** hold a charter or session entity, time a session, tag a case as exploratory, or create a requirement for behavior the session found. No tool sees the application. Every observation comes from a browser you drive yourself. Use a browser tool or Playwright for the product and the MCP for the platform records.
+- **Live testing in the web app.** The Desktop Browser live testing page is a native form (since early November 2026): enter the URL, pick a configuration (operating system and version, browser and version, resolution), then press Start Test. Start Test is billed. A "Switch to the old experience" link opens the older page. No MCP tool drives it. Offer it as a browser for a session. Never press Start Test for the user. Ask first and name the cost.
 - **Where the charter lives:** write the charter and the session sheet as a local artifact the user keeps. Optionally mirror the charter into the platform as one test case in the charter folder, with the mission in Description and the session log in Steps. Say which you did.
 
 Read `references/write-policy.md` before any write. Read `references/charter-and-session.md` before you write a charter.
@@ -481,6 +482,7 @@ A confirmation covers one run. Ask again for the next run.
 
 The MCP specification of 2026-07-28 removes protocol sessions. Clients differ in elicitation and sampling support.
 - Never rely on a server prompt or on sampling. Ask the user in chat.
+- If a client on MCP 2026-07-28 gets an input-required result from a write tool, ask the user in chat, then retry the call with their answer. Never assume a form prompt appears.
 - Carry IDs between calls yourself. Repeat `project_id` and `repository_id` on every call that takes them.
 - Prefer structured fields in a tool result. If they are missing, parse the text block.
 - Treat a tool annotation such as "read-only" as a hint. It is no safety argument. Follow this policy.

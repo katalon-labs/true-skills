@@ -77,6 +77,7 @@ Path: `Test Cases/Authentication/TC-1042 Login with valid credentials.tc`
 - The `.tc` does not hold the steps. The steps live in the Groovy script.
 - `<testCaseGuid>` is the identity of the case. The script never uses it.
 - `<defaultValue>` is a Groovy expression, so a string default is quoted: `'x'`, and an empty string is `''`.
+- Katalon Studio 11.6 and later write author and last-modified metadata into each `.tc` (`createdByUuid`, `createdByName`, `lastModifiedByUuid`, `lastModifiedByName`, inside the TestOps entity block). The platform repository scan maps the creator to the Author column. Issue-verified, not live-checked. Studio writes these values. When you edit an existing `.tc`, keep them. Do not write them by hand for a new file.
 - Generate new GUIDs for each case and each variable. Do not reuse GUIDs across files, except where a pairing requires equality.
 - The exact runtime effect of `<masked>` is not verified (log masking versus value decryption). Pair it with `setEncryptedText` only when the source data is Katalon-encrypted.
 
